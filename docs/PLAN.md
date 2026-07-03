@@ -13,8 +13,15 @@ mobile-first + WCAG AA; fixtures only behind `FIXTURES=true`, visibly labeled.
 
 ## Phase v0 — statewide launch
 
-### M1 — Foundation: scaffold, schema, first real data, first page — `planned`
-The user-approved starting scope.
+### M1 — Foundation: scaffold, schema, first real data, first page — `done` (2026-07-03)
+The user-approved starting scope. Shipped: all exit criteria met — CI green
+(lint, typecheck, migrations against PostGIS service container, build with
+empty-state exercise), importers idempotent, 234 ACs + 39 PCs + 38 districts +
+282 taluks live bilingually with provenance chips. Notable deviations, all in
+docs/DECISIONS.md: LGD via data.gov.in mirror (captcha on the portal, D-004);
+AC linkage via DataMeet + layered cross-validation (D-006); district withheld
+for 10 ACs pending M2 spatial resolution (D-009); /freshness placeholder came
+out live-from-DB rather than static copy.
 
 - Repo scaffold: Next.js App Router + TS strict + Tailwind + shadcn/ui + next-intl
   (`/ta` default, `/en`); CI via GitHub Actions (lint, typecheck, build).

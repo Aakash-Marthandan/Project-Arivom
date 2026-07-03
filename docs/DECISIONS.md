@@ -42,22 +42,44 @@ the row's existence: LGD or ECI). Rows that cannot obtain a genuine Tamil name
 are NOT imported (name_ta is NOT NULL); importers report the gap loudly. We
 never silently fill Tamil fields with English or invented text.
 
-### D-006: Constituency universe = ECI portal; numbers for PCs = TN SHB 2020
-The 234-AC universe (numbers + English names) comes from the ECI 2026 results
-portal constituency dropdown (single fetch). The 39-PC universe with official
-PC numbers comes from the "General Election to Lok Sabha by Parliamentary
-Constituencies: SHB 2020" dataset on data.gov.in (PC numbering is fixed by the
-2008 delimitation, so a 2020 source is current); reservation status (SC/ST) is
-stored as a sourced fact, not in the name. AC→PC mapping and AC→district come
-from Wikidata (P527 / P131), validated for completeness (every AC exactly one
-PC; hard fail otherwise). elections.tn.gov.in was unreachable at build time.
+### D-006: Constituency sourcing — layered, cross-validated (revised)
+- **AC universe** (numbers + English names): ECI 2026 results portal dropdown.
+  The portal's WAF rejects Python HTTP clients at the TLS layer while serving
+  curl, so that one fetch shells out to curl (documented in code).
+- **PC universe** (numbers + names + reservation): "General Election to Lok
+  Sabha by PC: SHB 2020" on data.gov.in (PC numbering is delimitation-fixed,
+  so a 2020 source is current). Reservation stored as a sourced fact.
+- **AC→PC linkage + AC reservation**: DataMeet's ECI-derived AC shapefile
+  attribute table — numeric AC_NO→PC_NO, cross-checked against SHB PC names.
+  Chosen after Wikidata P527 and the enwiki table each proved wrong for
+  different ACs (e.g. Sholinganallur, Mettuppalayam); DataMeet adjudicated
+  and is delimitation-authoritative for this mapping.
+- **AC→current district**: enwiki constituency table (structurally clean rows
+  only — the page has hand-edited rows with shifted cells) → Wikidata P131
+  (district-class filtered) → DataMeet delimitation-era value as last resort.
+- **Tamil names**: Wikidata labels (with tawiki article-title fallback when a
+  ta label contains non-Tamil text), matched name-first with district-based
+  disambiguation; multi-/duplicate-ordinal P1545 values are not trusted.
+- elections.tn.gov.in was unreachable at build time; when reachable it can
+  strengthen the district linkage (official AC-wise electors report).
+
+### D-009: Stale-district guard — withhold rather than mislead
+When the ONLY district signal for an AC is DataMeet's delimitation-era value
+and that district was later split (Tiruppur 2009; Ranipet, Tirupathur,
+Chengalpattu, Kallakurichi, Tenkasi 2019; Mayiladuthurai 2020), the current
+district is uncertain, so `district_id` stays NULL and the page simply omits
+the district line. Affects 10 ACs as of the M1 import (list printed by each
+run). Displaying a possibly-wrong district would violate pillar 1 in spirit;
+M2's boundary import resolves these spatially (AC polygon ∩ current district
+polygons).
 
 ### D-007: M1 imports state/districts/taluks + AC/PC; villages deferred
 Villages (~17k) and local bodies are not needed by any M1 page and have the
 worst `name_local` coverage; importing them under the no-fabricated-Tamil rule
 would produce a large partial set with no consumer. Deferred to the milestone
-that consumes them (geometry/ward work). Taluks with genuinely-Tamil LGD names
-are imported; the gap list is printed by the importer run.
+that consumes them (geometry/ward work). Taluks take Tamil names from LGD
+where genuinely Tamil, else Wikidata (Q122987736 items); 282 of 316 imported,
+34 skipped and reported (M1 run).
 
 ### D-008: Constituency URLs are code-based
 `/constituencies/ac/111`, `/constituencies/pc/22` — language-neutral, stable

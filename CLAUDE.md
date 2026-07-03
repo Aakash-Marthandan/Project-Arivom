@@ -59,6 +59,21 @@ ambiguous, **ask the user rather than assuming**, and log the resolved decision 
 - News aggregation policy (hard): headlines + links + own-words neutral summaries
   only — never store or republish full article text.
 
+## Development
+
+- Web: `npm run dev` / `lint` / `typecheck` / `build`. Local dev serves on
+  `/ta` (default) and `/en`. `DATABASE_URL` in `.env.local` (see .env.example).
+- DB: local Homebrew Postgres 17 + PostGIS (no Docker on this machine — see
+  DECISIONS.md D-001). Apply migrations with
+  `for f in supabase/migrations/*.sql; do psql -d arivom -v ON_ERROR_STOP=1 -f "$f"; done`.
+- Pipelines: `cd pipelines && uv sync`, then
+  `DATABASE_URL=postgresql://localhost/arivom uv run import-lgd` and
+  `uv run import-constituencies` (in that order). Lint: `uv run ruff check .`.
+- Server components read Postgres directly via `src/lib/db.ts` (postgres.js);
+  supabase-js arrives with auth in M9 (D-002).
+- Client JS is kept minimal deliberately: strings are passed to client
+  components as props — no NextIntlClientProvider message payloads.
+
 ## Do NOT build (any phase, without explicit user instruction)
 
 Native app · free-text comments · outlet bias labels · composite locality scores ·

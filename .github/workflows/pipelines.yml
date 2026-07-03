@@ -1,0 +1,36 @@
+name: Data pipelines
+
+on:
+  workflow_dispatch:
+    inputs:
+      importer:
+        description: Which importer to run
+        type: choice
+        options: [all, lgd, constituencies]
+        default: all
+  schedule:
+    # LGD hierarchy + constituency universe: monthly refresh (data changes
+    # rarely; the vacancy tracker in M5 will bring its own daily cron).
+    - cron: "17 2 3 * *"
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    # Requires the DATABASE_URL secret (hosted Supabase pooler URL).
+    if: ${{ vars.PIPELINES_ENABLED == 'true' }}
+    defaults:
+      run:
+        working-directory: pipelines
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATA_GOV_IN_API_KEY: ${{ secrets.DATA_GOV_IN_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - name: Import LGD hierarchy
+        if: ${{ inputs.importer == 'lgd' || inputs.importer == 'all' || github.event_name == 'schedule' }}
+        run: uv run import-lgd
+      - name: Import constituencies
+        if: ${{ inputs.importer == 'constituencies' || inputs.importer == 'all' || github.event_name == 'schedule' }}
+        run: uv run import-constituencies
