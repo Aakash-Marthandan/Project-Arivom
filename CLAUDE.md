@@ -67,8 +67,9 @@ ambiguous, **ask the user rather than assuming**, and log the resolved decision 
   DECISIONS.md D-001). Apply migrations with
   `for f in supabase/migrations/*.sql; do psql -d arivom -v ON_ERROR_STOP=1 -f "$f"; done`.
 - Pipelines: `cd pipelines && uv sync`, then
-  `DATABASE_URL=postgresql://localhost/arivom uv run import-lgd` and
-  `uv run import-constituencies` (in that order). Lint: `uv run ruff check .`.
+  `DATABASE_URL=postgresql://localhost/arivom uv run import-lgd`,
+  `uv run import-constituencies`, `uv run import-geometries` (in that order).
+  Lint: `uv run ruff check .`.
 - Server components read Postgres directly via `src/lib/db.ts` (postgres.js);
   supabase-js arrives with auth in M9 (D-002).
 - Client JS is kept minimal deliberately: strings are passed to client

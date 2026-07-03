@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { LocateButton } from "@/components/locate-button";
 import {
   Card,
   CardContent,
@@ -12,7 +13,10 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const t = await getTranslations("home");
+  const [t, tl] = await Promise.all([
+    getTranslations("home"),
+    getTranslations("locate"),
+  ]);
 
   const pillars = [
     { key: "transparency", accent: "border-t-primary" },
@@ -29,14 +33,21 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
           {t("hero.subtitle")}
         </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Button asChild size="lg">
+        <div className="mt-8 flex flex-wrap items-start gap-3">
+          <LocateButton
+            targetPath={`/${locale}/locate`}
+            labels={{
+              button: tl("button"),
+              locating: tl("locating"),
+              denied: tl("denied"),
+              failed: tl("failed"),
+            }}
+          />
+          <Button asChild size="lg" variant="outline">
             <Link href="/constituencies">{t("hero.browseCta")}</Link>
           </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/methodology">{t("hero.methodologyCta")}</Link>
-          </Button>
         </div>
+        <p className="mt-3 text-sm text-muted-foreground">{tl("privacyNote")}</p>
       </section>
 
       <section aria-labelledby="pillars-title" className="py-8">

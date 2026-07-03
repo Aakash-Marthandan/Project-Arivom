@@ -5,6 +5,33 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-03 — M2 decisions
+
+### D-011: District conflict audit — flag by default, adjudicate narrowly
+With geometry loaded, every AC's stored district is audited against the
+majority-overlap district polygon (geoBoundaries 2021). The audit found 13
+standing disagreements, and **neither side wins uniformly**: geoBoundaries
+lacks Chennai district's 2018 GCC expansion (so ACs 7–10, 27, 30–34 are
+correct as stored), its Kanchipuram↔Chengalpattu line is offset (ACs 36–37
+correct as stored), and Tirukkoyilur (76) is genuinely contested between
+sources (Kallakurichi vs Viluppuram). Policy: audit prints every mismatch on
+each run; stored values are never auto-overwritten. One narrow, documented
+override (`SPATIAL_OVERRIDES` in the importer): AC 160 Sirkazhi, whose stored
+value traced only to a stale Wikidata claim (pre-2020 split) — reassigned to
+Mayiladuthurai (99% overlap, recorded as a spatial fact). The authoritative
+adjudicator for the rest is the TN CEO district-wise AC list (unreachable at
+build time); revisit when reachable.
+
+### D-012: PC geometry derived from member ACs; districts from geoBoundaries
+PC polygons are computed as the union of member-AC polygons rather than
+imported from DataMeet's 51 MB PC shapefile: guarantees the point resolver
+can never place a point in an AC and a different PC, and keeps the download
+small. District polygons come from geoBoundaries gbOpen ADM2 2021 (ODbL —
+same license as our curated data), the only found open source with the
+post-2019 TN districts.
+
+---
+
 ## 2026-07-03 — Environment finalization (post-M1)
 
 ### D-010: Interim data-source operations until ~2026-07-13

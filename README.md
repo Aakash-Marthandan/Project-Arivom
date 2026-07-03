@@ -37,10 +37,11 @@ for f in supabase/migrations/*.sql; do
   psql -d arivom -v ON_ERROR_STOP=1 -f "$f"
 done
 
-# 2. Real data (LGD hierarchy, then constituencies)
+# 2. Real data (LGD hierarchy → constituencies → geometries)
 cd pipelines && uv sync
 DATABASE_URL=postgresql://localhost/arivom uv run import-lgd
 DATABASE_URL=postgresql://localhost/arivom uv run import-constituencies
+DATABASE_URL=postgresql://localhost/arivom uv run import-geometries
 cd ..
 
 # 3. Web app

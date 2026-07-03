@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -24,11 +25,14 @@ export async function SiteHeader() {
             {t("tagline")}
           </span>
         </Link>
-        <LocaleSwitcher
-          label={t("localeSwitcher.label")}
-          switchTo={t("localeSwitcher.switchTo")}
-          otherLocale={otherLocale}
-        />
+        {/* Suspense: useSearchParams requires it during static prerender. */}
+        <Suspense>
+          <LocaleSwitcher
+            label={t("localeSwitcher.label")}
+            switchTo={t("localeSwitcher.switchTo")}
+            otherLocale={otherLocale}
+          />
+        </Suspense>
       </div>
       <nav
         aria-label={t("nav.home")}

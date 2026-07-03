@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 
 const LOCALE_PREFIX = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
@@ -9,7 +9,8 @@ const LOCALE_PREFIX = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
  * Deliberately provider-free: uses a plain anchor + pathname rewrite so we
  * avoid shipping NextIntlClientProvider (and message catalogs) to the client.
  * A full navigation on language switch is correct — the document language,
- * fonts, and metadata all change.
+ * fonts, and metadata all change. Query params are preserved (e.g. the
+ * coordinates on /locate results).
  */
 export function LocaleSwitcher({
   label,
@@ -21,8 +22,9 @@ export function LocaleSwitcher({
   otherLocale: Locale;
 }) {
   const pathname = usePathname() ?? "/";
+  const search = useSearchParams()?.toString();
   const rest = pathname.replace(LOCALE_PREFIX, "");
-  const href = `/${otherLocale}${rest}`;
+  const href = `/${otherLocale}${rest}${search ? `?${search}` : ""}`;
 
   return (
     <a

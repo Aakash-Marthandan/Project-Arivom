@@ -139,6 +139,32 @@ export async function getLocalityFacts(
   `;
 }
 
+export interface ResolvedLocality {
+  level: "ac" | "pc" | "district";
+  eci_code: string | null;
+  name_en: string;
+  name_ta: string;
+}
+
+/**
+ * Point-in-polygon resolution: which AC, PC, and district contain this
+ * WGS84 point. Uses the GIST index on localities.geom; returns at most one
+ * row per level.
+ */
+export async function resolveLocation(
+  lon: number,
+  lat: number,
+): Promise<ResolvedLocality[]> {
+  return sql<ResolvedLocality[]>`
+    SELECT level::text AS level, eci_code, name_en, name_ta
+    FROM localities
+    WHERE level IN ('ac', 'pc', 'district')
+      AND geom IS NOT NULL
+      AND ST_Contains(geom, ST_SetSRID(ST_MakePoint(${lon}, ${lat}), 4326))
+    ORDER BY level
+  `;
+}
+
 /**
  * /freshness is generated from the database, never by hand: last retrieval
  * time and row count per source, across localities and facts.

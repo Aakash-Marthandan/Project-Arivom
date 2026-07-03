@@ -40,14 +40,18 @@ out live-from-DB rather than static copy.
 - **Exit criteria:** CI green; `supabase db reset` applies cleanly; importers
   idempotent (re-run safe); an AC page renders real LGD/ECI data in both locales.
 
-### M2 — Geometry & "who represents me" resolution — `planned`
-- Import DataMeet AC/PC/district boundaries (`ogr2ogr` → GeoJSON → PostGIS,
-  SRID 4326) attached to `localities.geom`; verify against 2008 delimitation.
-- Point-in-polygon resolver: location → AC + PC (+ district) chain (DESIGN.md §10).
-- Homepage locality entry: browser geolocation with graceful fallback to a manual
-  LGD-keyed locality picker (typeahead, bilingual).
-- **Exit criteria:** entering a GPS point or picking a locality lands on the right
-  constituency page; geolocation-denied path works.
+### M2 — Geometry & "who represents me" resolution — `done` (2026-07-03)
+Shipped: AC polygons from DataMeet (pyshp → GeoJSON → PostGIS, ST_MakeValid,
+SRID 4326); PC polygons derived as union of member ACs (D-012); current
+district polygons from geoBoundaries ADM2 2021 (ODbL). Point-in-polygon
+resolver + `/locate` flow: geolocation button (privacy note, graceful denial),
+server-side resolution, always-present bilingual name search fallback; result
+carries a boundary-provenance chip and a 2008-delimitation accuracy note.
+The 10 withheld districts (D-009) resolved spatially at 90–100% overlap; full
+AC↔district audit runs on every import — 13 standing conflicts flagged, one
+narrow adjudication (Sirkazhi → Mayiladuthurai, D-011). Verified in-browser:
+Madurai/Trichy/Chennai/Kanyakumari points, outside-TN state, denied path,
+locale switch preserving coordinates. Deployed to production.
 
 ### M3 — Representative spine: persons & tenures — `planned`
 - Importers: ECI 2026 results (`results.eci.gov.in` S22 pages) → winners as

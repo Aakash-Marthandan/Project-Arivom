@@ -28,7 +28,7 @@
     "hero": {
       "title": "Know your neighbourhood, know your representatives",
       "subtitle": "Clear, sourced information on Tamil Nadu's 234 assembly and 39 parliamentary constituencies. No ads, no fees, no slant.",
-      "browseCta": "Find your constituency",
+      "browseCta": "Browse all constituencies",
       "methodologyCta": "How does this work?"
     },
     "pillars": {
@@ -51,6 +51,22 @@
       "body": "Arivom is just taking shape. Basic details for every constituency are available today. Coming in the next stages: your representatives, vacancies and by-election status, your district's news, and education and health indicators.",
       "note": "You can always see when each dataset was last updated on the <link>data status</link> page."
     }
+  },
+  "locate": {
+    "title": "Find your constituency",
+    "intro": "Share your location and we will show your assembly and parliamentary constituencies. Or search by name below.",
+    "button": "Find my constituency",
+    "locating": "Finding your location…",
+    "denied": "Location permission was denied — no problem. You can search by your area's name below.",
+    "failed": "Could not determine your location. Try searching by name below.",
+    "resultTitle": "Your constituencies",
+    "outside": "This point appears to be outside Tamil Nadu's constituency boundaries. You can search for a Tamil Nadu constituency by name below.",
+    "accuracyNote": "Constituency boundaries follow the 2008 delimitation order. If you are very close to a boundary, check the neighbouring constituency too.",
+    "privacyNote": "Your location is used only to find the constituency — it is never stored.",
+    "provenanceTitle": "Constituency boundaries",
+    "pickerTitle": "Search by name",
+    "pickerHint": "Type a constituency or district name — in Tamil or English.",
+    "pickerPlaceholder": "e.g. Madurai, Salem, அம்பத்தூர்…"
   },
   "constituencies": {
     "title": "Constituencies of Tamil Nadu",
