@@ -69,6 +69,7 @@
       "pc": "Parliamentary Constituency"
     },
     "numberLabel": "Constituency no. {number}",
+    "reserved": "Reserved constituency ({status})",
     "district": "District",
     "partOfPc": "Parliamentary constituency",
     "assemblySegments": "Assembly segments in this constituency",
@@ -94,6 +95,11 @@
     "method": "Collection method",
     "license": "License",
     "viewSource": "View source",
+    "entries": {
+      "record": "Constituency record",
+      "nameTa": "Tamil name",
+      "reservation": "Reservation status"
+    },
     "methods": {
       "api": "Official API",
       "bulk": "Official bulk download",
