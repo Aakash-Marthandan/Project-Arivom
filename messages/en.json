@@ -1,0 +1,153 @@
+{
+  "common": {
+    "appName": "Arivom",
+    "tagline": "Let us know our Tamil Nadu",
+    "skipToContent": "Skip to content",
+    "nav": {
+      "home": "Home",
+      "constituencies": "Constituencies",
+      "methodology": "Methodology",
+      "freshness": "Data status"
+    },
+    "localeSwitcher": {
+      "label": "Change language",
+      "switchTo": "தமிழ்"
+    },
+    "footer": {
+      "mission": "Arivom — an open-source, ad-free civic data platform for the people of Tamil Nadu. Every fact with its source.",
+      "neutrality": "This platform is not affiliated with any political party. No opinions — sourced facts only.",
+      "license": "Code: AGPL-3.0 · Data: ODbL",
+      "sourceCode": "Source code (GitHub)",
+      "sections": {
+        "explore": "Explore",
+        "trust": "Trust"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Know your neighbourhood, know your representatives",
+      "subtitle": "Clear, sourced information on Tamil Nadu's 234 assembly and 39 parliamentary constituencies. No ads, no fees, no slant.",
+      "browseCta": "Find your constituency",
+      "methodologyCta": "How does this work?"
+    },
+    "pillars": {
+      "title": "Three founding principles",
+      "transparency": {
+        "title": "Every fact carries its source",
+        "body": "Every fact here arrives with its origin, retrieval date, and collection method — one tap away. A fact that cannot carry a source does not enter Arivom."
+      },
+      "neutrality": {
+        "title": "No leaning toward any party",
+        "body": "No opinions, no scores, no labels. We present sourced facts — the conclusions are yours to draw."
+      },
+      "craft": {
+        "title": "A calm, fast experience",
+        "body": "No ads, no tracking, no infinite scroll. Built to run fast on a basic phone over a slow connection."
+      }
+    },
+    "status": {
+      "title": "What is available now?",
+      "body": "Arivom is just taking shape. Basic details for every constituency are available today. Coming in the next stages: your representatives, vacancies and by-election status, your district's news, and education and health indicators.",
+      "note": "You can always see when each dataset was last updated on the <link>data status</link> page."
+    }
+  },
+  "constituencies": {
+    "title": "Constituencies of Tamil Nadu",
+    "subtitle": "234 assembly constituencies · 39 parliamentary constituencies",
+    "searchPlaceholder": "Search constituencies — in Tamil or English (e.g. Madurai)",
+    "searchLabel": "Search constituencies",
+    "assembly": "Assembly constituencies",
+    "parliamentary": "Parliamentary constituencies",
+    "assemblyCount": "{count} constituencies",
+    "noResults": "No matching constituency. Try a different spelling.",
+    "emptyState": "Constituency data has not been imported yet. Once the data pipelines run, all 234 assembly and 39 parliamentary constituencies will appear here."
+  },
+  "constituency": {
+    "types": {
+      "ac": "Assembly Constituency",
+      "pc": "Parliamentary Constituency"
+    },
+    "numberLabel": "Constituency no. {number}",
+    "district": "District",
+    "partOfPc": "Parliamentary constituency",
+    "assemblySegments": "Assembly segments in this constituency",
+    "representatives": {
+      "title": "Representatives",
+      "emptyState": "Representative details are not connected yet. Election results and candidate details arrive in the next milestone — we never display guessed or placeholder information as real."
+    },
+    "aboutData": {
+      "title": "About this data",
+      "body": "The information on this page is collected automatically from government sources. A structured way to report an error is coming soon."
+    },
+    "breadcrumb": {
+      "home": "Home",
+      "constituencies": "Constituencies"
+    }
+  },
+  "provenance": {
+    "chipLabel": "Source",
+    "title": "Where this fact comes from",
+    "source": "Source",
+    "publisher": "Publisher",
+    "retrievedOn": "Retrieved on",
+    "method": "Collection method",
+    "license": "License",
+    "viewSource": "View source",
+    "methods": {
+      "api": "Official API",
+      "bulk": "Official bulk download",
+      "scrape": "Collected from website",
+      "pdf": "PDF document parsing",
+      "parser": "Document parser",
+      "manual": "Manual verification",
+      "llm_bulk": "AI-assisted extraction"
+    }
+  },
+  "methodology": {
+    "title": "Methodology",
+    "intro": "How Arivom works, where the data comes from, and what we will never do — all documented here, in the open.",
+    "principles": {
+      "title": "Our principles",
+      "transparency": {
+        "title": "1. Transparency",
+        "body": "Every fact is stored with its source, retrieval date, collection method, and confidence. A fact that cannot carry a source cannot even be inserted into our database — this is enforced in software, not just policy."
+      },
+      "neutrality": {
+        "title": "2. Political neutrality",
+        "body": "We do not stamp any news outlet with a 'bias label'; we do not give any locality a single composite score; no opinion of ours appears anywhere. Candidate asset declarations and the like are always marked 'self-declared'."
+      },
+      "craft": {
+        "title": "3. Careful design",
+        "body": "It must run fast on an ordinary phone over 4G; Tamil typography must be excellent; it must be usable by everyone (WCAG AA) — these are our quality targets."
+      }
+    },
+    "currentData": {
+      "title": "Current data sources",
+      "body": "Two datasets are connected today: the Tamil Nadu administrative hierarchy from the Government of India's Local Government Directory (LGD), and the Election Commission of India's constituency list. Tap the 'Source' chip on any page to see the details."
+    },
+    "corrections": {
+      "title": "Corrections",
+      "body": "A structured form for reporting incorrect information is coming soon. Every accepted correction will be published in a public corrections log — alongside the original value."
+    },
+    "wip": "This document grows with the platform. As each new dataset is connected, its computation method will be explained here in detail."
+  },
+  "freshness": {
+    "title": "How fresh is the data?",
+    "intro": "See when each data source was last retrieved. This page is generated directly from our database — it is never updated by hand.",
+    "table": {
+      "dataset": "Dataset",
+      "source": "Source",
+      "retrieved": "Last retrieved",
+      "records": "Records",
+      "caption": "Data sources and their status"
+    },
+    "emptyState": "No data has been imported yet. Once the data pipelines start running, this table will fill in automatically.",
+    "slaNote": "Expected update windows (SLAs) for each dataset, with green/amber/red status against them, arrive in a later milestone."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you are looking for does not exist or may have moved.",
+    "homeLink": "Back to home"
+  }
+}

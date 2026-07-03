@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(pnpm --version)",
+      "Bash(supabase --version)",
+      "Bash(docker --version)",
+      "Bash(psql --version)",
+      "Bash(brew --version)",
+      "Read(//Users/aakash/**)",
+      "Bash(xcode-select -p)",
+      "Bash(curl --version)",
+      "Bash(brew install *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'docs: add design doc, project instructions, build plan, decision log *)",
+      "Bash(uv --version)",
+      "Bash(npx -y create-next-app@latest arivom --ts --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --disable-git)",
+      "Bash(rsync -a --exclude node_modules --exclude .next --exclude CLAUDE.md --exclude AGENTS.md --exclude .gitignore --exclude README.md /private/tmp/claude-501/-Users-aakash-Projects-Arivom/170a1207-d497-42ff-a3e9-b9cd5b1be45e/scratchpad/arivom/ .)",
+      "Bash(npm install *)",
+      "Bash(npx -y shadcn@latest init -y -b neutral)",
+      "Bash(npx -y shadcn@latest init --help)",
+      "Bash(npx -y shadcn@latest init -y -b radix)",
+      "Bash(npx -y shadcn@latest init -y -b radix -p vega)",
+      "Bash(npx -y shadcn@latest add button card badge separator input table breadcrumb popover skeleton)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/next-intl/package.json'\\).version\\)\")",
+      "Bash(npm run *)",
+      "Bash(grep -A 25 \"No intl context\" /tmp/arivom-dev.log | head -35)",
+      "Bash(curl -s http://localhost:3199/ta -o /tmp/ta.html -w \"ta: %{http_code} size=%{size_download}\\\\n\")",
+      "Bash(curl -s http://localhost:3199/en -o /tmp/en.html -w \"en: %{http_code} size=%{size_download}\\\\n\")",
+      "Bash(lsof -ti:3199)",
+      "Bash(xargs kill)",
+      "Bash(git commit -q -m 'feat: scaffold Next.js app with bilingual shell \\(ta default, en\\) *)"
+    ]
+  }
+}
