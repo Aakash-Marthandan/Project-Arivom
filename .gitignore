@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# builds
+build/
+dist/
+
+# env & secrets — never commit
+.env
+.env.local
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+
+# pipeline scratch (raw downloads cached locally, not committed)
+pipelines/.cache/
+
+# supabase local
+supabase/.branches
+supabase/.temp
+
+# os / editor
+.DS_Store
+*.log
