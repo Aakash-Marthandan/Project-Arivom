@@ -5,6 +5,21 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-03 — Environment finalization (post-M1)
+
+### D-010: Interim data-source operations until ~2026-07-13
+Repository is `github.com/Aakash-Marthandan/Project-Arivom` (public); Supabase
+is connected via the GitHub integration. The owner registers a personal
+data.gov.in API key after relocating to India (~10 days). Until then:
+pipelines keep using the public documented sample key (rate-limited but
+sufficient for the small M1/M2 datasets); the `pipelines.yml` cron stays
+dormant (`PIPELINES_ENABLED` variable unset); local imports remain the dev
+data source. M2 proceeds on public sources (DataMeet boundaries need no key).
+Production data load + cron activation happen once `DATABASE_URL` and
+`DATA_GOV_IN_API_KEY` secrets are set.
+
+---
+
 ## 2026-07-03 — M1 kickoff decisions
 
 ### D-001: Local dev database is plain Postgres + PostGIS (no Docker)

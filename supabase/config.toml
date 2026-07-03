@@ -1,0 +1,5 @@
+# Minimal Supabase project config: lets the Supabase GitHub integration
+# locate this directory and apply supabase/migrations on push.
+# Local development uses plain Postgres + PostGIS (docs/DECISIONS.md D-001),
+# so no local-stack settings are needed here yet.
+project_id = "project-arivom"

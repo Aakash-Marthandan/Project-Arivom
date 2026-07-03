@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-const GITHUB_URL = "https://github.com/arivom-tn/arivom";
+const GITHUB_URL = "https://github.com/Aakash-Marthandan/Project-Arivom";
 
 export async function SiteFooter() {
   const t = await getTranslations("common");

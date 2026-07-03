@@ -40,3 +40,6 @@ supabase/.temp
 # os / editor
 .DS_Store
 *.log
+
+# claude code local session settings (machine-specific)
+.claude/settings.local.json
