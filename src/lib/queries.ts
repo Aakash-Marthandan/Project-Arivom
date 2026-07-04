@@ -139,6 +139,55 @@ export async function getLocalityFacts(
   `;
 }
 
+export interface Representative {
+  office_type: "mla" | "mp_ls" | "mp_rs" | "councillor";
+  person_id: number;
+  name_en: string;
+  /** NULL = no sourced Tamil rendering yet (D-014) — never transliterated. */
+  name_ta: string | null;
+  party_en: string | null;
+  party_ta: string | null;
+  photo_url: string | null;
+  start_date: string | null;
+  retrieved_at: Date;
+  source_name: string;
+  source_url: string | null;
+  source_publisher: string;
+  source_license: string | null;
+}
+
+/** Current (active, open-ended) representatives for a locality. */
+export async function getRepresentatives(
+  localityId: number,
+): Promise<Representative[]> {
+  return sql<Representative[]>`
+    SELECT o.office_type::text AS office_type,
+           p.id AS person_id, p.name_en, p.name_ta, p.party_en, p.party_ta,
+           p.photo_url, t.start_date::text AS start_date, t.retrieved_at,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license
+    FROM offices o
+    JOIN tenures t ON t.office_id = o.id
+      AND t.end_date IS NULL AND t.status = 'active'
+    JOIN persons p ON p.id = t.person_id
+    JOIN sources s ON s.id = t.source_id
+    WHERE o.locality_id = ${localityId}
+    ORDER BY o.office_type
+  `;
+}
+
+export async function getPersonFacts(personId: number): Promise<FactWithSource[]> {
+  return sql<FactWithSource[]>`
+    SELECT f.key, f.value, f.extraction_method, f.retrieved_at,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license
+    FROM facts f
+    JOIN sources s ON s.id = f.source_id
+    WHERE f.subject_type = 'person' AND f.subject_id = ${personId}
+    ORDER BY f.key
+  `;
+}
+
 export interface ResolvedLocality {
   level: "ac" | "pc" | "district";
   eci_code: string | null;

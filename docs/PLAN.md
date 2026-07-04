@@ -53,16 +53,16 @@ narrow adjudication (Sirkazhi → Mayiladuthurai, D-011). Verified in-browser:
 Madurai/Trichy/Chennai/Kanyakumari points, outside-TN state, denied path,
 locale switch preserving coordinates. Deployed to production.
 
-### M3 — Representative spine: persons & tenures — `planned`
-- Importers: ECI 2026 results (`results.eci.gov.in` S22 pages) → winners as
-  `persons` + `tenures` for 234 ACs, marked **provisional** until Form 20; TN's 39
-  Lok Sabha MPs + 18 Rajya Sabha members via data.gov.in resources (sansad.in is
-  scrape-blocked — see DESIGN.md §13).
-- Constituency page: representative card (photo, party, tenure, contact where
-  sourced) with provenance chips; past-results section.
-- Empty state for ward tier ("Ward-level councillor data is not yet available…").
-- **Exit criteria:** every AC/PC page shows its current representative (or vacancy)
-  with sources, in both locales.
+### M3 — Representative spine: persons & tenures — `done` (2026-07-03)
+Shipped: 234/234 MLAs (ECI 2026, provisional-framed) + 39/39 Lok Sabha MPs
+with bilingual names via vote-anchored, party-validated joins (D-013);
+representative cards with provenance chips, election-result stat blocks
+(votes/share/margin/runner-up), provisional badges, and the ward-tier empty
+state; per-seat person identity with the dual-seat winner correctly modeled.
+33 MLAs display in English pending a sourced Tamil rendering (D-014 — never
+transliterated; reported on every import run). RS members descoped to the
+state-level-display milestone (D-013). Contact channels and photos arrive
+with M4 affidavit/person reconciliation.
 
 ### M4 — Affidavit data (MyNeta) — `planned`
 - Pipeline: scrape MyNeta TN 2026 candidate pages; LLM_bulk extraction of assets/

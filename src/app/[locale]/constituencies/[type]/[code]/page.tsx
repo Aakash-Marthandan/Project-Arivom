@@ -20,6 +20,8 @@ import {
   getAssemblySegments,
   getConstituency,
   getLocalityFacts,
+  getPersonFacts,
+  getRepresentatives,
   type ConstituencyLevel,
 } from "@/lib/queries";
 
@@ -62,13 +64,31 @@ export default async function ConstituencyPage({
   const c = await load(route.level, route.code);
   if (!c) notFound();
 
-  const [t, tp, format, facts, segments] = await Promise.all([
+  const [t, tp, format, facts, segments, representatives] = await Promise.all([
     getTranslations("constituency"),
     getTranslations("provenance"),
     getFormatter(),
     getLocalityFacts(c.id),
     c.level === "pc" ? getAssemblySegments(c.id) : Promise.resolve([]),
+    getRepresentatives(c.id),
   ]);
+  const rep = representatives[0] ?? null;
+  const repFacts = rep ? await getPersonFacts(rep.person_id) : [];
+
+  interface ElectionResult {
+    election: string;
+    provisional?: boolean;
+    votes: number;
+    vote_pct?: number | null;
+    margin?: number | null;
+    runner_up_en?: string | null;
+    runner_up_ta?: string | null;
+    total_votes?: number | null;
+    candidates?: number | null;
+  }
+  const electionResult = facts.find((f) => f.key === "election_result")?.value as
+    | ElectionResult
+    | undefined;
 
   const isTa = locale === "ta";
   const primaryName = isTa ? c.name_ta : c.name_en;
@@ -233,12 +253,157 @@ export default async function ConstituencyPage({
         <h2 id="reps-title" className="font-heading text-xl font-bold">
           {t("representatives.title")}
         </h2>
-        {/* Honest empty state: representative data arrives in a later
-            milestone; we never show placeholder people. */}
-        <p className="mt-3 max-w-xl rounded-md border border-dashed border-border bg-secondary/40 p-5 text-sm leading-relaxed text-muted-foreground">
-          {t("representatives.emptyState")}
-        </p>
+        {rep ? (
+          <div className="mt-4 max-w-2xl rounded-lg border border-border bg-card p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {t(`representatives.offices.${rep.office_type}`)}
+                </p>
+                {/* No sourced Tamil rendering yet (D-014): show the sourced
+                    English name with an honest pending note — never a
+                    transliteration. */}
+                <p
+                  className="mt-1 font-heading text-2xl font-bold"
+                  lang={isTa && !rep.name_ta ? "en" : undefined}
+                >
+                  {isTa ? (rep.name_ta ?? rep.name_en) : rep.name_en}
+                </p>
+                {rep.name_ta ? (
+                  <p className="text-sm text-muted-foreground" lang={isTa ? "en" : "ta"}>
+                    {isTa ? rep.name_en : rep.name_ta}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {t("representatives.nameTaPending")}
+                  </p>
+                )}
+              </div>
+              <ProvenanceChip
+                label={tp("chipLabel")}
+                heading={tp("title")}
+                fieldLabels={{
+                  publisher: tp("publisher"),
+                  retrievedOn: tp("retrievedOn"),
+                  method: tp("method"),
+                  license: tp("license"),
+                  viewSource: tp("viewSource"),
+                }}
+                entries={[
+                  {
+                    title: t("representatives.title"),
+                    sourceName: rep.source_name,
+                    url: rep.source_url,
+                    publisher: rep.source_publisher,
+                    license: rep.source_license,
+                    retrievedOn: formatDate(rep.retrieved_at),
+                    method: methodLabel("scrape"),
+                  },
+                  ...repFacts
+                    .filter((f) => f.key === "name_ta")
+                    .map((f) => ({
+                      title: tp("entries.nameTa"),
+                      sourceName: f.source_name,
+                      url: f.source_url,
+                      publisher: f.source_publisher,
+                      license: f.source_license,
+                      retrievedOn: formatDate(f.retrieved_at),
+                      method: methodLabel(f.extraction_method),
+                    })),
+                ]}
+              />
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {(isTa ? rep.party_ta : rep.party_en) ? (
+                <Badge variant="secondary">
+                  {isTa ? (rep.party_ta ?? rep.party_en) : rep.party_en}
+                </Badge>
+              ) : null}
+              {rep.start_date ? (
+                <span className="text-sm text-muted-foreground">
+                  {t("representatives.electedOn", {
+                    // Civil date, not a timestamp: parse at local midnight so
+                    // the displayed day never shifts across timezones.
+                    date: format.dateTime(new Date(`${rep.start_date}T00:00:00`), {
+                      dateStyle: "long",
+                    }),
+                  })}
+                </span>
+              ) : null}
+            </div>
+            {electionResult?.provisional ? (
+              <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant="outline" className="border-stale-foreground/40 bg-stale text-stale-foreground">
+                  {t("representatives.provisionalBadge")}
+                </Badge>
+                {t("representatives.provisionalNote")}
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <p className="mt-3 max-w-xl rounded-md border border-dashed border-border bg-secondary/40 p-5 text-sm leading-relaxed text-muted-foreground">
+            {t("representatives.emptyState")}
+          </p>
+        )}
+        {c.level === "ac" ? (
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {t("representatives.wardEmpty")}
+          </p>
+        ) : null}
       </section>
+
+      {electionResult ? (
+        <section aria-labelledby="result-title" className="mt-10">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 id="result-title" className="font-heading text-xl font-bold">
+              {t("result.title")}
+            </h2>
+            <span className="text-sm text-muted-foreground">
+              {electionResult.election}
+            </span>
+          </div>
+          <dl className="mt-4 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3">
+            {[
+              ["votes", format.number(electionResult.votes)],
+              [
+                "votePct",
+                electionResult.vote_pct != null ? `${electionResult.vote_pct}%` : null,
+              ],
+              [
+                "margin",
+                electionResult.margin != null ? format.number(electionResult.margin) : null,
+              ],
+              [
+                "runnerUp",
+                isTa
+                  ? (electionResult.runner_up_ta ?? electionResult.runner_up_en)
+                  : electionResult.runner_up_en,
+              ],
+              [
+                "totalVotes",
+                electionResult.total_votes != null
+                  ? format.number(electionResult.total_votes)
+                  : null,
+              ],
+              [
+                "candidates",
+                electionResult.candidates != null
+                  ? format.number(electionResult.candidates)
+                  : null,
+              ],
+            ]
+              .filter(([, v]) => v != null)
+              .map(([key, value]) => (
+                <div key={key as string} className="rounded-lg border border-border bg-card p-3">
+                  <dt className="text-xs text-muted-foreground">
+                    {t(`result.${key}`)}
+                  </dt>
+                  <dd className="mt-1 font-medium tabular-nums">{value}</dd>
+                </div>
+              ))}
+          </dl>
+        </section>
+      ) : null}
 
       <section aria-labelledby="about-title" className="mt-10">
         <h2 id="about-title" className="font-heading text-base font-semibold">

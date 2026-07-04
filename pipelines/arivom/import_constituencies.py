@@ -32,6 +32,7 @@ from dbfread import DBF
 
 from .common import (
     Db,
+    expand_table_grid,
     fail,
     fetch_datagovin_resource,
     has_tamil,
@@ -177,53 +178,6 @@ def fetch_datameet_acs(session: Any) -> dict[int, dict[str, Any]]:
     return result
 
 
-def _expand_table_grid(table: Any) -> list[list[str]]:
-    """Expand an HTML table into a dense grid, resolving row/colspans."""
-    grid: list[list[str]] = []
-    pending: dict[int, tuple[str, int]] = {}  # col index -> (text, remaining rows)
-    for tr in table.find_all("tr"):
-        row: list[str] = []
-        col = 0
-        cells = tr.find_all(["td", "th"])
-        cell_iter = iter(cells)
-        while True:
-            if col in pending:
-                text, remaining = pending[col]
-                row.append(text)
-                if remaining > 1:
-                    pending[col] = (text, remaining - 1)
-                else:
-                    del pending[col]
-                col += 1
-                continue
-            cell = next(cell_iter, None)
-            if cell is None:
-                # Flush any trailing pending cells.
-                if any(c >= col for c in pending):
-                    max_col = max(c for c in pending if c >= col)
-                    while col <= max_col:
-                        if col in pending:
-                            text, remaining = pending[col]
-                            row.append(text)
-                            if remaining > 1:
-                                pending[col] = (text, remaining - 1)
-                            else:
-                                del pending[col]
-                        else:
-                            row.append("")
-                        col += 1
-                break
-            text = " ".join(cell.get_text(" ", strip=True).split())
-            rowspan = int(cell.get("rowspan", 1) or 1)
-            colspan = int(cell.get("colspan", 1) or 1)
-            for _ in range(colspan):
-                row.append(text)
-                if rowspan > 1:
-                    pending[col] = (text, rowspan - 1)
-                col += 1
-        grid.append(row)
-    return grid
-
 
 def fetch_enwiki_ac_links(session: Any) -> dict[int, dict[str, str | None]]:
     """AC number → district, PC name, reservation from the enwiki list table."""
@@ -244,7 +198,7 @@ def fetch_enwiki_ac_links(session: Any) -> dict[int, dict[str, str | None]]:
 
     result: dict[int, dict[str, str | None]] = {}
     for table in soup.find_all("table", class_="wikitable"):
-        grid = _expand_table_grid(table)
+        grid = expand_table_grid(table)
         if not grid:
             continue
         header = [h.lower() for h in grid[0]]

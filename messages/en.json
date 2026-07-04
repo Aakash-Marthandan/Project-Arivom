@@ -91,7 +91,28 @@
     "assemblySegments": "Assembly segments in this constituency",
     "representatives": {
       "title": "Representatives",
-      "emptyState": "Representative details are not connected yet. Election results and candidate details arrive in the next milestone — we never display guessed or placeholder information as real."
+      "emptyState": "Representative details are not connected yet. Election results and candidate details arrive in the next milestone — we never display guessed or placeholder information as real.",
+      "offices": {
+        "mla": "Member of Legislative Assembly (MLA)",
+        "mp_ls": "Member of Parliament (Lok Sabha)",
+        "mp_rs": "Member of Parliament (Rajya Sabha)",
+        "councillor": "Ward councillor"
+      },
+      "party": "Party",
+      "electedOn": "Elected: {date}",
+      "provisionalBadge": "Provisional result",
+      "nameTaPending": "The Tamil rendering of this name is pending source verification — we do not use machine transliterations.",
+      "provisionalNote": "This result is preliminary data entered by returning officers. Final confirmation comes via the Form 20 record.",
+      "wardEmpty": "Ward-level (local body) representative details are not connected yet — they begin with the Madurai Corporation pilot. Your MLA and MP are shown above."
+    },
+    "result": {
+      "title": "Election result",
+      "votes": "Votes won",
+      "votePct": "Vote share",
+      "margin": "Winning margin",
+      "runnerUp": "Runner-up",
+      "totalVotes": "Total votes polled",
+      "candidates": "Candidates"
     },
     "aboutData": {
       "title": "About this data",

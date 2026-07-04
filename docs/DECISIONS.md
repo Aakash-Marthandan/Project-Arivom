@@ -5,6 +5,37 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-03 — M3 decisions
+
+### D-013: Representative spine sourcing — vote-anchored bilingual joins
+MLA winners/parties/votes: ECI 2026 portal per-AC pages (provisional until
+Form 20, framed as such in UI and facts). Tamil renderings come from Tamil
+Wikipedia, joined **by constituency number and validated by exact vote-count
+equality** (script-independent); fallbacks in order: statewide results table
+(±1% drift tolerated at lower confidence) → pre-election candidates table
+(party-anchored, self-calibrated against pass-1 names) → per-AC articles
+(vote-anchored AND party-validated — a vote coincidence with the wrong party
+is rejected; this caught a real mis-extraction). Lok Sabha 2024: enwiki
+results table (EN authority) + tawiki elected-members table, validated by
+party match plus alliance-votes cross-check (the ECI 2024 portal is offline;
+sansad.in blocks scraping). Person identity is **per seat**
+(`tn2026:ac<n>:<name>`): two same-named winners in different seats stay two
+people; a dual-seat winner (C. Joseph Vijay: Perambur + Tiruchirappalli East)
+appears as two rows until person-level reconciliation lands with affidavit
+data (M4). Rajya Sabha members are descoped to the milestone that displays
+state-level representation — importing them now would be dead data. Tenure
+start = result-declaration date (oath dates are not machine-available);
+basis recorded in each election_result fact.
+
+### D-014: Missing Tamil renderings are NULL, never transliterated
+33 of 234 winners (mostly first-term members) have no Tamil rendering of
+their name in any machine-checkable source yet. `persons.name_ta` is now
+nullable (migration 20260704020000): the UI shows the sourced English name
+with a visible "Tamil name pending source verification — we do not use
+machine transliterations" note, and every import run prints the outstanding
+list until it reaches zero. Manual sourced curation (or wiki catch-up) closes
+these; a machine transliteration would violate D-005.
+
 ## 2026-07-03 — M2 decisions
 
 ### D-011: District conflict audit — flag by default, adjudicate narrowly
