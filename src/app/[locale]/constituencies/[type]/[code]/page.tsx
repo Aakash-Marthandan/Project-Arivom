@@ -99,6 +99,14 @@ export default async function ConstituencyPage({
     Others: "others",
   };
 
+  interface StatusNote {
+    note_en: string;
+    note_ta: string;
+    as_of: string;
+  }
+  const statusNoteFact = facts.find((f) => f.key === "status_note");
+  const statusNote = statusNoteFact?.value as StatusNote | undefined;
+
   interface VacancyFact {
     reason: string;
     vacated_on: string;
@@ -532,6 +540,37 @@ export default async function ConstituencyPage({
             {t("representatives.emptyState")}
           </p>
         )}
+        {/* Curated status note (D-016): civically important context such as
+            a pending election petition, always cited. */}
+        {statusNote ? (
+          <div className="mt-4 flex max-w-2xl flex-wrap items-start gap-2 rounded-md border border-stale-foreground/30 bg-stale/60 p-4">
+            <p className="min-w-0 flex-1 text-sm leading-relaxed text-stale-foreground">
+              {isTa ? statusNote.note_ta : statusNote.note_en}
+            </p>
+            <ProvenanceChip
+              label={tp("chipLabel")}
+              heading={tp("title")}
+              fieldLabels={{
+                publisher: tp("publisher"),
+                retrievedOn: tp("retrievedOn"),
+                method: tp("method"),
+                license: tp("license"),
+                viewSource: tp("viewSource"),
+              }}
+              entries={[
+                {
+                  title: t("statusNote"),
+                  sourceName: statusNoteFact!.source_name,
+                  url: statusNoteFact!.source_url,
+                  publisher: statusNoteFact!.source_publisher,
+                  license: statusNoteFact!.source_license,
+                  retrievedOn: formatDate(statusNoteFact!.retrieved_at),
+                  method: methodLabel(statusNoteFact!.extraction_method),
+                },
+              ]}
+            />
+          </div>
+        ) : null}
         {c.level === "ac" ? (
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
             {t("representatives.wardEmpty")}

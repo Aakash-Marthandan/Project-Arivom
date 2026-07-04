@@ -5,6 +5,22 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-04 — M5 decisions
+
+### D-018: Tracker monitor is detection-only; runs daily regardless of PIPELINES_ENABLED
+The vacancy monitor uses Google News RSS (en+ta) strictly as a discovery
+aid (DESIGN §4E): it records unreviewed `vacancy_signal` facts and a
+`vacancy_monitor_run` record (the tracker's "last checked"), and can never
+change a seat's status. Status changes happen only through the curated,
+per-entry-cited seed applied by import-vacancies with member-name
+validation — the literal "human confirmation before status flip" of DESIGN
+§6. Because the monitor needs only DATABASE_URL (no data.gov.in key), its
+daily cron runs independently of the PIPELINES_ENABLED gate (D-010). The
+ECI portal remains a JS app without a stable machine-readable feed; its
+reachability is recorded honestly on every run, and a proper ECI parser
+can slot in as an additional feed when one becomes available (or via an
+India egress for the CEO site, see D-017).
+
 ## 2026-07-04 — Data consolidation research (owner-requested)
 
 ### D-017: Post-election research pass; Tamil-name completion; vacancy records

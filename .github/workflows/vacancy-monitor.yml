@@ -1,0 +1,26 @@
+name: Vacancy monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 03:00 UTC (08:30 IST): DESIGN.md §6 gives the tracker a
+    # daily cadence and a 24-hour freshness SLA.
+    - cron: "0 3 * * *"
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    # Detection only: raises unreviewed signals and updates the last-checked
+    # record. Needs only DATABASE_URL (not the data.gov.in key), so it runs
+    # regardless of PIPELINES_ENABLED (see DECISIONS.md D-018).
+    defaults:
+      run:
+        working-directory: pipelines
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - name: Run vacancy monitor
+        run: uv run monitor-vacancies

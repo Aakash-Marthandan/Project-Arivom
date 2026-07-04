@@ -21,6 +21,7 @@ from pathlib import Path
 from .common import Db, fail, norm_name, now_utc
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "vacancies_2026.json"
+NOTES_PATH = Path(__file__).resolve().parent.parent / "data" / "status_notes.json"
 
 
 def main() -> None:
@@ -105,6 +106,47 @@ def main() -> None:
             confidence=1.0,
         )
 
+    # Curated status notes (court disputes and similar, D-016): bilingual,
+    # cited, applied to the constituency as a sourced fact.
+    notes_applied = 0
+    if NOTES_PATH.exists():
+        notes_source = db.ensure_source(
+            name="Seat status notes (curated, cited)",
+            url=None,
+            publisher="Arivom curation over news reports",
+            license=None,
+            access_mode="manual",
+            notes=(
+                "Civically important context about a seat's current situation (for "
+                "example a pending election petition), curated with citations in "
+                "pipelines/data/status_notes.json."
+            ),
+        )
+        for note in json.loads(NOTES_PATH.read_text())["notes"]:
+            loc = db.conn.execute(
+                "SELECT id FROM localities WHERE level = 'ac' AND eci_code = %s",
+                (note["ac"],),
+            ).fetchone()
+            if loc is None:
+                fail(f"status note references unknown AC {note['ac']}")
+                return
+            db.upsert_fact(
+                subject_type="locality",
+                subject_id=loc[0],
+                key="status_note",
+                value={
+                    "note_en": note["note_en"],
+                    "note_ta": note["note_ta"],
+                    "as_of": note["as_of"],
+                    "cited_sources": note["sources"],
+                },
+                source_id=notes_source,
+                retrieved_at=retrieved_at,
+                extraction_method="manual",
+                confidence=1.0,
+            )
+            notes_applied += 1
+
     db.conn.commit()
 
     vacant = db.conn.execute("SELECT count(*) FROM vacancies").fetchone()
@@ -112,6 +154,7 @@ def main() -> None:
     print("=== Vacancy import report ===")
     print(f"records applied: {applied} (already applied: {already})")
     print(f"vacancies view now shows: {vacant[0]} offices without an active tenure")
+    print(f"status notes applied: {notes_applied}")
     if vacant[0] != len(seed["vacancies"]):
         fail(
             f"vacancies view count {vacant[0]} != seed count {len(seed['vacancies'])} — "

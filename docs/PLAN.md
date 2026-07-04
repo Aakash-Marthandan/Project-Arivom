@@ -76,13 +76,19 @@ listing against detail pages; run fails on any mismatch). UI: affidavit
 block on MLA cards with "self-declared" badge, ECI-via-MyNeta provenance
 chip, localized education categories, Indian-grouped ₹ formatting.
 
-### M5 — Vacancy & by-election tracker (flagship) — `planned`
-- Daily pipeline over ECI press releases / TN CEO / eGazette; parse + NER; **human
-  confirmation required before a status flip** (DESIGN.md §6).
-- Tracker page over the `vacancies` view: seat, reason code, status (default
-  "By-election awaiting ECI notification"), last-checked timestamp; quiet state.
-- **Exit criteria:** tracker lists the current vacant seats with provenance and
-  localized reason/status labels; daily cron green.
+### M5 — Vacancy & by-election tracker (flagship) — `done` (2026-07-04)
+Shipped: /vacancies tracker over the `vacancies` view listing all 7 vacant
+seats with previous member (bilingual), vacated date, localized reason and
+by-election status badges, per-seat provenance chips, last-checked
+timestamp, and quiet state. Daily monitor (monitor-vacancies, cron 03:00
+UTC): detection only over discovery feeds (Google News RSS en+ta, per
+DESIGN §4E's discovery-aid role; ECI portal reachability recorded — it is a
+JS app with no machine feed). Signals are written as unreviewed facts and
+NEVER flip status; the only status write path is the human-curated cited
+seed with member-name validation (DESIGN §6 human confirmation). Status-note
+pattern added for civically important seat context (AC 185's pending Madras
+HC election petition, cited). Assembly-context keyword filter keeps job-
+vacancy noise out of the review queue.
 
 ### M6 — News ingestion — `planned`
 - Outlet registry (DESIGN.md §4E) as config + `sources` rows: RSS URL, tagging

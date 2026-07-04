@@ -6,6 +6,7 @@
     "nav": {
       "home": "Home",
       "constituencies": "Constituencies",
+      "vacancies": "Vacancies",
       "methodology": "Methodology",
       "freshness": "Data status"
     },
@@ -67,6 +68,31 @@
     "pickerTitle": "Search by name",
     "pickerHint": "Type a constituency or district name, in Tamil or English.",
     "pickerPlaceholder": "e.g. Madurai, Salem, அம்பத்தூர்…"
+  },
+  "vacancies": {
+    "title": "Vacancies and by-elections",
+    "intro": "Assembly constituencies that are currently vacant, with their by-election status. This page is checked daily.",
+    "count": "{count} constituencies are vacant",
+    "quietState": "No constituency is currently vacant.",
+    "lastChecked": "Last checked: {datetime}",
+    "table": {
+      "constituency": "Constituency",
+      "previousMember": "Previous member",
+      "vacatedOn": "Vacated on",
+      "reason": "Reason",
+      "byElection": "By-election status"
+    },
+    "reasons": {
+      "resigned": "Resignation",
+      "deceased": "Death",
+      "disqualified": "Disqualification"
+    },
+    "byElectionStatus": {
+      "awaiting_notification": "Awaiting Election Commission notification",
+      "notified": "Notified",
+      "scheduled": "Date announced"
+    },
+    "methodNote": "Changes appear in this list only after they are verified against sources. No status is ever changed automatically."
   },
   "constituencies": {
     "title": "Constituencies of Tamil Nadu",
@@ -156,7 +182,8 @@
     "breadcrumb": {
       "home": "Home",
       "constituencies": "Constituencies"
-    }
+    },
+    "statusNote": "Status note"
   },
   "provenance": {
     "chipLabel": "Source",

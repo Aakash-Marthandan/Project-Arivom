@@ -18,6 +18,7 @@ import-geometries = "arivom.import_geometries:main"
 import-representatives = "arivom.import_representatives:main"
 import-affidavits = "arivom.import_affidavits:main"
 import-vacancies = "arivom.import_vacancies:main"
+monitor-vacancies = "arivom.monitor_vacancies:main"
 
 [dependency-groups]
 dev = ["ruff>=0.8"]

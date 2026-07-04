@@ -1,0 +1,16 @@
+{
+  "_comment": "Curated, cited status notes about a seat's current situation (court disputes and similar civically important context, D-016). Bilingual note text is part of the curated data. Applied by import-vacancies; removed by deleting the entry and re-running.",
+  "notes": [
+    {
+      "ac": "185",
+      "note_en": "An election petition about this constituency's result is pending in the Madras High Court. The result was declared with a margin of one vote, and an interim order has restricted the member's participation in assembly proceedings while the case is heard.",
+      "note_ta": "இந்தத் தொகுதியின் தேர்தல் முடிவு தொடர்பான வழக்கு சென்னை உயர் நீதிமன்றத்தில் நிலுவையில் உள்ளது. ஒரு வாக்கு வித்தியாசத்தில் முடிவு அறிவிக்கப்பட்டது. வழக்கு விசாரணையில் இருக்கும் வரை உறுப்பினர் சட்டமன்ற நடவடிக்கைகளில் பங்கேற்பதற்கு இடைக்காலத் தடை உள்ளது.",
+      "as_of": "2026-07-04",
+      "sources": [
+        "https://www.vikatan.com/government-and-politics/the-thirupathur-constituency-tvk-candidate-background",
+        "https://www.chennaionline.com/tamil/madras-high-court-bars-tvk-mla-srinivasa-sethupathi-from-participating-in-the-confidence-vote/",
+        "https://tamil.asianetnews.com/gallery/tamilnadu/madras-high-court-bars-tvk-mla-from-assembly-proceedings-in-election-dispute-6kuwris"
+      ]
+    }
+  ]
+}

@@ -214,6 +214,55 @@ export async function resolveLocation(
   `;
 }
 
+export interface VacantSeat {
+  locality_id: number;
+  eci_code: string;
+  name_en: string;
+  name_ta: string;
+  district_en: string | null;
+  district_ta: string | null;
+  vacancy: unknown;
+  retrieved_at: Date;
+  source_name: string;
+  source_url: string | null;
+  source_publisher: string;
+  source_license: string | null;
+  extraction_method: string;
+}
+
+/** MLA seats without an active tenure, with their vacancy fact (M5 tracker). */
+export async function getVacantSeats(): Promise<VacantSeat[]> {
+  return sql<VacantSeat[]>`
+    SELECT l.id AS locality_id, l.eci_code, l.name_en, l.name_ta,
+           d.name_en AS district_en, d.name_ta AS district_ta,
+           f.value AS vacancy, f.retrieved_at, f.extraction_method,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license
+    FROM offices o
+    JOIN localities l ON l.id = o.locality_id
+    LEFT JOIN localities d ON d.id = l.district_id
+    JOIN facts f ON f.subject_type = 'locality' AND f.subject_id = l.id
+      AND f.key = 'vacancy'
+    JOIN sources s ON s.id = f.source_id
+    WHERE o.office_type = 'mla'
+      AND NOT EXISTS (
+        SELECT 1 FROM tenures t
+        WHERE t.office_id = o.id AND t.end_date IS NULL AND t.status = 'active'
+      )
+    ORDER BY (f.value ->> 'vacated_on')
+  `;
+}
+
+/** When the vacancy monitor last ran (null before its first run). */
+export async function getMonitorLastChecked(): Promise<Date | null> {
+  const rows = await sql<{ retrieved_at: Date }[]>`
+    SELECT retrieved_at FROM facts
+    WHERE key = 'vacancy_monitor_run'
+    ORDER BY retrieved_at DESC LIMIT 1
+  `;
+  return rows[0]?.retrieved_at ?? null;
+}
+
 /**
  * /freshness is generated from the database, never by hand: last retrieval
  * time and row count per source, across localities and facts.
