@@ -75,6 +75,29 @@ export default async function ConstituencyPage({
   const rep = representatives[0] ?? null;
   const repFacts = rep ? await getPersonFacts(rep.person_id) : [];
 
+  // Self-declared affidavit facts (M4). Keys mirror the importer.
+  const affidavitFacts = {
+    assets: repFacts.find((f) => f.key === "declared_assets"),
+    liabilities: repFacts.find((f) => f.key === "declared_liabilities"),
+    cases: repFacts.find((f) => f.key === "criminal_cases"),
+    education: repFacts.find((f) => f.key === "education"),
+  };
+  const hasAffidavit = Boolean(affidavitFacts.assets);
+
+  const EDUCATION_KEYS: Record<string, string> = {
+    Illiterate: "illiterate",
+    Literate: "literate",
+    "5th Pass": "pass5",
+    "8th Pass": "pass8",
+    "10th Pass": "pass10",
+    "12th Pass": "pass12",
+    Graduate: "graduate",
+    "Graduate Professional": "graduateProfessional",
+    "Post Graduate": "postGraduate",
+    Doctorate: "doctorate",
+    Others: "others",
+  };
+
   interface ElectionResult {
     election: string;
     provisional?: boolean;
@@ -339,6 +362,120 @@ export default async function ConstituencyPage({
                 {t("representatives.provisionalNote")}
               </p>
             ) : null}
+
+            {/* Affidavit summary: ALWAYS framed as a self-declared filing
+                (DESIGN.md pillar 2), never as verified fact. */}
+            {hasAffidavit ? (
+              <div className="mt-4 border-t border-border pt-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-heading text-base font-semibold">
+                    {t("affidavit.title")}
+                  </h3>
+                  <Badge variant="outline">{t("affidavit.selfDeclaredBadge")}</Badge>
+                  <ProvenanceChip
+                    label={tp("chipLabel")}
+                    heading={tp("title")}
+                    fieldLabels={{
+                      publisher: tp("publisher"),
+                      retrievedOn: tp("retrievedOn"),
+                      method: tp("method"),
+                      license: tp("license"),
+                      viewSource: tp("viewSource"),
+                    }}
+                    entries={[
+                      {
+                        title: t("affidavit.title"),
+                        sourceName: affidavitFacts.assets!.source_name,
+                        url: affidavitFacts.assets!.source_url,
+                        publisher: affidavitFacts.assets!.source_publisher,
+                        license: affidavitFacts.assets!.source_license,
+                        retrievedOn: formatDate(affidavitFacts.assets!.retrieved_at),
+                        method: methodLabel(affidavitFacts.assets!.extraction_method),
+                      },
+                    ]}
+                  />
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-3">
+                  {(
+                    [
+                      [
+                        "assets",
+                        (() => {
+                          const v = affidavitFacts.assets?.value as
+                            | { amount_inr?: number }
+                            | undefined;
+                          return v?.amount_inr != null
+                            ? format.number(v.amount_inr, {
+                                style: "currency",
+                                currency: "INR",
+                                maximumFractionDigits: 0,
+                              })
+                            : null;
+                        })(),
+                      ],
+                      [
+                        "liabilities",
+                        (() => {
+                          const v = affidavitFacts.liabilities?.value as
+                            | { amount_inr?: number }
+                            | undefined;
+                          return v?.amount_inr != null
+                            ? format.number(v.amount_inr, {
+                                style: "currency",
+                                currency: "INR",
+                                maximumFractionDigits: 0,
+                              })
+                            : null;
+                        })(),
+                      ],
+                      [
+                        "criminalCases",
+                        (() => {
+                          const v = affidavitFacts.cases?.value as
+                            | { count?: number }
+                            | undefined;
+                          if (v?.count == null) return null;
+                          return v.count === 0
+                            ? t("affidavit.casesZero")
+                            : format.number(v.count);
+                        })(),
+                      ],
+                      [
+                        "education",
+                        (() => {
+                          const v = affidavitFacts.education?.value as
+                            | { category?: string }
+                            | undefined;
+                          if (!v?.category) return null;
+                          const key = EDUCATION_KEYS[v.category];
+                          return key
+                            ? t(`affidavit.educationCategories.${key}`)
+                            : v.category;
+                        })(),
+                      ],
+                    ] as const
+                  )
+                    .filter(([, v]) => v != null)
+                    .map(([key, value]) => (
+                      <div key={key}>
+                        <dt className="text-xs text-muted-foreground">
+                          {t(`affidavit.${key}`)}
+                        </dt>
+                        <dd className="mt-0.5 text-sm font-medium tabular-nums">
+                          {value}
+                        </dd>
+                      </div>
+                    ))}
+                </dl>
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  {t("affidavit.framing")}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-4 border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">
+                {t("affidavit.pending")}
+              </p>
+            )}
           </div>
         ) : (
           <p className="mt-3 max-w-xl rounded-md border border-dashed border-border bg-secondary/40 p-5 text-sm leading-relaxed text-muted-foreground">
@@ -359,7 +496,11 @@ export default async function ConstituencyPage({
               {t("result.title")}
             </h2>
             <span className="text-sm text-muted-foreground">
-              {electionResult.election}
+              {electionResult.election.includes("2026")
+                ? t("result.elections.assembly2026")
+                : electionResult.election.includes("2024")
+                  ? t("result.elections.ls2024")
+                  : electionResult.election}
             </span>
           </div>
           <dl className="mt-4 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3">

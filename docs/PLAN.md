@@ -64,14 +64,17 @@ transliterated; reported on every import run). RS members descoped to the
 state-level-display milestone (D-013). Contact channels and photos arrive
 with M4 affidavit/person reconciliation.
 
-### M4 — Affidavit data (MyNeta) — `planned`
-- Pipeline: scrape MyNeta TN 2026 candidate pages; LLM_bulk extraction of assets/
-  liabilities/criminal cases/education into `facts` with confidence + review_status;
-  batched and cached.
-- UI: "self-declared filing (source: ECI affidavit via MyNeta, retrieved <date>)"
-  framing on every affidavit field.
-- **Exit criteria:** MLA cards show affidavit summaries with correct labelling and
-  provenance; spot-check ≥20 candidates against source pages.
+### M4 — Affidavit data (MyNeta) — `done` (2026-07-04)
+Shipped: self-declared affidavit summaries (assets, liabilities, criminal
+cases, education) for 208/234 winning MLAs — full ADR coverage at import
+time; the 26 ACs ADR hasn't analyzed yet show an honest pending note and are
+reported on every run. Deterministic parser extraction (D-015 — MyNeta pages
+are structured; llm_bulk reserved for unstructured PDFs), name-similarity-
+guarded attachment (caught the two-Tiruppattur collision), and the required
+≥20-candidate spot-check automated into every import (cross-validates the
+listing against detail pages; run fails on any mismatch). UI: affidavit
+block on MLA cards with "self-declared" badge, ECI-via-MyNeta provenance
+chip, localized education categories, Indian-grouped ₹ formatting.
 
 ### M5 — Vacancy & by-election tracker (flagship) — `planned`
 - Daily pipeline over ECI press releases / TN CEO / eGazette; parse + NER; **human

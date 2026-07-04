@@ -5,6 +5,25 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-04 — M4 decisions
+
+### D-015: Affidavits — deterministic parser; partial ADR coverage; guarded attachment
+MyNeta's winners-analyzed listing is fully structured, so extraction is a
+deterministic parser (`extraction_method='parser'`, confidence 1.0) — the
+DESIGN's `llm_bulk` pattern stays reserved for genuinely unstructured
+documents (e.g. Form 20 PDFs later; also no LLM key is configured yet).
+Facts per winner: declared_assets, declared_liabilities, criminal_cases,
+education — every value stored with `self_declared: true` and always
+UI-framed as a self-declared ECI filing via MyNeta (ADR), per DESIGN.md.
+Coverage is whatever ADR has analyzed (208/234 at first import): the 26
+outstanding ACs show an honest "not yet analyzed" note and are listed on
+every import run. Attachment safety: rows bind to a person only when the
+MyNeta winner name is similar to the ECI winner name — this both validates
+every row and disambiguates same-named constituencies (the two Tiruppatturs,
+whose shared display name had silently collided in a name-keyed lookup).
+The M4 spot-check cross-validates 20 sampled candidates against MyNeta's
+per-candidate detail pages on every run; any mismatch fails the import.
+
 ## 2026-07-03 — M3 decisions
 
 ### D-013: Representative spine sourcing — vote-anchored bilingual joins

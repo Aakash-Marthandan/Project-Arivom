@@ -16,6 +16,7 @@ import-lgd = "arivom.import_lgd:main"
 import-constituencies = "arivom.import_constituencies:main"
 import-geometries = "arivom.import_geometries:main"
 import-representatives = "arivom.import_representatives:main"
+import-affidavits = "arivom.import_affidavits:main"
 
 [dependency-groups]
 dev = ["ruff>=0.8"]

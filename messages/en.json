@@ -105,8 +105,36 @@
       "provisionalNote": "This result is preliminary data entered by returning officers. Final confirmation comes via the Form 20 record.",
       "wardEmpty": "Ward-level (local body) representative details are not connected yet — they begin with the Madurai Corporation pilot. Your MLA and MP are shown above."
     },
+    "affidavit": {
+      "title": "Self-declared details",
+      "selfDeclaredBadge": "Self-declared",
+      "framing": "Declared by the candidate to the Election Commission in their nomination affidavit — not independently verified. Source: ECI affidavit, via MyNeta (ADR).",
+      "assets": "Declared assets",
+      "liabilities": "Declared liabilities",
+      "criminalCases": "Declared criminal cases",
+      "education": "Education",
+      "casesZero": "No cases declared",
+      "pending": "This representative's affidavit has not yet been analyzed on MyNeta (ADR) — it will appear here once published.",
+      "educationCategories": {
+        "illiterate": "Illiterate",
+        "literate": "Literate",
+        "pass5": "5th Pass",
+        "pass8": "8th Pass",
+        "pass10": "10th Pass",
+        "pass12": "12th Pass",
+        "graduate": "Graduate",
+        "graduateProfessional": "Graduate Professional",
+        "postGraduate": "Post Graduate",
+        "doctorate": "Doctorate",
+        "others": "Others"
+      }
+    },
     "result": {
       "title": "Election result",
+      "elections": {
+        "assembly2026": "2026 Tamil Nadu Legislative Assembly election",
+        "ls2024": "2024 Indian general election (Lok Sabha)"
+      },
       "votes": "Votes won",
       "votePct": "Vote share",
       "margin": "Winning margin",
