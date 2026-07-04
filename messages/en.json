@@ -114,6 +114,7 @@
       "criminalCases": "Declared criminal cases",
       "education": "Education",
       "casesZero": "No cases declared",
+      "moreInfo": "More information",
       "pending": "This representative's affidavit has not yet been analyzed on MyNeta (ADR) — it will appear here once published.",
       "educationCategories": {
         "illiterate": "Illiterate",

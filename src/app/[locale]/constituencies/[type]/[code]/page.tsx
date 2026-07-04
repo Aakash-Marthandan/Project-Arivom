@@ -11,6 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   ProvenanceChip,
@@ -395,68 +396,39 @@ export default async function ConstituencyPage({
                     ]}
                   />
                 </div>
-                <dl className="mt-3 grid grid-cols-2 gap-3">
-                  {(
-                    [
-                      [
-                        "assets",
-                        (() => {
-                          const v = affidavitFacts.assets?.value as
-                            | { amount_inr?: number }
-                            | undefined;
-                          return v?.amount_inr != null
-                            ? format.number(v.amount_inr, {
-                                style: "currency",
-                                currency: "INR",
-                                maximumFractionDigits: 0,
-                              })
-                            : null;
-                        })(),
-                      ],
-                      [
-                        "liabilities",
-                        (() => {
-                          const v = affidavitFacts.liabilities?.value as
-                            | { amount_inr?: number }
-                            | undefined;
-                          return v?.amount_inr != null
-                            ? format.number(v.amount_inr, {
-                                style: "currency",
-                                currency: "INR",
-                                maximumFractionDigits: 0,
-                              })
-                            : null;
-                        })(),
-                      ],
-                      [
-                        "criminalCases",
-                        (() => {
-                          const v = affidavitFacts.cases?.value as
-                            | { count?: number }
-                            | undefined;
-                          if (v?.count == null) return null;
-                          return v.count === 0
-                            ? t("affidavit.casesZero")
-                            : format.number(v.count);
-                        })(),
-                      ],
-                      [
-                        "education",
-                        (() => {
-                          const v = affidavitFacts.education?.value as
-                            | { category?: string }
-                            | undefined;
-                          if (!v?.category) return null;
-                          const key = EDUCATION_KEYS[v.category];
-                          return key
-                            ? t(`affidavit.educationCategories.${key}`)
-                            : v.category;
-                        })(),
-                      ],
-                    ] as const
-                  )
-                    .filter(([, v]) => v != null)
-                    .map(([key, value]) => (
+                {(() => {
+                  const inr = (fact: typeof affidavitFacts.assets) => {
+                    const v = fact?.value as { amount_inr?: number } | undefined;
+                    return v?.amount_inr != null
+                      ? format.number(v.amount_inr, {
+                          style: "currency",
+                          currency: "INR",
+                          maximumFractionDigits: 0,
+                        })
+                      : null;
+                  };
+                  const casesValue = (() => {
+                    const v = affidavitFacts.cases?.value as
+                      | { count?: number }
+                      | undefined;
+                    if (v?.count == null) return null;
+                    return v.count === 0
+                      ? t("affidavit.casesZero")
+                      : format.number(v.count);
+                  })();
+                  const educationValue = (() => {
+                    const v = affidavitFacts.education?.value as
+                      | { category?: string }
+                      | undefined;
+                    if (!v?.category) return null;
+                    const key = EDUCATION_KEYS[v.category];
+                    return key
+                      ? t(`affidavit.educationCategories.${key}`)
+                      : v.category;
+                  })();
+
+                  const field = (key: string, value: string | null) =>
+                    value == null ? null : (
                       <div key={key}>
                         <dt className="text-xs text-muted-foreground">
                           {t(`affidavit.${key}`)}
@@ -465,8 +437,34 @@ export default async function ConstituencyPage({
                           {value}
                         </dd>
                       </div>
-                    ))}
-                </dl>
+                    );
+
+                  return (
+                    <>
+                      {/* Rational-citizen hierarchy (D-016): identity-adjacent
+                          facts stay visible; sensitive facts live one tap
+                          away under a neutral label — de-emphasized, never
+                          buried. Native <details>: works without JS. */}
+                      <dl className="mt-3 grid grid-cols-2 gap-3">
+                        {field("assets", inr(affidavitFacts.assets))}
+                        {field("education", educationValue)}
+                      </dl>
+                      <details className="group mt-3">
+                        <summary className="flex cursor-pointer list-none items-center gap-1 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
+                          <ChevronDown
+                            className="size-4 transition-transform group-open:rotate-180"
+                            aria-hidden="true"
+                          />
+                          {t("affidavit.moreInfo")}
+                        </summary>
+                        <dl className="mt-3 grid grid-cols-2 gap-3">
+                          {field("criminalCases", casesValue)}
+                          {field("liabilities", inr(affidavitFacts.liabilities))}
+                        </dl>
+                      </details>
+                    </>
+                  );
+                })()}
                 <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                   {t("affidavit.framing")}
                 </p>

@@ -28,6 +28,13 @@ ambiguous, **ask the user rather than assuming**, and log the resolved decision 
    profile), excellent Tamil typography, information-dense but calm, WCAG 2.1 AA,
    mobile-first. The polish is the product.
 
+**Information hierarchy (owner directive, D-016):** present information from a
+rational citizen's perspective — ranked by civic usefulness under the
+Constitution and common sense, never for entertainment value. Sensitive
+self-declared facts (criminal cases, liabilities) are **de-emphasized, never
+buried**: one tap away under a neutral "More information" disclosure, never
+removed or sensationalized in either direction.
+
 ## Stack (fixed — do not substitute)
 
 - **Frontend:** Next.js App Router + TypeScript `strict` + Tailwind + shadcn/ui.

@@ -5,6 +5,26 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-04 — Editorial directive (owner)
+
+### D-016: Rational-citizen information hierarchy
+Owner directive: pages present information from a rational citizen's
+perspective — ranked by civic usefulness under a widely accepted moral
+frame (the Constitution, common sense), never for entertainment value.
+Operationalized as **de-emphasize, never bury**: potentially stigmatizing
+self-declared facts (criminal cases, liabilities) move out of the immediate
+view into a neutral "More information" disclosure (native `<details>`, no
+JS), while identity-adjacent facts (assets, education) stay visible. The
+constitutional context cuts both ways and bounds this rule: the Supreme
+Court's ADR jurisprudence entitles voters to candidates' criminal
+antecedents and even mandates their publicity, so such facts must remain
+exactly one tap away with a neutral label — never removed, paywalled, or
+pushed behind additional friction, and never sensationalized in either
+direction. Presentation may change (e.g. surfacing during election periods
+when the information is most decision-relevant); the data itself is
+untouched. Applies platform-wide as new surfaces are built (news layer:
+prefer civically substantive clusters over engagement-bait framing).
+
 ## 2026-07-04 — M4 decisions
 
 ### D-015: Affidavits — deterministic parser; partial ADR coverage; guarded attachment
