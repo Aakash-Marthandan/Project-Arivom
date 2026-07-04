@@ -108,7 +108,11 @@ class Db:
     @classmethod
     def connect(cls) -> Db:
         url = os.environ.get("DATABASE_URL", "postgresql://localhost/arivom")
-        return cls(conn=psycopg.connect(url))
+        conn = psycopg.connect(url)
+        # Long import transactions over a WAN pooler can trip conservative
+        # server-side statement timeouts; raise it for pipeline sessions.
+        conn.execute("SET statement_timeout = '300s'")
+        return cls(conn=conn)
 
     def ensure_source(
         self,
