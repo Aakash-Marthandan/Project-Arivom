@@ -5,6 +5,37 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-04 — Spine completion (owner-requested, pre-M6)
+
+### D-019: Profiles, government page, and framing corrections
+Owner review before M6 drove five changes:
+- **Assets/liabilities audit:** parsing verified correct (medians ₹4.6 Cr
+  assets vs ₹57 lakh liabilities; the similar-range cases the owner saw are
+  genuine declarations; the one duplicate pair is the dual-seat winner's
+  two per-seat rows). The 20-sample spot-check became a full-population
+  listing-vs-detail reconciliation: when MyNeta's two surfaces disagree,
+  the detail page (enumerated record) wins, both values are stored, and
+  the discrepancy is printed (3 found, all criminal-case counts).
+- **Profiles:** age and self-declared profession imported from MyNeta
+  detail pages for 208 MLAs and 36 MPs; MP affidavits added via the
+  LokSabha2024 listing (constituency + name-similarity matched). Identity
+  facts (age, education, profession) are visible; sensitive facts remain
+  in the D-016 disclosure. MyNeta fetches moved to curl (the same
+  TLS-fingerprint discrimination as the ECI portal, intermittent).
+- **Contacts:** no reachable official directory yet (assembly/tn.gov.in
+  geo-blocked, sansad legacy feed dead, sansad.in scrape-blocked). The
+  contact fact model and UI section exist with an honest pending note and
+  a hard policy line: only officially published channels, never personal
+  numbers. Populate when official directories are reachable (D-017).
+- **Government page:** /government lists the council of ministers (35,
+  bilingual portfolios) from the ta+en 17th-assembly articles matched via
+  constituency, plus the assembly's party composition computed from our
+  own tenure records with vacant seats linked. Official department links
+  and ministers' office contacts follow the official directory.
+- **Provisional framing:** the badge left the representative card; a
+  reworded note lives under the vote figures only ("the outcome itself
+  and the government are settled"), matching a formed, running government.
+
 ## 2026-07-04 — M5 decisions
 
 ### D-018: Tracker monitor is detection-only; runs daily regardless of PIPELINES_ENABLED

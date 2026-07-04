@@ -263,6 +263,62 @@ export async function getMonitorLastChecked(): Promise<Date | null> {
   return rows[0]?.retrieved_at ?? null;
 }
 
+export interface Minister {
+  person_id: number;
+  name_en: string;
+  name_ta: string | null;
+  party_en: string | null;
+  party_ta: string | null;
+  minister: unknown;
+  seat_code: string;
+  seat_en: string;
+  seat_ta: string;
+  retrieved_at: Date;
+  source_name: string;
+  source_url: string | null;
+  source_publisher: string;
+  source_license: string | null;
+  extraction_method: string;
+}
+
+/** Council of ministers: persons with a minister fact and an active seat. */
+export async function getMinisters(): Promise<Minister[]> {
+  return sql<Minister[]>`
+    SELECT p.id AS person_id, p.name_en, p.name_ta, p.party_en, p.party_ta,
+           f.value AS minister, f.retrieved_at, f.extraction_method,
+           l.eci_code AS seat_code, l.name_en AS seat_en, l.name_ta AS seat_ta,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license
+    FROM facts f
+    JOIN persons p ON p.id = f.subject_id AND f.subject_type = 'person'
+    JOIN tenures t ON t.person_id = p.id AND t.end_date IS NULL AND t.status = 'active'
+    JOIN offices o ON o.id = t.office_id AND o.office_type = 'mla'
+    JOIN localities l ON l.id = o.locality_id
+    JOIN sources s ON s.id = f.source_id
+    WHERE f.key = 'minister'
+    ORDER BY (f.value ->> 'is_chief_minister') DESC, p.name_en
+  `;
+}
+
+export interface PartySeats {
+  party_en: string | null;
+  party_ta: string | null;
+  seats: number;
+}
+
+/** Party-wise composition of active MLA tenures (computed from our rows). */
+export async function getAssemblyComposition(): Promise<PartySeats[]> {
+  return sql<PartySeats[]>`
+    SELECT p.party_en, p.party_ta, count(*)::int AS seats
+    FROM tenures t
+    JOIN offices o ON o.id = t.office_id AND o.office_type = 'mla'
+    JOIN persons p ON p.id = t.person_id
+    WHERE t.end_date IS NULL AND t.status = 'active'
+    GROUP BY p.party_en, p.party_ta
+    ORDER BY seats DESC, p.party_en
+  `;
+}
+
 /**
  * /freshness is generated from the database, never by hand: last retrieval
  * time and row count per source, across localities and facts.

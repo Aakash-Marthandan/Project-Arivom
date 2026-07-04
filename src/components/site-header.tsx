@@ -10,6 +10,7 @@ export async function SiteHeader() {
 
   const nav = [
     { href: "/constituencies", label: t("nav.constituencies") },
+    { href: "/government", label: t("nav.government") },
     { href: "/vacancies", label: t("nav.vacancies") },
     { href: "/methodology", label: t("nav.methodology") },
     { href: "/freshness", label: t("nav.freshness") },

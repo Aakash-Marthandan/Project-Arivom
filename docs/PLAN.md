@@ -147,6 +147,14 @@ vacancy noise out of the review queue.
 - **Exit criteria:** budgets met on throttled profile; both locales indexed;
   production live.
 
+### Interim — spine completion (owner-requested) — `done` (2026-07-04)
+Between M5 and M6: affidavit data audited and hardened (full-population
+listing/detail reconciliation); age and profession on all covered MLA/MP
+cards; MP affidavits via LokSabha2024; contact model with official-only
+policy and honest pending state; /government page (35 ministers, bilingual
+portfolios, party composition, vacancy link); provisional framing corrected
+to cover vote figures only. See DECISIONS.md D-019.
+
 ---
 
 ## Phase v0.5

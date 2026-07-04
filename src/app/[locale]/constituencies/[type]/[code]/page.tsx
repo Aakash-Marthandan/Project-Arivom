@@ -76,13 +76,16 @@ export default async function ConstituencyPage({
   const rep = representatives[0] ?? null;
   const repFacts = rep ? await getPersonFacts(rep.person_id) : [];
 
-  // Self-declared affidavit facts (M4). Keys mirror the importer.
+  // Self-declared affidavit facts (M4/M5.5). Keys mirror the importer.
   const affidavitFacts = {
     assets: repFacts.find((f) => f.key === "declared_assets"),
     liabilities: repFacts.find((f) => f.key === "declared_liabilities"),
     cases: repFacts.find((f) => f.key === "criminal_cases"),
     education: repFacts.find((f) => f.key === "education"),
+    age: repFacts.find((f) => f.key === "age"),
+    profession: repFacts.find((f) => f.key === "profession"),
   };
+  const contactFacts = repFacts.filter((f) => f.key === "contact");
   const hasAffidavit = Boolean(affidavitFacts.assets);
 
   const EDUCATION_KEYS: Record<string, string> = {
@@ -373,15 +376,6 @@ export default async function ConstituencyPage({
                 </span>
               ) : null}
             </div>
-            {electionResult?.provisional ? (
-              <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <Badge variant="outline" className="border-stale-foreground/40 bg-stale text-stale-foreground">
-                  {t("representatives.provisionalBadge")}
-                </Badge>
-                {t("representatives.provisionalNote")}
-              </p>
-            ) : null}
-
             {/* Affidavit summary: ALWAYS framed as a self-declared filing
                 (DESIGN.md pillar 2), never as verified fact. */}
             {hasAffidavit ? (
@@ -465,7 +459,27 @@ export default async function ConstituencyPage({
                           neutral label — de-emphasized, never buried.
                           Native <details>: works without JS. */}
                       <dl className="mt-3 grid grid-cols-2 gap-3">
+                        {field(
+                          "age",
+                          (() => {
+                            const v = affidavitFacts.age?.value as
+                              | { years_at_nomination?: number }
+                              | undefined;
+                            return v?.years_at_nomination != null
+                              ? format.number(v.years_at_nomination)
+                              : null;
+                          })(),
+                        )}
                         {field("education", educationValue)}
+                        {field(
+                          "profession",
+                          (() => {
+                            const v = affidavitFacts.profession?.value as
+                              | { profession?: string }
+                              | undefined;
+                            return v?.profession ?? null;
+                          })(),
+                        )}
                       </dl>
                       <details className="group mt-3">
                         <summary className="flex cursor-pointer list-none items-center gap-1 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
@@ -493,6 +507,37 @@ export default async function ConstituencyPage({
                 {t("affidavit.pending")}
               </p>
             )}
+
+            {/* Contact channels: officially published only, never personal
+                numbers. Honest pending state until official directories
+                are reachable (D-017 geo-block). */}
+            <div className="mt-4 border-t border-border pt-4">
+              <h3 className="font-heading text-base font-semibold">
+                {t("contact.title")}
+              </h3>
+              {contactFacts.length > 0 ? (
+                <dl className="mt-2 space-y-1">
+                  {contactFacts.map((f, i) => {
+                    const v = f.value as { label?: string; value?: string };
+                    return v.value ? (
+                      <div key={i} className="flex flex-wrap gap-2 text-sm">
+                        {v.label ? (
+                          <dt className="text-muted-foreground">{v.label}:</dt>
+                        ) : null}
+                        <dd className="font-medium">{v.value}</dd>
+                      </div>
+                    ) : null;
+                  })}
+                </dl>
+              ) : (
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {t("contact.pending")}
+                </p>
+              )}
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {t("contact.policy")}
+              </p>
+            </div>
           </div>
         ) : vacancy ? (
           <div className="mt-4 max-w-2xl rounded-lg border border-border bg-card p-5">
@@ -632,6 +677,13 @@ export default async function ConstituencyPage({
                 </div>
               ))}
           </dl>
+          {/* The preliminary-figures note belongs to the vote counts, not to
+              the representative: the outcome and government are settled. */}
+          {electionResult.provisional ? (
+            <p className="mt-3 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+              {t("result.figuresNote")}
+            </p>
+          ) : null}
         </section>
       ) : null}
 

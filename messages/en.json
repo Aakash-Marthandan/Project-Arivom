@@ -5,6 +5,7 @@
     "skipToContent": "Skip to content",
     "nav": {
       "home": "Home",
+      "government": "Government",
       "constituencies": "Constituencies",
       "vacancies": "Vacancies",
       "methodology": "Methodology",
@@ -126,9 +127,7 @@
       },
       "party": "Party",
       "electedOn": "Elected: {date}",
-      "provisionalBadge": "Provisional result",
       "nameTaPending": "The Tamil rendering of this name is pending source verification. We do not use machine transliterations.",
-      "provisionalNote": "This result is preliminary data entered by returning officers. Final confirmation comes via the Form 20 record.",
       "wardEmpty": "Ward-level (local body) representative details are not connected yet. They begin with the Madurai Corporation pilot. Your MLA and MP are shown above."
     },
     "affidavit": {
@@ -154,7 +153,9 @@
         "postGraduate": "Post Graduate",
         "doctorate": "Doctorate",
         "others": "Others"
-      }
+      },
+      "age": "Age (per affidavit)",
+      "profession": "Profession (self-declared)"
     },
     "result": {
       "title": "Election result",
@@ -167,7 +168,8 @@
       "margin": "Winning margin",
       "runnerUp": "Runner-up",
       "totalVotes": "Total votes polled",
-      "candidates": "Candidates"
+      "candidates": "Candidates",
+      "figuresNote": "Vote counts follow the preliminary data entered by returning officers. They will be checked against the final Form 20 record once published. The outcome itself and the government are settled."
     },
     "vacancy": {
       "title": "This constituency's seat is currently vacant",
@@ -183,7 +185,12 @@
       "home": "Home",
       "constituencies": "Constituencies"
     },
-    "statusNote": "Status note"
+    "statusNote": "Status note",
+    "contact": {
+      "title": "Contact details",
+      "pending": "Officially published contact details (office address, phone, email) are not connected yet. They will appear here once the official assembly and parliament directories are available.",
+      "policy": "We show only officially published contact channels. We never publish personal numbers."
+    }
   },
   "provenance": {
     "chipLabel": "Source",
@@ -254,5 +261,18 @@
     "title": "Page not found",
     "body": "The page you are looking for does not exist or may have moved.",
     "homeLink": "Back to home"
+  },
+  "government": {
+    "title": "Government of Tamil Nadu",
+    "intro": "The current council of ministers, their portfolios, and the assembly's party composition.",
+    "chiefMinister": "Chief Minister",
+    "ministers": "Ministers",
+    "portfolio": "Portfolio",
+    "constituency": "Constituency",
+    "composition": "Assembly party composition",
+    "compositionNote": "Computed from the active members in our records. Vacant seats are shown separately.",
+    "seats": "{count} seats",
+    "vacantSeats": "Vacant seats",
+    "officialNote": "Official department websites and ministers' office contact details will be connected once the government's official directory is available."
   }
 }
