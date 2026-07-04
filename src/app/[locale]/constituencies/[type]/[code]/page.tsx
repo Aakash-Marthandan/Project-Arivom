@@ -442,11 +442,11 @@ export default async function ConstituencyPage({
                   return (
                     <>
                       {/* Rational-citizen hierarchy (D-016): identity-adjacent
-                          facts stay visible; sensitive facts live one tap
-                          away under a neutral label — de-emphasized, never
-                          buried. Native <details>: works without JS. */}
+                          facts stay visible; sensitive facts (assets,
+                          liabilities, cases) live one tap away under a
+                          neutral label — de-emphasized, never buried.
+                          Native <details>: works without JS. */}
                       <dl className="mt-3 grid grid-cols-2 gap-3">
-                        {field("assets", inr(affidavitFacts.assets))}
                         {field("education", educationValue)}
                       </dl>
                       <details className="group mt-3">
@@ -458,8 +458,9 @@ export default async function ConstituencyPage({
                           {t("affidavit.moreInfo")}
                         </summary>
                         <dl className="mt-3 grid grid-cols-2 gap-3">
-                          {field("criminalCases", casesValue)}
+                          {field("assets", inr(affidavitFacts.assets))}
                           {field("liabilities", inr(affidavitFacts.liabilities))}
+                          {field("criminalCases", casesValue)}
                         </dl>
                       </details>
                     </>

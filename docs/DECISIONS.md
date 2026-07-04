@@ -11,10 +11,11 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 Owner directive: pages present information from a rational citizen's
 perspective — ranked by civic usefulness under a widely accepted moral
 frame (the Constitution, common sense), never for entertainment value.
-Operationalized as **de-emphasize, never bury**: potentially stigmatizing
-self-declared facts (criminal cases, liabilities) move out of the immediate
-view into a neutral "More information" disclosure (native `<details>`, no
-JS), while identity-adjacent facts (assets, education) stay visible. The
+Operationalized as **de-emphasize, never bury**: sensitive self-declared
+facts (assets, liabilities, criminal cases — owner confirmed assets belong
+here too) move out of the immediate view into a neutral "More information"
+disclosure (native `<details>`, no JS), while identity-adjacent facts
+(education) stay visible. The
 constitutional context cuts both ways and bounds this rule: the Supreme
 Court's ADR jurisprudence entitles voters to candidates' criminal
 antecedents and even mandates their publicity, so such facts must remain

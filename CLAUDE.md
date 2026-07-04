@@ -31,9 +31,9 @@ ambiguous, **ask the user rather than assuming**, and log the resolved decision 
 **Information hierarchy (owner directive, D-016):** present information from a
 rational citizen's perspective — ranked by civic usefulness under the
 Constitution and common sense, never for entertainment value. Sensitive
-self-declared facts (criminal cases, liabilities) are **de-emphasized, never
-buried**: one tap away under a neutral "More information" disclosure, never
-removed or sensationalized in either direction.
+self-declared facts (assets, liabilities, criminal cases) are **de-emphasized,
+never buried**: one tap away under a neutral "More information" disclosure,
+never removed or sensationalized in either direction.
 
 ## Stack (fixed — do not substitute)
 
