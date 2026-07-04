@@ -99,6 +99,16 @@ export default async function ConstituencyPage({
     Others: "others",
   };
 
+  interface VacancyFact {
+    reason: string;
+    vacated_on: string;
+    previous_member_en: string;
+    previous_member_ta: string | null;
+    by_election: string;
+  }
+  const vacancyFact = facts.find((f) => f.key === "vacancy");
+  const vacancy = vacancyFact?.value as VacancyFact | undefined;
+
   interface ElectionResult {
     election: string;
     provisional?: boolean;
@@ -475,6 +485,47 @@ export default async function ConstituencyPage({
                 {t("affidavit.pending")}
               </p>
             )}
+          </div>
+        ) : vacancy ? (
+          <div className="mt-4 max-w-2xl rounded-lg border border-border bg-card p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-heading text-lg font-semibold">
+                {t("vacancy.title")}
+              </h3>
+              <ProvenanceChip
+                label={tp("chipLabel")}
+                heading={tp("title")}
+                fieldLabels={{
+                  publisher: tp("publisher"),
+                  retrievedOn: tp("retrievedOn"),
+                  method: tp("method"),
+                  license: tp("license"),
+                  viewSource: tp("viewSource"),
+                }}
+                entries={[
+                  {
+                    title: t("vacancy.title"),
+                    sourceName: vacancyFact!.source_name,
+                    url: vacancyFact!.source_url,
+                    publisher: vacancyFact!.source_publisher,
+                    license: vacancyFact!.source_license,
+                    retrievedOn: formatDate(vacancyFact!.retrieved_at),
+                    method: methodLabel(vacancyFact!.extraction_method),
+                  },
+                ]}
+              />
+            </div>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {t("vacancy.body", {
+                member: isTa
+                  ? (vacancy.previous_member_ta ?? vacancy.previous_member_en)
+                  : vacancy.previous_member_en,
+                date: format.dateTime(new Date(`${vacancy.vacated_on}T00:00:00`), {
+                  dateStyle: "long",
+                }),
+              })}
+            </p>
+            <p className="mt-2 text-sm font-medium">{t("vacancy.byElection")}</p>
           </div>
         ) : (
           <p className="mt-3 max-w-xl rounded-md border border-dashed border-border bg-secondary/40 p-5 text-sm leading-relaxed text-muted-foreground">

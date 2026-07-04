@@ -14,8 +14,8 @@
       "switchTo": "தமிழ்"
     },
     "footer": {
-      "mission": "Arivom — an open-source, ad-free civic data platform for the people of Tamil Nadu. Every fact with its source.",
-      "neutrality": "This platform is not affiliated with any political party. No opinions — sourced facts only.",
+      "mission": "Arivom is an open-source, ad-free civic data platform for the people of Tamil Nadu. Every fact with its source.",
+      "neutrality": "This platform is not affiliated with any political party. No opinions. Sourced facts only.",
       "license": "Code: AGPL-3.0 · Data: ODbL",
       "sourceCode": "Source code (GitHub)",
       "sections": {
@@ -35,11 +35,11 @@
       "title": "Three founding principles",
       "transparency": {
         "title": "Every fact carries its source",
-        "body": "Every fact here arrives with its origin, retrieval date, and collection method — one tap away. A fact that cannot carry a source does not enter Arivom."
+        "body": "Every fact here arrives with its origin, retrieval date, and collection method, one tap away. A fact that cannot carry a source does not enter Arivom."
       },
       "neutrality": {
         "title": "No leaning toward any party",
-        "body": "No opinions, no scores, no labels. We present sourced facts — the conclusions are yours to draw."
+        "body": "No opinions, no scores, no labels. We present sourced facts. The conclusions are yours to draw."
       },
       "craft": {
         "title": "A calm, fast experience",
@@ -57,21 +57,21 @@
     "intro": "Share your location and we will show your assembly and parliamentary constituencies. Or search by name below.",
     "button": "Find my constituency",
     "locating": "Finding your location…",
-    "denied": "Location permission was denied — no problem. You can search by your area's name below.",
+    "denied": "Location permission was denied, and that is fine. You can search by your area's name below.",
     "failed": "Could not determine your location. Try searching by name below.",
     "resultTitle": "Your constituencies",
     "outside": "This point appears to be outside Tamil Nadu's constituency boundaries. You can search for a Tamil Nadu constituency by name below.",
     "accuracyNote": "Constituency boundaries follow the 2008 delimitation order. If you are very close to a boundary, check the neighbouring constituency too.",
-    "privacyNote": "Your location is used only to find the constituency — it is never stored.",
+    "privacyNote": "Your location is used only to find the constituency. It is never stored.",
     "provenanceTitle": "Constituency boundaries",
     "pickerTitle": "Search by name",
-    "pickerHint": "Type a constituency or district name — in Tamil or English.",
+    "pickerHint": "Type a constituency or district name, in Tamil or English.",
     "pickerPlaceholder": "e.g. Madurai, Salem, அம்பத்தூர்…"
   },
   "constituencies": {
     "title": "Constituencies of Tamil Nadu",
     "subtitle": "234 assembly constituencies · 39 parliamentary constituencies",
-    "searchPlaceholder": "Search constituencies — in Tamil or English (e.g. Madurai)",
+    "searchPlaceholder": "Search in Tamil or English (e.g. Madurai)",
     "searchLabel": "Search constituencies",
     "assembly": "Assembly constituencies",
     "parliamentary": "Parliamentary constituencies",
@@ -91,7 +91,7 @@
     "assemblySegments": "Assembly segments in this constituency",
     "representatives": {
       "title": "Representatives",
-      "emptyState": "Representative details are not connected yet. Election results and candidate details arrive in the next milestone — we never display guessed or placeholder information as real.",
+      "emptyState": "Representative details are not connected yet. Election results and candidate details arrive in the next milestone. We never display guessed or placeholder information as real.",
       "offices": {
         "mla": "Member of Legislative Assembly (MLA)",
         "mp_ls": "Member of Parliament (Lok Sabha)",
@@ -101,21 +101,21 @@
       "party": "Party",
       "electedOn": "Elected: {date}",
       "provisionalBadge": "Provisional result",
-      "nameTaPending": "The Tamil rendering of this name is pending source verification — we do not use machine transliterations.",
+      "nameTaPending": "The Tamil rendering of this name is pending source verification. We do not use machine transliterations.",
       "provisionalNote": "This result is preliminary data entered by returning officers. Final confirmation comes via the Form 20 record.",
-      "wardEmpty": "Ward-level (local body) representative details are not connected yet — they begin with the Madurai Corporation pilot. Your MLA and MP are shown above."
+      "wardEmpty": "Ward-level (local body) representative details are not connected yet. They begin with the Madurai Corporation pilot. Your MLA and MP are shown above."
     },
     "affidavit": {
       "title": "Self-declared details",
       "selfDeclaredBadge": "Self-declared",
-      "framing": "Declared by the candidate to the Election Commission in their nomination affidavit — not independently verified. Source: ECI affidavit, via MyNeta (ADR).",
+      "framing": "Declared by the candidate to the Election Commission in their nomination affidavit. Not independently verified. Source: ECI affidavit, via MyNeta (ADR).",
       "assets": "Declared assets",
       "liabilities": "Declared liabilities",
       "criminalCases": "Declared criminal cases",
       "education": "Education",
       "casesZero": "No cases declared",
       "moreInfo": "More information",
-      "pending": "This representative's affidavit has not yet been analyzed on MyNeta (ADR) — it will appear here once published.",
+      "pending": "This representative's affidavit has not yet been analyzed on MyNeta (ADR). It will appear here once published.",
       "educationCategories": {
         "illiterate": "Illiterate",
         "literate": "Literate",
@@ -142,6 +142,12 @@
       "runnerUp": "Runner-up",
       "totalVotes": "Total votes polled",
       "candidates": "Candidates"
+    },
+    "vacancy": {
+      "title": "This constituency's seat is currently vacant",
+      "body": "The seat became vacant when {member} resigned on {date}.",
+      "byElection": "A by-election announcement from the Election Commission is awaited.",
+      "previousMember": "Previous member"
     },
     "aboutData": {
       "title": "About this data",
@@ -178,12 +184,12 @@
   },
   "methodology": {
     "title": "Methodology",
-    "intro": "How Arivom works, where the data comes from, and what we will never do — all documented here, in the open.",
+    "intro": "How Arivom works, where the data comes from, and what we will never do. All documented here, in the open.",
     "principles": {
       "title": "Our principles",
       "transparency": {
         "title": "1. Transparency",
-        "body": "Every fact is stored with its source, retrieval date, collection method, and confidence. A fact that cannot carry a source cannot even be inserted into our database — this is enforced in software, not just policy."
+        "body": "Every fact is stored with its source, retrieval date, collection method, and confidence. A fact that cannot carry a source cannot even be inserted into our database. This is enforced in software, not just policy."
       },
       "neutrality": {
         "title": "2. Political neutrality",
@@ -191,7 +197,7 @@
       },
       "craft": {
         "title": "3. Careful design",
-        "body": "It must run fast on an ordinary phone over 4G; Tamil typography must be excellent; it must be usable by everyone (WCAG AA) — these are our quality targets."
+        "body": "It must run fast on an ordinary phone over 4G. Tamil typography must be excellent. It must be usable by everyone (WCAG AA). These are our quality targets."
       }
     },
     "currentData": {
@@ -200,13 +206,13 @@
     },
     "corrections": {
       "title": "Corrections",
-      "body": "A structured form for reporting incorrect information is coming soon. Every accepted correction will be published in a public corrections log — alongside the original value."
+      "body": "A structured form for reporting incorrect information is coming soon. Every accepted correction will be published in a public corrections log alongside the original value."
     },
     "wip": "This document grows with the platform. As each new dataset is connected, its computation method will be explained here in detail."
   },
   "freshness": {
     "title": "How fresh is the data?",
-    "intro": "See when each data source was last retrieved. This page is generated directly from our database — it is never updated by hand.",
+    "intro": "See when each data source was last retrieved. This page is generated directly from our database. It is never updated by hand.",
     "table": {
       "dataset": "Dataset",
       "source": "Source",

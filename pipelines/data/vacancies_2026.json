@@ -1,0 +1,80 @@
+{
+  "_comment": "Researched vacancy records for the 17th TN assembly, curated with citations (2026-07-04). Applied by import-vacancies with member-name validation against the seated tenure. M5 replaces this curation with the automated ECI press-release pipeline; this file then becomes its regression fixture. By-elections: not yet notified by ECI as of 2026-07-04.",
+  "vacancies": [
+    {
+      "ac": "141",
+      "member_hint": "C. Joseph Vijay",
+      "vacated_on": "2026-05-10",
+      "reason": "resigned",
+      "note": "Won two seats; retained Perambur on becoming Chief Minister and vacated Tiruchirappalli East as required.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/17th_Tamil_Nadu_Assembly",
+        "https://www.newkerala.com/news/a/tn-eci-initiates-preparations-bypolls-five-vacant-assembly-566.htm"
+      ]
+    },
+    {
+      "ac": "35",
+      "member_hint": "Maragatham Kumaravel",
+      "vacated_on": "2026-05-25",
+      "reason": "resigned",
+      "note": "AIADMK MLA; resigned and joined TVK.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/17th_Tamil_Nadu_Assembly",
+        "https://www.newkerala.com/news/a/tn-eci-initiates-preparations-bypolls-five-vacant-assembly-566.htm"
+      ]
+    },
+    {
+      "ac": "101",
+      "member_hint": "P. Sathyabama",
+      "vacated_on": "2026-05-25",
+      "reason": "resigned",
+      "note": "AIADMK MLA; resigned and joined TVK.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/17th_Tamil_Nadu_Assembly",
+        "https://www.newkerala.com/news/a/tn-eci-initiates-preparations-bypolls-five-vacant-assembly-566.htm"
+      ]
+    },
+    {
+      "ac": "103",
+      "member_hint": "S. Jayakumar",
+      "vacated_on": "2026-05-25",
+      "reason": "resigned",
+      "note": "AIADMK MLA; resigned and joined TVK.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/17th_Tamil_Nadu_Assembly",
+        "https://www.newkerala.com/news/a/tn-eci-initiates-preparations-bypolls-five-vacant-assembly-566.htm"
+      ]
+    },
+    {
+      "ac": "225",
+      "member_hint": "Isakki Subbiah",
+      "vacated_on": "2026-05-26",
+      "reason": "resigned",
+      "note": "AIADMK MLA; resigned and joined TVK.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/17th_Tamil_Nadu_Assembly",
+        "https://www.newkerala.com/news/a/tn-eci-initiates-preparations-bypolls-five-vacant-assembly-566.htm"
+      ]
+    },
+    {
+      "ac": "179",
+      "member_hint": "C. Vijayabaskar",
+      "vacated_on": "2026-06-16",
+      "reason": "resigned",
+      "note": "AIADMK MLA; resigned.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/17th_Tamil_Nadu_Assembly"
+      ]
+    },
+    {
+      "ac": "135",
+      "member_hint": "M. R. Vijayabhaskar",
+      "vacated_on": "2026-06-29",
+      "reason": "resigned",
+      "note": "AIADMK MLA; resigned.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/17th_Tamil_Nadu_Assembly"
+      ]
+    }
+  ]
+}

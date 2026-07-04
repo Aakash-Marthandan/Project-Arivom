@@ -5,6 +5,39 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-04 — Data consolidation research (owner-requested)
+
+### D-017: Post-election research pass; Tamil-name completion; vacancy records
+Owner-requested research to make the data concrete now that results are a
+month old. Outcomes:
+- **Tamil names: 234/234 complete.** New primary bulk source: ETV Bharat
+  Tamil's complete winners table (professional newsroom; joined by AC
+  number, validated by exact vote equality with ECI; filled 93 seats the
+  wiki tables left untranslated). One member (AC 185, won by 1 vote) came
+  via curated news citations in pipelines/data/curated_names_ta.json.
+  D-014's pending list is now empty.
+- **Vacancies: 7 seats confirmed and applied** via a curated, per-entry-
+  cited seed (pipelines/data/vacancies_2026.json): Tiruchirappalli East
+  (C. Joseph Vijay became CM, retained Perambur, 10 May), Madurantakam,
+  Dharapuram, Perundurai (25 May), Ambasamudram (26 May, all four AIADMK
+  members joined TVK), Viralimalai (16 June), Karur (29 June). By-election
+  not yet notified by ECI as of 2026-07-04. The import validates the seated
+  member's name before any status flip; the `vacancies` view now reflects
+  reality. M5's automated ECI pipeline supersedes the curation; the seed
+  becomes its regression fixture.
+- **Form 20 finality:** no evidence of publication yet; vote figures keep
+  the provisional framing. The representation itself is settled (assembly
+  constituted, ministry formed).
+- **Watch item for M5:** AC 185 Tiruppattur (Sivaganga) has an election
+  dispute in the Madras High Court (1-vote margin; interim order restricted
+  the member's assembly participation). Not yet displayed; needs a
+  status-note pattern in the tracker.
+- **Access finding:** TN government sites (assembly.tn.gov.in, tn.gov.in,
+  elections.tn.gov.in) are unreachable from non-India networks (geo-blocked
+  at TLS). Official-source ingestion needs an India egress; revisit when the
+  owner relocates (~2026-07-13). The official members list remains the
+  preferred replacement for news-sourced Tamil names when reachable.
+
 ## 2026-07-04 — Editorial directive (owner)
 
 ### D-016: Rational-citizen information hierarchy

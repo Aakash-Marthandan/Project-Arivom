@@ -1,0 +1,13 @@
+{
+  "_comment": "Curated Tamil renderings sourced from professional news reports, used only when no bulk source covers a member (D-005: sourced manual curation, never transliteration). Each entry cites its sources and the validation anchors.",
+  "185": {
+    "name_ta": "சீனிவாச சேதுபதி",
+    "validated_by": "votes 83,375 exact vs ECI; party TVK; Sivaganga district; margin 1 vote",
+    "sources": [
+      "https://www.vikatan.com/government-and-politics/the-thirupathur-constituency-tvk-candidate-background",
+      "https://m.dinakaran.com/article/News_Detail/10143682",
+      "https://minnambalam.com/tirupathur-case-can-tvk-mla-srinivasa-sethupathi-take-oath-high-court-to-hear-plea-tomorrow"
+    ],
+    "note": "Won by 1 vote; election dispute pending in Madras HC (interim order restricted assembly participation). Track in M5."
+  }
+}

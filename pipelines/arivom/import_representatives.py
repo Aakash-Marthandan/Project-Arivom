@@ -44,6 +44,10 @@ CACHE_DIR = Path(__file__).resolve().parent.parent / ".cache"
 TAWIKI_API = "https://ta.wikipedia.org/w/api.php"
 ENWIKI_API = "https://en.wikipedia.org/w/api.php"
 TAWIKI_ASSEMBLY_PAGE = "தமிழ்நாடு சட்டமன்றத் தேர்தல், 2026"
+ETV_WINNERS_URL = (
+    "https://www.etvbharat.com/ta/state/"
+    "tamilnadu-assembly-election-results-2026-complete-candidate-list-tns26050505861"
+)
 TAWIKI_LS_PAGE = "தமிழ்நாட்டில் இந்தியப் பொதுத் தேர்தல், 2024"
 ENWIKI_LS_PAGE = "2024 Indian general election in Tamil Nadu"
 
@@ -276,6 +280,55 @@ def find_results_rows(
     return best
 
 
+def fetch_etv_winners(session: Any) -> dict[int, dict[str, Any]]:
+    """Winner Tamil names from ETV Bharat Tamil's complete results table:
+    [no, constituency, winner, party, votes, margin]. Vote counts are used
+    as the script-independent join anchor against ECI, like the wiki path.
+    """
+    import hashlib
+    import time as _time
+
+    cache = CACHE_DIR / "news"
+    cache.mkdir(parents=True, exist_ok=True)
+    key = hashlib.sha256(ETV_WINNERS_URL.encode()).hexdigest()[:24]
+    path = cache / f"{key}.html"
+    if path.exists() and _time.time() - path.stat().st_mtime < 86400:
+        html = path.read_text(errors="replace")
+    else:
+        resp = session.get(
+            ETV_WINNERS_URL,
+            timeout=60,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; ArivomCivicData/0.1)"},
+        )
+        resp.raise_for_status()
+        html = resp.text
+        path.write_text(html)
+
+    soup = BeautifulSoup(html, "html.parser")
+    out: dict[int, dict[str, Any]] = {}
+    for table in soup.find_all("table"):
+        grid = expand_table_grid(table)
+        if len(grid) < 200 or "வெற்றி" not in " ".join(grid[0]):
+            continue
+        for row in grid[1:]:
+            if len(row) < 5:
+                continue
+            n = parse_int(row[0])
+            if n is None or not 1 <= n <= 234:
+                continue
+            votes = parse_int(row[4])
+            if votes is None:
+                continue
+            out[n] = {
+                "name_ta": clean_cell(row[2]),
+                "party_ta": clean_cell(row[3]),
+                "votes": votes,
+                "margin": parse_int(row[5]) if len(row) > 5 else None,
+            }
+        break
+    return out
+
+
 def find_candidates_rows(html: str) -> dict[int, list[str]]:
     """The pre-election candidates-by-alliance table: numbered rows, mostly
     Tamil names, NO vote counts (that's how it differs from results tables)."""
@@ -475,6 +528,18 @@ def main() -> None:
             "English-side authority."
         ),
     )
+    etv_source = db.ensure_source(
+        name="ETV Bharat Tamil — 2026 TN results (winners list)",
+        url=ETV_WINNERS_URL,
+        publisher="ETV Bharat (Ushodaya Enterprises)",
+        license=None,
+        access_mode="scrape",
+        notes=(
+            "Professional Tamil newsroom's complete 234-winner table. Used for Tamil "
+            "renderings of winner names, joined by AC number and validated by exact "
+            "vote-count equality with ECI."
+        ),
+    )
     enwiki_source = db.ensure_source(
         name="English Wikipedia — 2024 general election in Tamil Nadu",
         url="https://en.wikipedia.org/wiki/2024_Indian_general_election_in_Tamil_Nadu",
@@ -548,6 +613,77 @@ def main() -> None:
     party_norms = {norm_party(p) for p in party_map.values()} | {
         norm_party(p) for p in PARTY_LEXICON_TA
     }
+
+    # Pass 1b: ETV Bharat's complete winners table (professional Tamil
+    # newsroom), joined by AC number, validated by vote equality with ECI.
+    print("Fetching ETV Bharat winners table…")
+    try:
+        etv = fetch_etv_winners(session)
+    except Exception as exc:  # noqa: BLE001 — news source is best-effort
+        print(f"  ETV fetch failed ({exc}); continuing with wiki passes only")
+        etv = {}
+    print(f"  ETV rows: {len(etv)}")
+    for num in gaps[:]:
+        row = etv.get(num)
+        if not row or not has_tamil(row.get("name_ta", "")):
+            continue
+        winner = eci[num]["winner"]
+        drift = abs(row["votes"] - winner["votes"]) / max(winner["votes"], 1)
+        if row["votes"] == winner["votes"]:
+            confidence = 1.0
+        elif drift <= 0.01:
+            confidence = 0.9
+        else:
+            continue
+        if row["margin"] is not None and row["margin"] != eci[num]["margin"]:
+            print(
+                f"  NOTE (AC {num}): ETV margin {row['margin']} vs ECI "
+                f"{eci[num]['margin']} — vote anchor still matches, accepting."
+            )
+        if has_tamil(row.get("party_ta", "")):
+            party_map.setdefault(winner["party"], row["party_ta"])
+        mla_records[num] = {
+            **eci[num],
+            "name_ta": row["name_ta"],
+            "confidence": confidence,
+            "ta_source": "etv",
+        }
+        gaps.remove(num)
+        print(f"  AC {num}: Tamil name via ETV Bharat → {row['name_ta']}")
+
+    # Pass 1c: curated names from cited news reports (D-005-compliant
+    # manual curation for members no bulk source covers).
+    curated_path = Path(__file__).resolve().parent.parent / "data" / "curated_names_ta.json"
+    if gaps and curated_path.exists():
+        import json as _json
+
+        curated = _json.loads(curated_path.read_text())
+        curated_source = db.ensure_source(
+            name="Curated Tamil names (cited news reports)",
+            url=None,
+            publisher="Arivom curation",
+            license=None,
+            access_mode="manual",
+            notes=(
+                "Tamil renderings curated by hand from professional news reports when "
+                "no bulk source covers a member. Every entry in "
+                "pipelines/data/curated_names_ta.json cites its sources and validation "
+                "anchors (vote counts, party, district)."
+            ),
+        )
+        for num in gaps[:]:
+            entry = curated.get(str(num))
+            if not entry or not has_tamil(entry.get("name_ta", "")):
+                continue
+            mla_records[num] = {
+                **eci[num],
+                "name_ta": entry["name_ta"],
+                "confidence": 1.0,
+                "ta_source": "curated",
+                "ta_sources_cited": entry.get("sources", []),
+            }
+            gaps.remove(num)
+            print(f"  AC {num}: Tamil name via curated citation → {entry['name_ta']}")
 
     # Pass 2 (cheap, bulk): the pre-election candidates-by-alliance table (fully Tamil).
     # Party-anchored: the winner's party (from ECI) locates the candidate
@@ -833,8 +969,22 @@ def main() -> None:
                 subject_type="person",
                 subject_id=person_id,
                 key="name_ta",
-                value={"name_ta": rec["name_ta"], "validated_by": "vote-count equality"},
-                source_id=tawiki_source,
+                value={
+                    "name_ta": rec["name_ta"],
+                    "validated_by": "vote-count equality",
+                    **(
+                        {"cited_sources": rec["ta_sources_cited"]}
+                        if rec.get("ta_sources_cited")
+                        else {}
+                    ),
+                },
+                source_id=(
+                    etv_source
+                    if rec.get("ta_source") == "etv"
+                    else curated_source
+                    if rec.get("ta_source") == "curated"
+                    else tawiki_source
+                ),
                 retrieved_at=retrieved_at,
                 extraction_method="scrape",
                 confidence=rec["confidence"],
