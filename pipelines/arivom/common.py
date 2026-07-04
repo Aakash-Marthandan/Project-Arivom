@@ -216,46 +216,33 @@ class Db:
         confidence: float | None = None,
         review_status: str = "unreviewed",
     ) -> None:
-        """Idempotent on (subject_type, subject_id, key, source_id)."""
-        updated = self.conn.execute(
+        """Idempotent on (subject_type, subject_id, key, source_id):
+        single round trip via the unique index (migration 20260704030000)."""
+        self.conn.execute(
             """
-            UPDATE facts
-              SET value = %s, retrieved_at = %s, extraction_method = %s,
-                  confidence = %s, review_status = %s
-            WHERE subject_type = %s AND subject_id = %s AND key = %s AND source_id = %s
+            INSERT INTO facts
+              (subject_type, subject_id, key, value, source_id, retrieved_at,
+               extraction_method, confidence, review_status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (subject_type, subject_id, key, source_id) DO UPDATE
+              SET value = EXCLUDED.value,
+                  retrieved_at = EXCLUDED.retrieved_at,
+                  extraction_method = EXCLUDED.extraction_method,
+                  confidence = EXCLUDED.confidence,
+                  review_status = EXCLUDED.review_status
             """,
             (
+                subject_type,
+                subject_id,
+                key,
                 json.dumps(value, ensure_ascii=False),
+                source_id,
                 retrieved_at,
                 extraction_method,
                 confidence,
                 review_status,
-                subject_type,
-                subject_id,
-                key,
-                source_id,
             ),
         )
-        if updated.rowcount == 0:
-            self.conn.execute(
-                """
-                INSERT INTO facts
-                  (subject_type, subject_id, key, value, source_id, retrieved_at,
-                   extraction_method, confidence, review_status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """,
-                (
-                    subject_type,
-                    subject_id,
-                    key,
-                    json.dumps(value, ensure_ascii=False),
-                    source_id,
-                    retrieved_at,
-                    extraction_method,
-                    confidence,
-                    review_status,
-                ),
-            )
 
 
 def expand_table_grid(table: Any) -> list[list[str]]:
