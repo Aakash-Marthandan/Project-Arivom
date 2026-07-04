@@ -64,7 +64,7 @@ export default async function GovernmentPage({
     },
   ];
 
-  function MinisterCard({ m, big }: { m: Minister; big?: boolean }) {
+  function ministerCard(m: Minister, big?: boolean) {
     const v = m.minister as MinisterValue;
     const portfolio = isTa
       ? v.portfolios_ta || v.portfolios_en
@@ -131,9 +131,7 @@ export default async function GovernmentPage({
           <h2 id="cm-title" className="font-heading text-xl font-bold">
             {t("chiefMinister")}
           </h2>
-          <div className="mt-3 max-w-2xl">
-            <MinisterCard m={cm} big />
-          </div>
+          <div className="mt-3 max-w-2xl">{ministerCard(cm, true)}</div>
         </section>
       ) : null}
 
@@ -144,7 +142,7 @@ export default async function GovernmentPage({
           </h2>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
             {council.map((m) => (
-              <MinisterCard key={m.person_id} m={m} />
+              <div key={m.person_id}>{ministerCard(m)}</div>
             ))}
           </div>
         </section>
