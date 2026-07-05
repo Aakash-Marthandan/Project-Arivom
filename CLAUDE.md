@@ -72,20 +72,25 @@ no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
 
 ## Current status (as of 2026-07-05)
 
-v0 milestones M1–M5 are `done` plus an owner-requested spine-completion pass
-(see docs/PLAN.md for detail, docs/DECISIONS.md D-001…D-019 for every resolved
+v0 milestones M1–M6 are `done` plus an owner-requested spine-completion pass
+(see docs/PLAN.md for detail, docs/DECISIONS.md D-001…D-020 for every resolved
 decision). Live: constituency pages with representatives, self-declared
 affidavit profiles, election results; /locate (point-in-polygon); /vacancies
 tracker (7 vacant seats, daily monitor cron); /government (department-first
 cards with anchor ids, built as future click-targets for department-tagged
-news); /methodology and live /freshness. **Next: M6 news ingestion** (outlet
-registry + RSS poller), then M7 clustering. Production = Supabase (Mumbai),
+news); news ingestion (11-outlet §4E registry, poll-news 30-min cron,
+headline+link only, conservative district tagging — D-020); /methodology and
+live /freshness (now including per-outlet news freshness). **Next: M7 news
+clustering** (embeddings, neutral bilingual summaries, coverage tables).
+Production = Supabase (Mumbai),
 repo = github.com/Aakash-Marthandan/Project-Arivom, CI green.
 
 Known pending (all reported by importer runs, never hidden): 26 MLA + 3 MP
 affidavits awaiting ADR analysis; representative contacts awaiting official
 directories; by-election notification awaited (watch the vacancy-signal
-queue); AC 185 election petition status note; data.gov.in personal API key
+queue); AC 185 election petition status note; 5 registry outlets without
+machine-readable feeds — Dinamalar, Dinakaran, Hindu Tamil Thisai, News18
+Tamil, Sun News (re-check from India egress); data.gov.in personal API key
 and TN-government-site access arrive when the owner relocates to India
 (~2026-07-13, D-010/D-017).
 
@@ -93,8 +98,9 @@ and TN-government-site access arrive when the owner relocates to India
 
 - Web: `npm run dev` / `lint` / `typecheck` / `build`. Local dev serves on
   `/ta` (default) and `/en`. `DATABASE_URL` in `.env.local` (see .env.example).
-  Preview server config in `.claude/launch.json` (port 3199); owner likes it
-  left running.
+  Preview server config in `.claude/launch.json` (prefers 3199, autoPort on —
+  Next 16 allows one dev server per checkout, so reuse a running one via
+  `curl` when another session owns it); owner likes it left running.
 - DB: local Homebrew Postgres 17 + PostGIS (no Docker on this machine — see
   DECISIONS.md D-001). Apply migrations with
   `for f in supabase/migrations/*.sql; do psql -d arivom -v ON_ERROR_STOP=1 -f "$f"; done`.
@@ -102,8 +108,10 @@ and TN-government-site access arrive when the owner relocates to India
   `DATABASE_URL=postgresql://localhost/arivom uv run <entry>` in this order:
   `import-lgd` → `import-constituencies` → `import-geometries` →
   `import-representatives` → `import-affidavits` → `import-vacancies` →
-  `import-ministers`. `monitor-vacancies` is detection-only (daily GH Actions
-  cron). Lint: `uv run ruff check .`. All importers are idempotent and print
+  `import-ministers`. Order-independent: `monitor-vacancies` (detection-only,
+  daily GH Actions cron) and `poll-news` (outlet registry → news_items,
+  30-min cron; registry in `pipelines/data/outlets.json`). Lint:
+  `uv run ruff check .`. All importers are idempotent and print
   audit/pending reports; read them.
 - **Production deploys:** `SUPABASE_DB_URL` in `.env.local` is the Mumbai
   session-pooler URL (IPv4; the direct db host is IPv6-only and unreachable

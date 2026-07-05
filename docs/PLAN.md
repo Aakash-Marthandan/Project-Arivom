@@ -90,13 +90,20 @@ pattern added for civically important seat context (AC 185's pending Madras
 HC election petition, cited). Assembly-context keyword filter keeps job-
 vacancy noise out of the review queue.
 
-### M6 — News ingestion — `planned`
-- Outlet registry (DESIGN.md §4E) as config + `sources` rows: RSS URL, tagging
-  practice, paywall status, copyright note.
-- RSS/HTML poller (30-min cron) → `news_items` (headline + link + metadata only,
-  never article text); dedupe; locality tagging where derivable.
-- **Exit criteria:** items flowing from ≥6 outlets across Tamil and English; no
-  full-text storage; re-poll produces no duplicates.
+### M6 — News ingestion — `done` (2026-07-05)
+Shipped: curated outlet registry (pipelines/data/outlets.json, all §4E
+outlets with feed URL, scope, tagging practice, paywall and copyright
+notes) mirrored into `sources`; poll-news ingesting headline + link +
+metadata only (the parser never reads article text) on a 30-minute cron.
+11 outlets flowing (7 Tamil + 4 English — exit criterion ≥6); 5 outlets
+pending without machine feeds (reasons per entry; re-check from India,
+D-017); fact-checkers registered but not polled until M7 defines their
+coverage role. Dedupe by canonical URL (re-poll: 0 new / 281 re-observed);
+conservative single-district headline tagging (~15% tagged, never wrongly
+tagged over untagged); news_items carries source_id + retrieved_at
+(D-003 extension) and /freshness now shows per-outlet freshness. NIE's
+national feed scoped by its own /states/tamil-nadu/ URL taxonomy. All
+resolved details in DECISIONS.md D-020.
 
 ### M7 — News clustering, summaries & coverage tables — `planned`
 - Clustering: embedding similarity + temporal proximity + named-entity overlap →

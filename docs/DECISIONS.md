@@ -5,6 +5,60 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-05 — M6 decisions
+
+### D-020: News ingestion — registry scope, provenance, tagging, cadence
+DESIGN §4E/§7 and PLAN M6 left operational details open; resolved as follows.
+- **Registry outcome (verified 2026-07-05, outside India):** 11 outlets flow —
+  The Hindu (TN section feed), Times of India (Chennai section), New Indian
+  Express, DT Next, Dinamani, Daily Thanthi, Maalaimalar, Puthiya Thalaimurai,
+  Polimer News, News7 Tamil, Oneindia Tamil (7 Tamil + 4 English; exit
+  criterion was ≥6). Dinamalar (feed page now redirects home), Dinakaran
+  (WAF 403), Hindu Tamil Thisai (no feed endpoint), News18 Tamil (bot-block
+  403), and Sun News (no feed) are `pending` in the registry with reasons;
+  several may open up from India egress (D-017). Quintype-platform outlets
+  expose only site-wide `stories.rss` (section feeds return HTML).
+- **Fact-checkers registered, not polled.** Factly, BOOM, Alt News have live
+  feeds; YouTurn does not. All four are registry + `sources` rows, but their
+  national scope means item ingestion would pollute TN feeds — their
+  consumption model arrives with M7 coverage work.
+- **National-feed scoping by the outlet's own taxonomy.** New Indian
+  Express's feed is national; only items under
+  `/states/tamil-nadu/` (registry `include_url_prefixes`) are stored. No
+  keyword guessing. TN-market outlets are ingested whole — M7 coverage
+  tables need to know what an outlet did NOT cover, which requires the
+  full feed.
+- **Provenance on news_items (D-003 extension).** `source_id` (the outlet's
+  registry row) + `retrieved_at`, NOT NULL, via migration
+  20260705100000. /freshness now unions news_items, so per-outlet
+  freshness is visible publicly. `outlet` column holds the registry slug.
+- **Dedupe + refresh semantics.** Canonical URL (tracking params stripped,
+  fragment dropped) is the identity; `ON CONFLICT (url)` refreshes
+  headline, published time, tag and `retrieved_at` — an edited headline is
+  re-observed, not duplicated. Re-poll therefore produces zero new rows
+  (verified: second run 0 new / 281 re-observed).
+- **Conservative district tagging.** A headline is tagged to a district only
+  when exactly one district matches (English word-boundary match including
+  common press spellings — Trichy/Tiruchi/Tiruchy, Tuticorin, Kanyakumari,
+  Nilgiris, Villupuram… — or Tamil name as word-initial substring so case
+  suffixes match, plus press forms கோவை/திருச்சி/நெல்லை). Ambiguous or
+  unmatched headlines stay untagged (~15% tagged on first run) rather than
+  wrongly tagged; M7's entity work supersedes this. Aliases are matching
+  aids only, never stored or displayed.
+- **Per-item language.** `lang` = 'ta' if the headline contains Tamil-script
+  codepoints, else 'en' (D-005 spirit: script decides, not the outlet's
+  nominal language).
+- **Cadence and gate.** 30-minute GitHub Actions cron (offset :07/:37),
+  needing only DATABASE_URL — like the vacancy monitor it runs regardless
+  of PIPELINES_ENABLED (D-018 precedent). The run writes a `news_poll_run`
+  fact (per-outlet health) that M7's news pages can surface as "last
+  checked". The poller fails loudly if fewer than 6 outlets flow.
+- **Hard policy retained:** headline + link + feed metadata only; the parser
+  never reads description/content elements, so article text cannot enter
+  the database even by accident.
+
+---
+
 ## 2026-07-04 — Spine completion (owner-requested, pre-M6)
 
 ### D-019: Profiles, government page, and framing corrections
