@@ -41,9 +41,17 @@ uv run import-vacancies        # curated vacancy seed + status notes
 uv run import-ministers        # council of ministers, bilingual portfolios
 ```
 
+Independent of the order above (each needs only the localities spine):
+
 ```sh
 uv run monitor-vacancies       # detection-only; daily GitHub Actions cron
+uv run poll-news               # outlet registry → news_items; 30-min cron
 ```
+
+poll-news ingests headline + link + feed metadata only — the parser never
+reads article text (DESIGN §4E hard aggregation policy). The outlet
+registry lives in `data/outlets.json`; outlets without a machine-readable
+feed stay `pending` there with the reason, and every run reports them.
 
 Every importer is idempotent and prints an audit and pending report; read it.
 Status changes only enter through the curated, cited seeds in `data/`
