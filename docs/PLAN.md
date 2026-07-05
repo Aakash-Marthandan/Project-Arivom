@@ -105,16 +105,20 @@ tagged over untagged); news_items carries source_id + retrieved_at
 national feed scoped by its own /states/tamil-nadu/ URL taxonomy. All
 resolved details in DECISIONS.md D-020.
 
-### M7 — News clustering, summaries & coverage tables — `planned`
-- Clustering: embedding similarity + temporal proximity + named-entity overlap →
-  `news_clusters` + `cluster_coverage`.
-- Neutral bilingual summaries with inline citations: cheap-model draft, frontier
-  spot-check, cached in pipeline (never at request time).
-- Locality + statewide feeds; coverage-transparency table (covered / not covered per
-  tracked outlet — **no bias labels**); moderation classifier sets
-  `discussion_locked` per the escalation protocol; locked-state UI.
-- **Exit criteria:** a locality feed shows clustered events with bilingual summaries,
-  citations, and coverage tables; empty state falls back to statewide feed.
+### M7 — News clustering, summaries & coverage tables — `in-progress` (built 2026-07-05)
+Built and verified except the live LLM run: entity extraction (bilingual DB
+lexicon + cheap-model pass over transiently read articles, D-022);
+incremental clustering (entity blocking + cheap-model same-event
+confirmation; clusters materialize at ≥2 items); neutral bilingual
+summaries with inline [n] citations (mid-tier draft, frontier spot-check
+for claim support / neutrality / Tamil register, one revise cycle, withheld
+on failure); escalation classifier that only ever locks
+(discussion_locked + lock_category, locked-state UI); /news statewide and
+/news/d/[lgd] district feeds with coverage-transparency tables (covered /
+not covered per tracked outlet, no bias labels) and statewide fallback;
+hourly key-gated cron. **Blocked on:** owner's ANTHROPIC_API_KEY (local +
+GH secret). Exit criteria (live clustered events with checked bilingual
+summaries) verified once the key lands and the first runs complete.
 
 ### M8 — Data indicators: education (UDISE+) — `planned`
 - UDISE+ ingest (district aggregation, TN codes 33xx) → `facts` with methodology

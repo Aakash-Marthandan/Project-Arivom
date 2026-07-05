@@ -73,16 +73,20 @@ no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
 ## Current status (as of 2026-07-05)
 
 v0 milestones M1–M6 are `done` plus an owner-requested spine-completion pass
-(see docs/PLAN.md for detail, docs/DECISIONS.md D-001…D-020 for every resolved
-decision). Live: constituency pages with representatives, self-declared
+(see docs/PLAN.md for detail, docs/DECISIONS.md D-001…D-022 for every resolved
+decision; D-021 records the owner's north star: an informed electorate).
+Live: constituency pages with representatives, self-declared
 affidavit profiles, election results; /locate (point-in-polygon); /vacancies
 tracker (7 vacant seats, daily monitor cron); /government (department-first
 cards with anchor ids, built as future click-targets for department-tagged
 news); news ingestion (11-outlet §4E registry, poll-news 30-min cron,
 headline+link only, conservative district tagging — D-020); /methodology and
-live /freshness (now including per-outlet news freshness). **Next: M7 news
-clustering** (embeddings, neutral bilingual summaries, coverage tables).
-Production = Supabase (Mumbai),
+live /freshness (now including per-outlet news freshness). **M7 news
+clustering is built** (cluster-news pipeline, /news and /news/d/[lgd] feeds
+with coverage tables and locked-state UI, D-022) **and awaits the owner's
+ANTHROPIC_API_KEY** (.env.local + GH Actions secret) for the live run and
+exit-criteria check; the hourly cron skips politely until the secret
+exists. Production = Supabase (Mumbai),
 repo = github.com/Aakash-Marthandan/Project-Arivom, CI green.
 
 Known pending (all reported by importer runs, never hidden): 26 MLA + 3 MP
@@ -109,8 +113,10 @@ and TN-government-site access arrive when the owner relocates to India
   `import-lgd` → `import-constituencies` → `import-geometries` →
   `import-representatives` → `import-affidavits` → `import-vacancies` →
   `import-ministers`. Order-independent: `monitor-vacancies` (detection-only,
-  daily GH Actions cron) and `poll-news` (outlet registry → news_items,
-  30-min cron; registry in `pipelines/data/outlets.json`). Lint:
+  daily GH Actions cron), `poll-news` (outlet registry → news_items,
+  30-min cron; registry in `pipelines/data/outlets.json`), and
+  `cluster-news` (clusters + checked bilingual summaries, hourly cron;
+  the only LLM pipeline — needs `ANTHROPIC_API_KEY`, D-022). Lint:
   `uv run ruff check .`. All importers are idempotent and print
   audit/pending reports; read them.
 - **Production deploys:** `SUPABASE_DB_URL` in `.env.local` is the Mumbai

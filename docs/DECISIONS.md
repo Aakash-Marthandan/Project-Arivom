@@ -5,6 +5,74 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-05 — M7 decisions
+
+### D-022: News clustering — owner-approved LLM setup and posture
+Two owner decisions plus the operational details they imply.
+- **Anthropic-only, no embeddings provider (owner choice).** DESIGN §7's
+  "embedding similarity" is satisfied at our scale by our own bilingual
+  entity lexicon (persons, districts, parties already in the DB with ta+en
+  names) for candidate blocking, plus cheap-model confirmation of borderline
+  merges. One API key (`ANTHROPIC_API_KEY`), one provider. Model tiers per
+  DESIGN §10's "cheap bulk, frontier spot-check": claude-haiku-4-5 for
+  entity extraction and merge judgments, claude-sonnet-5 for the bilingual
+  summary drafts (user-facing Tamil quality), claude-opus-4-8 with adaptive
+  thinking for the spot-check + escalation classification. Revisit
+  embeddings if merge recall proves weak on entity-less stories.
+- **Transient full-text reading (owner choice).** The pipeline may fetch and
+  read an article at run time to extract entities and write an own-words
+  summary. Article text is NEVER stored in the database and never
+  republished; only a short derived excerpt sits in the gitignored local
+  cache (24h) to keep re-runs polite. Headlines + links + own-words
+  summaries remain the only stored news content (§4E hard policy).
+- **Clusters materialize at two or more items.** A single-source story stays
+  a plain item (shown as a headline card labelled single-source); clusters
+  exist for multi-outlet events, which is also what coverage tables need.
+- **Summaries are checked or withheld.** Draft → frontier spot-check
+  (claim support, neutrality, Tamil faithfulness, citation validity) → one
+  revise cycle → publish on pass (`review_status='llm_checked'`) or withhold
+  with a loud report. An unchecked summary never reaches the database.
+  Every summary sentence carries [n] markers resolving to member items
+  (`citations` column holds the id order).
+- **Moderation only ever locks.** The spot-check call also classifies the
+  event (communal / sub judice / allegations against a named person);
+  positives set `discussion_locked` + `lock_category`. The pipeline never
+  clears a lock; unlocking is a human path (escalation protocol, §9).
+- **Conservative cluster locality.** A cluster gets a district only when
+  every district-bearing member agrees on it; else NULL and the story is
+  statewide-only. District feeds live at /news/d/[lgd] with an explicit
+  statewide fallback when empty.
+- **Known limitations, accepted for v0:** clusters never merge with each
+  other (only items join clusters); extraction retries failed items every
+  run until they age out of the 7-day window; per-run caps (300 extractions,
+  250 merge checks, 40 summaries) bound cost and are reported when hit.
+- **Cadence and cost.** Hourly cron (`cluster-news.yml`, :20), gated to skip
+  politely until the ANTHROPIC_API_KEY secret exists. Expected cost at
+  current volume is roughly $10-30/month; all LLM calls are disk-cached and
+  schema-constrained, and summaries regenerate only when cluster membership
+  changes (content_hash).
+
+---
+
+## 2026-07-05 — Pre-M7 owner directive
+
+### D-021: North star — an informed electorate (owner directive)
+Before M7 the owner named the project's founding inspiration: the news
+philosophy of "News Night 2.0" in HBO's *The Newsroom* (which led him to
+Ground News, then to building Arivom). The operative mission: **ensure an
+informed electorate.** Applied as a design test alongside D-016: when
+ranking or presenting anything — news clusters, feeds, page hierarchy —
+ask "does this help a Tamil Nadu citizen vote and hold power to account?",
+never "does this get attention?". Concretely for M7+: civic usefulness
+orders clusters (not recency alone, not volume); context sits next to
+facts; no sensationalism in copy or ordering. One deliberate divergence
+from the inspiration: The Newsroom's anchors editorialize; Arivom never
+does (pillar 2) — the same mission is pursued through sourced facts and
+coverage transparency instead of opinion. The show is design philosophy,
+never product voice or user-facing copy.
+
+---
+
 ## 2026-07-05 — M6 decisions
 
 ### D-020: News ingestion — registry scope, provenance, tagging, cadence
