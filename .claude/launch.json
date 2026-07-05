@@ -4,8 +4,9 @@
     {
       "name": "arivom-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "--port", "3199"],
+      "runtimeArgs": ["run", "dev"],
       "port": 3199,
+      "autoPort": true,
       "env": {
         "DATABASE_URL": "postgresql://localhost/arivom"
       }
