@@ -1,0 +1,43 @@
+name: News clustering
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Hourly at :20, between poller runs (:07/:37). DESIGN §7 gives the
+    # cluster+summarize stage a 1-hour freshness SLA.
+    - cron: "20 * * * *"
+
+concurrency:
+  group: cluster-news
+  cancel-in-progress: false
+
+jobs:
+  cluster:
+    runs-on: ubuntu-latest
+    # Offline LLM work (DESIGN §10): entity extraction, event clustering,
+    # neutral bilingual summaries with a frontier spot-check (D-022).
+    # Needs DATABASE_URL + ANTHROPIC_API_KEY. Until the key secret exists
+    # the run skips politely instead of failing every hour.
+    defaults:
+      run:
+        working-directory: pipelines
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - name: Gate on ANTHROPIC_API_KEY
+        id: gate
+        working-directory: .
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY secret not set; skipping (see DECISIONS.md D-022)."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.skip != 'true'
+      - uses: astral-sh/setup-uv@v5
+        if: steps.gate.outputs.skip != 'true'
+      - run: uv sync
+        if: steps.gate.outputs.skip != 'true'
+      - run: uv run cluster-news
+        if: steps.gate.outputs.skip != 'true'
