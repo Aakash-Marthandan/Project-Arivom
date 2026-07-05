@@ -32,6 +32,7 @@ export interface ConstituencyDetail {
   district_id: number | null;
   district_en: string | null;
   district_ta: string | null;
+  district_lgd: string | null;
   parent_id: number | null;
   parent_eci_code: string | null;
   parent_name_en: string | null;
@@ -97,6 +98,7 @@ export async function getConstituency(
            l.level::text AS level, l.retrieved_at,
            l.district_id,
            d.name_en AS district_en, d.name_ta AS district_ta,
+           d.lgd_code AS district_lgd,
            p.id AS parent_id, p.eci_code AS parent_eci_code,
            p.name_en AS parent_name_en, p.name_ta AS parent_name_ta,
            s.name AS source_name, s.url AS source_url,
@@ -319,6 +321,124 @@ export async function getAssemblyComposition(): Promise<PartySeats[]> {
   `;
 }
 
+export interface NewsClusterMember {
+  id: number;
+  outlet: string;
+  url: string;
+  headline: string;
+  lang: "ta" | "en";
+  published_at: string | null;
+}
+
+export interface NewsCluster {
+  id: number;
+  title_en: string | null;
+  title_ta: string | null;
+  summary_en: string | null;
+  summary_ta: string | null;
+  citations: number[] | null;
+  event_time: Date | null;
+  district_en: string | null;
+  district_ta: string | null;
+  district_lgd: string | null;
+  discussion_locked: boolean;
+  lock_category: string | null;
+  retrieved_at: Date;
+  source_name: string;
+  source_url: string | null;
+  source_publisher: string;
+  source_license: string | null;
+  members: NewsClusterMember[];
+}
+
+export interface NewsSingleItem {
+  id: number;
+  outlet: string;
+  url: string;
+  headline: string;
+  lang: "ta" | "en";
+  published_at: Date | null;
+  district_en: string | null;
+  district_ta: string | null;
+  district_lgd: string | null;
+  retrieved_at: Date;
+}
+
+/** Multi-outlet event clusters, newest first (M7). */
+export async function getNewsClusters(
+  districtId?: number,
+  limit = 30,
+): Promise<NewsCluster[]> {
+  return sql<NewsCluster[]>`
+    SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
+           c.citations, c.event_time, c.discussion_locked, c.lock_category,
+           c.retrieved_at,
+           d.name_en AS district_en, d.name_ta AS district_ta,
+           d.lgd_code AS district_lgd,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license,
+           m.members
+    FROM news_clusters c
+    JOIN sources s ON s.id = c.source_id
+    LEFT JOIN localities d ON d.id = c.locality_id
+    JOIN LATERAL (
+      SELECT json_agg(json_build_object(
+               'id', i.id, 'outlet', i.outlet, 'url', i.url,
+               'headline', i.headline_orig, 'lang', i.lang,
+               'published_at', i.published_at
+             ) ORDER BY i.published_at) AS members,
+             count(*) AS n
+      FROM cluster_coverage cc
+      JOIN news_items i ON i.id = cc.news_item_id
+      WHERE cc.cluster_id = c.id
+    ) m ON m.n >= 2
+    WHERE c.event_time > now() - interval '14 days'
+    ${districtId ? sql`AND c.locality_id = ${districtId}` : sql``}
+    ORDER BY c.event_time DESC
+    LIMIT ${limit}
+  `;
+}
+
+/** Recent items not (yet) part of any cluster: single-source stories. */
+export async function getUnclusteredItems(
+  districtId?: number,
+  limit = 30,
+): Promise<NewsSingleItem[]> {
+  return sql<NewsSingleItem[]>`
+    SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
+           i.published_at, i.retrieved_at,
+           d.name_en AS district_en, d.name_ta AS district_ta,
+           d.lgd_code AS district_lgd
+    FROM news_items i
+    LEFT JOIN localities d ON d.id = i.locality_id
+    WHERE NOT EXISTS (
+      SELECT 1 FROM cluster_coverage cc WHERE cc.news_item_id = i.id
+    )
+    AND i.published_at > now() - interval '3 days'
+    ${districtId ? sql`AND i.locality_id = ${districtId}` : sql``}
+    ORDER BY i.published_at DESC
+    LIMIT ${limit}
+  `;
+}
+
+/** The outlets currently flowing into news_items (coverage-table universe). */
+export async function getTrackedOutlets(): Promise<string[]> {
+  const rows = await sql<{ outlet: string }[]>`
+    SELECT DISTINCT outlet FROM news_items ORDER BY outlet
+  `;
+  return rows.map((r) => r.outlet);
+}
+
+export async function getDistrictByLgd(
+  lgdCode: string,
+): Promise<{ id: number; name_en: string; name_ta: string } | null> {
+  const rows = await sql<{ id: number; name_en: string; name_ta: string }[]>`
+    SELECT id, name_en, name_ta FROM localities
+    WHERE level = 'district' AND lgd_code = ${lgdCode}
+  `;
+  return rows[0] ?? null;
+}
+
 /**
  * /freshness is generated from the database, never by hand: last retrieval
  * time and row count per source, across localities, facts and news items.
@@ -331,6 +451,8 @@ export async function getFreshness(): Promise<FreshnessRow[]> {
       SELECT source_id, retrieved_at FROM facts
       UNION ALL
       SELECT source_id, retrieved_at FROM news_items
+      UNION ALL
+      SELECT source_id, retrieved_at FROM news_clusters
     )
     SELECT s.name AS source_name, s.url AS source_url,
            s.publisher, s.license, s.access_mode,

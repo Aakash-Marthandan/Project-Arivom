@@ -7,6 +7,7 @@
       "home": "Home",
       "government": "Government",
       "constituencies": "Constituencies",
+      "news": "News",
       "vacancies": "Vacancies",
       "methodology": "Methodology",
       "freshness": "Data status"
@@ -281,5 +282,43 @@
       "deputyCm": "Deputy Chief Minister",
       "minister": "Minister"
     }
+  },
+  "news": {
+    "title": "News",
+    "intro": "Stories from tracked Tamil Nadu outlets, grouped by event. Summaries are written by our automated pipeline in plain words and checked before publishing. Every sentence cites its sources. We store only headlines and links, never full articles.",
+    "districtTitle": "{district} district news",
+    "emptyDistrict": "No recent stories are placed in this district yet. Statewide stories are shown below.",
+    "empty": "No stories yet. News collection has just started. Check back soon.",
+    "singleSource": "Reported by one tracked outlet so far",
+    "aiNote": "This summary was written automatically from the cited reporting. It was checked for accuracy and neutrality before publishing.",
+    "summaryPending": "A checked summary is not ready yet. The headlines below come from the outlets themselves.",
+    "coverage": "Covered by {covered} of {total} tracked outlets",
+    "coveredList": "Covered",
+    "notCoveredList": "Not covered",
+    "coverageNote": "This table only shows which tracked outlets reported this story. It says nothing about why. We do not rate or label outlets.",
+    "sources": "Sources",
+    "locked": "Discussion closed",
+    "lockedReasons": {
+      "communal": "Discussion is closed on this story because it touches communal tensions. The facts stay visible.",
+      "sub_judice": "Discussion is closed on this story because the matter is before a court. The facts stay visible.",
+      "allegations": "Discussion is closed on this story because it centres on unverified allegations against a person. The facts stay visible."
+    },
+    "districtLink": "News from {district} district",
+    "backToAll": "All Tamil Nadu news",
+    "methodNote": "Stories are grouped by event using shared names, places and dates. Each sentence of a summary carries a number like [1] pointing to its source. Full articles are never stored or republished. Read more on the methodology page.",
+    "outlets": {
+      "the-hindu": "The Hindu",
+      "times-of-india": "The Times of India (Chennai)",
+      "new-indian-express": "The New Indian Express",
+      "dt-next": "DT Next",
+      "dinamani": "Dinamani",
+      "daily-thanthi": "Daily Thanthi",
+      "maalaimalar": "Maalaimalar",
+      "puthiyathalaimurai": "Puthiya Thalaimurai",
+      "polimer-news": "Polimer News",
+      "news7-tamil": "News7 Tamil",
+      "oneindia-tamil": "Oneindia Tamil"
+    },
+    "summaryLabel": "Summary"
   }
 }

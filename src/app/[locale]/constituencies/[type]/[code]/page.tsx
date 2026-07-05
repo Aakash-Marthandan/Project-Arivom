@@ -65,14 +65,16 @@ export default async function ConstituencyPage({
   const c = await load(route.level, route.code);
   if (!c) notFound();
 
-  const [t, tp, format, facts, segments, representatives] = await Promise.all([
-    getTranslations("constituency"),
-    getTranslations("provenance"),
-    getFormatter(),
-    getLocalityFacts(c.id),
-    c.level === "pc" ? getAssemblySegments(c.id) : Promise.resolve([]),
-    getRepresentatives(c.id),
-  ]);
+  const [t, tp, tn, format, facts, segments, representatives] =
+    await Promise.all([
+      getTranslations("constituency"),
+      getTranslations("provenance"),
+      getTranslations("news"),
+      getFormatter(),
+      getLocalityFacts(c.id),
+      c.level === "pc" ? getAssemblySegments(c.id) : Promise.resolve([]),
+      getRepresentatives(c.id),
+    ]);
   const rep = representatives[0] ?? null;
   const repFacts = rep ? await getPersonFacts(rep.person_id) : [];
 
@@ -252,6 +254,16 @@ export default async function ConstituencyPage({
           <div className="rounded-lg border border-border bg-card p-4">
             <dt className="text-sm text-muted-foreground">{t("district")}</dt>
             <dd className="mt-1 font-medium">{districtName}</dd>
+            {c.district_lgd ? (
+              <dd className="mt-2 text-sm">
+                <Link
+                  href={`/news/d/${c.district_lgd}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  {tn("districtLink", { district: districtName })} →
+                </Link>
+              </dd>
+            ) : null}
           </div>
         ) : null}
         {c.level === "ac" && parentName && c.parent_eci_code ? (
