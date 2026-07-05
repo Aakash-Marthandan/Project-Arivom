@@ -273,6 +273,13 @@
     "compositionNote": "Computed from the active members in our records. Vacant seats are shown separately.",
     "seats": "{count} seats",
     "vacantSeats": "Vacant seats",
-    "officialNote": "Official department websites and ministers' office contact details will be connected once the government's official directory is available."
+    "officialNote": "Official department websites and ministers' office contact details will be connected once the government's official directory is available.",
+    "departments": "Departments",
+    "departmentsNote": "A minister's combined portfolios are shown split by department. Department names appear as the source records them.",
+    "positions": {
+      "cm": "Chief Minister",
+      "deputyCm": "Deputy Chief Minister",
+      "minister": "Minister"
+    }
   }
 }
