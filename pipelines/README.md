@@ -28,6 +28,7 @@ uv sync
 |---|---|
 | `DATABASE_URL` | Postgres connection string (local dev: `postgresql://localhost/arivom`) |
 | `DATA_GOV_IN_API_KEY` | Free key from data.gov.in. Falls back to the public sample key (fine for dev, rate-limited). |
+| `ANTHROPIC_API_KEY` | Anthropic Console key for cluster-news only (offline LLM use, D-022). The importer fails loudly without it. |
 
 ## Importers (run in this order)
 
@@ -46,12 +47,19 @@ Independent of the order above (each needs only the localities spine):
 ```sh
 uv run monitor-vacancies       # detection-only; daily GitHub Actions cron
 uv run poll-news               # outlet registry → news_items; 30-min cron
+uv run cluster-news            # cluster + summarize; hourly cron; needs ANTHROPIC_API_KEY
 ```
 
 poll-news ingests headline + link + feed metadata only — the parser never
 reads article text (DESIGN §4E hard aggregation policy). The outlet
 registry lives in `data/outlets.json`; outlets without a machine-readable
 feed stay `pending` there with the reason, and every run reports them.
+
+cluster-news is the only LLM-using pipeline (offline, batched, disk-cached
+in `.cache/llm/`; never at page-request time). It reads articles
+transiently for entities and summaries but stores only derived metadata
+and checked own-words summaries with citations (DECISIONS.md D-022). A
+summary that fails the frontier spot-check is withheld and reported.
 
 Every importer is idempotent and prints an audit and pending report; read it.
 Status changes only enter through the curated, cited seeds in `data/`
