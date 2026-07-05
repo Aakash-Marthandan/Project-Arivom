@@ -1,0 +1,32 @@
+name: News poller
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every 30 minutes (DESIGN.md §7 pipeline table: news poll cadence
+    # 30 min, freshness SLA 1 hour). Offset minutes to avoid the
+    # top-of-hour GitHub cron rush.
+    - cron: "7,37 * * * *"
+
+# A poll is cheap and idempotent; never let two overlap.
+concurrency:
+  group: news-poller
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    # Ingestion only: headline + link + metadata from the §4E outlet
+    # registry, never article text. Needs only DATABASE_URL (not the
+    # data.gov.in key), so like the vacancy monitor it runs regardless
+    # of PIPELINES_ENABLED (DECISIONS.md D-018, D-020).
+    defaults:
+      run:
+        working-directory: pipelines
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run poll-news
