@@ -35,6 +35,10 @@ self-declared facts (assets, liabilities, criminal cases) are **de-emphasized,
 never buried**: one tap away under a neutral "More information" disclosure,
 never removed or sensationalized in either direction.
 
+**Copy style (owner directive):** user-facing copy uses short plain sentences,
+no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
+`messages/en.json`); full parity, warm formal Tamil register.
+
 ## Stack (fixed — do not substitute)
 
 - **Frontend:** Next.js App Router + TypeScript `strict` + Tailwind + shadcn/ui.
@@ -66,17 +70,57 @@ never removed or sensationalized in either direction.
 - News aggregation policy (hard): headlines + links + own-words neutral summaries
   only — never store or republish full article text.
 
+## Current status (as of 2026-07-05)
+
+v0 milestones M1–M5 are `done` plus an owner-requested spine-completion pass
+(see docs/PLAN.md for detail, docs/DECISIONS.md D-001…D-019 for every resolved
+decision). Live: constituency pages with representatives, self-declared
+affidavit profiles, election results; /locate (point-in-polygon); /vacancies
+tracker (7 vacant seats, daily monitor cron); /government (department-first
+cards with anchor ids, built as future click-targets for department-tagged
+news); /methodology and live /freshness. **Next: M6 news ingestion** (outlet
+registry + RSS poller), then M7 clustering. Production = Supabase (Mumbai),
+repo = github.com/Aakash-Marthandan/Project-Arivom, CI green.
+
+Known pending (all reported by importer runs, never hidden): 26 MLA + 3 MP
+affidavits awaiting ADR analysis; representative contacts awaiting official
+directories; by-election notification awaited (watch the vacancy-signal
+queue); AC 185 election petition status note; data.gov.in personal API key
+and TN-government-site access arrive when the owner relocates to India
+(~2026-07-13, D-010/D-017).
+
 ## Development
 
 - Web: `npm run dev` / `lint` / `typecheck` / `build`. Local dev serves on
   `/ta` (default) and `/en`. `DATABASE_URL` in `.env.local` (see .env.example).
+  Preview server config in `.claude/launch.json` (port 3199); owner likes it
+  left running.
 - DB: local Homebrew Postgres 17 + PostGIS (no Docker on this machine — see
   DECISIONS.md D-001). Apply migrations with
   `for f in supabase/migrations/*.sql; do psql -d arivom -v ON_ERROR_STOP=1 -f "$f"; done`.
-- Pipelines: `cd pipelines && uv sync`, then
-  `DATABASE_URL=postgresql://localhost/arivom uv run import-lgd`,
-  `uv run import-constituencies`, `uv run import-geometries` (in that order).
-  Lint: `uv run ruff check .`.
+- Pipelines: `cd pipelines && uv sync`, then run with
+  `DATABASE_URL=postgresql://localhost/arivom uv run <entry>` in this order:
+  `import-lgd` → `import-constituencies` → `import-geometries` →
+  `import-representatives` → `import-affidavits` → `import-vacancies` →
+  `import-ministers`. `monitor-vacancies` is detection-only (daily GH Actions
+  cron). Lint: `uv run ruff check .`. All importers are idempotent and print
+  audit/pending reports; read them.
+- **Production deploys:** `SUPABASE_DB_URL` in `.env.local` is the Mumbai
+  session-pooler URL (IPv4; the direct db host is IPv6-only and unreachable
+  here). Migrations: `supabase db push --yes --db-url "$SUPABASE_DB_URL"`.
+  Data: rerun the importers with `DATABASE_URL="$SUPABASE_DB_URL"` (slow over
+  WAN; run in background). Keep local and prod data in step.
+- **Source quirks:** ECI and MyNeta reject Python TLS fingerprints — those
+  fetches shell out to curl (see D-006/D-019). TN government sites
+  (assembly/tn.gov.in/elections.tn.gov.in) are geo-blocked outside India.
+  data.gov.in runs on the public sample key until the owner's key lands
+  (D-010; cron gate variable `PIPELINES_ENABLED` stays unset). Wiki and
+  MyNeta fetches are disk-cached 24h under `pipelines/.cache/`.
+- **Human-confirmation paths:** status flips and curated data live in
+  `pipelines/data/` (vacancies_2026.json, status_notes.json,
+  curated_names_ta.json), every entry cited. Monitors and importers only
+  raise signals or pending lists; a human edits the seed, the importer
+  validates (name similarity) and applies.
 - Server components read Postgres directly via `src/lib/db.ts` (postgres.js);
   supabase-js arrives with auth in M9 (D-002).
 - Client JS is kept minimal deliberately: strings are passed to client

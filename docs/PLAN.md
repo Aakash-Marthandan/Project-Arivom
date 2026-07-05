@@ -147,13 +147,18 @@ vacancy noise out of the review queue.
 - **Exit criteria:** budgets met on throttled profile; both locales indexed;
   production live.
 
-### Interim — spine completion (owner-requested) — `done` (2026-07-04)
+### Interim — spine completion (owner-requested) — `done` (2026-07-05)
 Between M5 and M6: affidavit data audited and hardened (full-population
 listing/detail reconciliation); age and profession on all covered MLA/MP
 cards; MP affidavits via LokSabha2024; contact model with official-only
-policy and honest pending state; /government page (35 ministers, bilingual
-portfolios, party composition, vacancy link); provisional framing corrected
-to cover vote figures only. See DECISIONS.md D-019.
+policy and honest pending state; /government page restructured
+department-first (each card = one department with a stable anchor id,
+position then name; built as the click-target for department-tagged news
+in M6/M7); provisional framing corrected to cover vote figures only. See
+DECISIONS.md D-019. Note for M6: department names on the cards are
+source-verbatim and differ across locales (ta 116 / en 92 entries), so
+news-to-department tagging must match loosely until the official
+tn.gov.in department directory becomes the canonical list.
 
 ---
 

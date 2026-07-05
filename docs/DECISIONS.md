@@ -35,6 +35,13 @@ Owner review before M6 drove five changes:
 - **Provisional framing:** the badge left the representative card; a
   reworded note lives under the vote figures only ("the outcome itself
   and the government are settled"), matching a formed, running government.
+- **Department-first government page (2026-07-05):** each card is one
+  department (portfolios split at render time on commas only; sourced
+  text stored intact), ordered department → position → name, with a
+  stable anchor id per card so M6/M7 can attach department-tagged news
+  to clicks. The split is disclosed in a note; entry counts differ per
+  locale because the two source wikis phrase combined portfolios
+  differently (ta 116 / en 92).
 
 ## 2026-07-04 — M5 decisions
 
