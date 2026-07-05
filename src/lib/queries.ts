@@ -321,7 +321,7 @@ export async function getAssemblyComposition(): Promise<PartySeats[]> {
 
 /**
  * /freshness is generated from the database, never by hand: last retrieval
- * time and row count per source, across localities and facts.
+ * time and row count per source, across localities, facts and news items.
  */
 export async function getFreshness(): Promise<FreshnessRow[]> {
   return sql<FreshnessRow[]>`
@@ -329,6 +329,8 @@ export async function getFreshness(): Promise<FreshnessRow[]> {
       SELECT source_id, retrieved_at FROM localities
       UNION ALL
       SELECT source_id, retrieved_at FROM facts
+      UNION ALL
+      SELECT source_id, retrieved_at FROM news_items
     )
     SELECT s.name AS source_name, s.url AS source_url,
            s.publisher, s.license, s.access_mode,
