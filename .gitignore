@@ -43,3 +43,6 @@ supabase/.temp
 
 # claude code local session settings (machine-specific)
 .claude/settings.local.json
+
+# Lighthouse CI local artifacts
+.lighthouseci/
