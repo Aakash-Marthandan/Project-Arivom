@@ -4,16 +4,17 @@ import { StoryThumb } from "@/components/story-thumb";
 import type { NewsCluster, NewsSingleItem } from "@/lib/queries";
 
 /**
- * Story cards (D-024/D-025): hero image when the outlet published one,
- * Arivom-voice title in the reader's language when available, in-card
- * summary preview, sources pill. Clusters route to their story page;
- * single-source items link out to the outlet.
+ * Story cards v3 (D-026): content-first. A side thumbnail supports the
+ * text (the full-width hero lives on story pages); extended summary
+ * preview; a markers row of FACTS — civic priority, sources-differ,
+ * locked — never judgments or scores (pillar 2).
  */
 
 export interface StoryStrings {
   singleSource: string;
   sourcesCount: (count: number) => string;
   outletName: (slug: string) => string;
+  markers: { priority: string; sourcesDiffer: string; locked: string };
 }
 
 export function clusterImage(cluster: NewsCluster): string | null {
@@ -32,16 +33,39 @@ export function itemTitle(
   return { text: item.headline.replace(/\\(["'])/g, "$1"), lang: item.lang };
 }
 
+function Marker({
+  tone,
+  children,
+}: {
+  tone: "priority" | "differ" | "locked";
+  children: React.ReactNode;
+}) {
+  const tones = {
+    priority: "bg-accent text-accent-foreground",
+    differ: "bg-stale text-stale-foreground",
+    locked: "bg-stale text-stale-foreground",
+  } as const;
+  return (
+    <span
+      className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${tones[tone]}`}
+    >
+      {children}
+    </span>
+  );
+}
+
 export function ClusterStoryCard({
   cluster,
   locale,
   timeLabel,
   s,
+  eager = false,
 }: {
   cluster: NewsCluster;
   locale: string;
   timeLabel: string | null;
   s: StoryStrings;
+  eager?: boolean;
 }) {
   const isTa = locale === "ta";
   const title =
@@ -50,40 +74,64 @@ export function ClusterStoryCard({
     cluster.title_ta ??
     cluster.members[0]?.headline;
   const summary = isTa
-    ? (cluster.summary_ta ?? cluster.summary_en)
-    : (cluster.summary_en ?? cluster.summary_ta);
+    ? (cluster.summary_long_ta ?? cluster.summary_ta ?? cluster.summary_long_en ?? cluster.summary_en)
+    : (cluster.summary_long_en ?? cluster.summary_en ?? cluster.summary_long_ta ?? cluster.summary_ta);
   const covered = new Set(cluster.members.map((m) => m.outlet)).size;
   const image = clusterImage(cluster);
 
   return (
     <Link
       href={`/news/s/${cluster.id}` as "/news"}
-      className="press block overflow-hidden rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgba(46,42,36,0.04)] transition-shadow hover:shadow-[0_8px_22px_-12px_rgba(46,42,36,0.3)]"
+      className="press block rounded-2xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(46,42,36,0.04)] transition-shadow hover:shadow-[0_8px_22px_-12px_rgba(46,42,36,0.3)]"
       style={{ viewTransitionName: `story-${cluster.id}` }}
     >
-      {image ? (
-        <StoryThumb src={image} className="aspect-[16/9] w-full" />
-      ) : null}
-      <div className="p-4">
-        <span className="inline-block rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-accent-foreground">
+      <div className="flex items-center gap-1.5">
+        <span className="inline-block rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-secondary-foreground">
           {s.sourcesCount(covered)}
         </span>
-        <h3 className="mt-2 font-heading text-[17px] font-bold leading-snug">
-          {title}
-        </h3>
-        {summary ? (
-          <p className="mt-1.5 line-clamp-3 text-[13.5px] leading-relaxed text-muted-foreground">
-            {summary.replace(/\[\d+\]/g, "")}
-          </p>
+        {cluster.priority_high ? (
+          <Marker tone="priority">{s.markers.priority}</Marker>
         ) : null}
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <SourceDots count={covered} label={s.sourcesCount(covered)} />
-          {timeLabel ? (
-            <span className="text-[11px] font-medium text-muted-foreground">
-              {timeLabel}
-            </span>
+        {cluster.sources_disagree ? (
+          <Marker tone="differ">{s.markers.sourcesDiffer}</Marker>
+        ) : null}
+        {cluster.discussion_locked ? (
+          <Marker tone="locked">{s.markers.locked}</Marker>
+        ) : null}
+      </div>
+      <div className="mt-2 flex gap-3.5">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-heading text-[16.5px] font-bold leading-snug">
+            {title}
+          </h3>
+          {summary ? (
+            <p className="mt-1.5 line-clamp-4 text-[13.5px] leading-relaxed text-muted-foreground">
+              {summary.replace(/\[\d+\]/g, "")}
+            </p>
           ) : null}
         </div>
+        {image ? (
+          <StoryThumb
+            src={image}
+            eager={eager}
+            className="mt-0.5 size-[104px] rounded-xl sm:size-[118px]"
+          />
+        ) : null}
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="flex items-center gap-2">
+          <SourceDots count={covered} label={s.sourcesCount(covered)} />
+          {cluster.district_en ? (
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              {isTa ? cluster.district_ta : cluster.district_en}
+            </span>
+          ) : null}
+        </span>
+        {timeLabel ? (
+          <span className="text-[11px] font-medium text-muted-foreground">
+            {timeLabel}
+          </span>
+        ) : null}
       </div>
     </Link>
   );
@@ -94,11 +142,13 @@ export function ItemStoryCard({
   locale,
   timeLabel,
   s,
+  eager = false,
 }: {
   item: NewsSingleItem;
   locale: string;
   timeLabel: string | null;
   s: StoryStrings;
+  eager?: boolean;
 }) {
   const title = itemTitle(item, locale);
   return (
@@ -106,29 +156,38 @@ export function ItemStoryCard({
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="press block overflow-hidden rounded-2xl border border-border bg-card/70"
+      className="press block rounded-2xl border border-border bg-card/70 p-4"
     >
-      {item.image_url ? (
-        <StoryThumb src={item.image_url} className="aspect-[16/9] w-full" />
-      ) : null}
-      <div className="p-4">
-        <h3
-          lang={title.lang}
-          className="font-heading text-[16px] font-bold leading-snug"
-        >
-          {title.text} <span aria-hidden="true">↗</span>
-        </h3>
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <span className="text-[11.5px] font-semibold text-muted-foreground">
-            {s.outletName(item.outlet)} · {s.singleSource}
-          </span>
-          {timeLabel ? (
-            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">
-              {timeLabel}
-            </span>
+      <div className="flex gap-3.5">
+        <div className="min-w-0 flex-1">
+          {item.civic_priority === "high" ? (
+            <div className="mb-1">
+              <Marker tone="priority">{s.markers.priority}</Marker>
+            </div>
           ) : null}
+          <h3
+            lang={title.lang}
+            className="font-heading text-[15.5px] font-bold leading-snug"
+          >
+            {title.text} <span aria-hidden="true">↗</span>
+          </h3>
+          <p className="mt-1.5 text-[11.5px] font-semibold text-muted-foreground">
+            {s.outletName(item.outlet)} · {s.singleSource}
+          </p>
         </div>
+        {item.image_url ? (
+          <StoryThumb
+            src={item.image_url}
+            eager={eager}
+            className="mt-0.5 size-[88px] rounded-xl"
+          />
+        ) : null}
       </div>
+      {timeLabel ? (
+        <p className="mt-2 text-right text-[11px] font-medium text-muted-foreground">
+          {timeLabel}
+        </p>
+      ) : null}
     </a>
   );
 }

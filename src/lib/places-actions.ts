@@ -2,8 +2,11 @@
 
 import { cookies } from "next/headers";
 import {
+  FOLLOWS_COOKIE,
+  MAX_FOLLOWS,
   MAX_PLACES,
   PLACES_COOKIE,
+  parseFollows,
   parsePlaces,
   type Place,
 } from "./places-shared";
@@ -52,4 +55,29 @@ export async function removePlace(formData: FormData): Promise<void> {
     (p) => !(p.level === place.level && p.code === place.code),
   );
   jar.set(PLACES_COOKIE, JSON.stringify(places), COOKIE_OPTS);
+}
+
+function readPersonId(formData: FormData): number | null {
+  const raw = formData.get("person_id");
+  return typeof raw === "string" && /^\d{1,10}$/.test(raw) ? Number(raw) : null;
+}
+
+export async function followPerson(formData: FormData): Promise<void> {
+  const personId = readPersonId(formData);
+  if (personId === null) return;
+  const jar = await cookies();
+  const follows = parseFollows(jar.get(FOLLOWS_COOKIE)?.value);
+  if (!follows.includes(personId) && follows.length < MAX_FOLLOWS) {
+    jar.set(FOLLOWS_COOKIE, JSON.stringify([...follows, personId]), COOKIE_OPTS);
+  }
+}
+
+export async function unfollowPerson(formData: FormData): Promise<void> {
+  const personId = readPersonId(formData);
+  if (personId === null) return;
+  const jar = await cookies();
+  const follows = parseFollows(jar.get(FOLLOWS_COOKIE)?.value).filter(
+    (id) => id !== personId,
+  );
+  jar.set(FOLLOWS_COOKIE, JSON.stringify(follows), COOKIE_OPTS);
 }

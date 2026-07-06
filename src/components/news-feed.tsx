@@ -61,6 +61,11 @@ export async function buildNewsStrings(): Promise<NewsStrings> {
     aiNote: t("aiNote"),
     summaryPending: t("summaryPending"),
     sourcesCount: (count) => t("sourcesCount", { count }),
+    markers: {
+      priority: t("markers.priority"),
+      sourcesDiffer: t("markers.sourcesDiffer"),
+      locked: t("locked"),
+    },
     locked: t("locked"),
     lockedReason: (category) => {
       const known = LOCK_CATEGORIES.find((c) => c === category);
@@ -125,12 +130,13 @@ export function NewsFeed({
   const entries = interleave(clusters, items);
   return (
     <ul className="mt-8 space-y-3">
-      {entries.map((entry) => (
+      {entries.map((entry, index) => (
         <li key={entry.kind === "cluster" ? `c${entry.cluster.id}` : `i${entry.item.id}`}>
           {entry.kind === "cluster" ? (
             <ClusterStoryCard
               cluster={entry.cluster}
               locale={locale}
+              eager={index === 0}
               timeLabel={
                 entry.cluster.event_time
                   ? format.relativeTime(new Date(entry.cluster.event_time))
@@ -142,6 +148,7 @@ export function NewsFeed({
             <ItemStoryCard
               item={entry.item}
               locale={locale}
+              eager={index === 0}
               timeLabel={
                 entry.item.published_at
                   ? format.relativeTime(entry.item.published_at)

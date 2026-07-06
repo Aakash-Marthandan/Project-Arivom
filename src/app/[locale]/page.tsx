@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { LocateButton } from "@/components/locate-button";
 import { buildNewsStrings } from "@/components/news-feed";
 import { ClusterStoryCard, ItemStoryCard } from "@/components/story-card";
-import { getMyPlaces } from "@/lib/places";
+import { getMyFollows, getMyPlaces } from "@/lib/places";
 import {
+  getDailyBrief,
   getNewsClusters,
   getNewsLastChecked,
+  getPersonNewsItems,
   getPlaceCards,
   getUnclusteredItems,
   getVacantSeats,
@@ -44,14 +46,17 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const isTa = locale === "ta";
 
   const lang = locale === "ta" ? ("ta" as const) : ("en" as const);
-  const places = await getMyPlaces();
-  const [t, tl, format, strings, lastChecked] =
+  const [places, follows] = await Promise.all([getMyPlaces(), getMyFollows()]);
+  const [t, tn, tl, format, strings, lastChecked, brief, followItems] =
     await Promise.all([
       getTranslations("home.feed"),
+      getTranslations("news"),
       getTranslations("locate"),
       getFormatter(),
       buildNewsStrings(),
       getNewsLastChecked(),
+      getDailyBrief(),
+      getPersonNewsItems(follows, 4),
     ]);
 
   const cards = places.length ? await getPlaceCards(places) : [];
@@ -95,12 +100,61 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   const timeLabel = (d: Date | string | null) =>
     d ? format.relativeTime(new Date(d)) : null;
+
   const vacantByLocality = new Map(
     vacantSeats.map((seat) => [seat.locality_id, seat]),
   );
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">
+      {brief.length > 0 ? (
+        <section className="mb-8">
+          <h2 className="font-heading text-lg font-extrabold tracking-tight text-primary">
+            {tn("brief.title")}
+          </h2>
+          <ol className="mt-3 space-y-2 rounded-2xl border border-border bg-card p-4">
+            {brief.map((cluster, i) => (
+              <li key={cluster.id} className="flex gap-3">
+                <span
+                  aria-hidden="true"
+                  className="font-heading text-sm font-extrabold tabular-nums text-primary"
+                >
+                  {i + 1}
+                </span>
+                <Link
+                  href={`/news/s/${cluster.id}`}
+                  className="press min-w-0 flex-1 font-heading text-[14.5px] font-bold leading-snug underline-offset-4 hover:underline"
+                >
+                  {(locale === "ta"
+                    ? (cluster.title_ta ?? cluster.title_en)
+                    : (cluster.title_en ?? cluster.title_ta)) ??
+                    cluster.members[0]?.headline}
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
+      {followItems.length > 0 ? (
+        <section className="mb-8">
+          <h2 className="font-heading text-lg font-extrabold tracking-tight text-primary">
+            {t("followedSection")}
+          </h2>
+          <div className="mt-3 space-y-2.5">
+            {followItems.map((item) => (
+              <ItemStoryCard
+                key={`f${item.id}`}
+                item={item}
+                locale={locale}
+                timeLabel={timeLabel(item.published_at)}
+                s={strings}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {cards.length === 0 ? (
         <section className="py-10 sm:py-16">
           <h1 className="max-w-xl font-heading text-3xl font-extrabold leading-snug sm:text-4xl">
@@ -128,7 +182,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </p>
         </section>
       ) : (
-        sectors.map((sector) => (
+        sectors.map((sector, sectorIndex) => (
           <section key={sector.districtId} className="mb-8">
             <div className="flex items-baseline justify-between gap-2">
               <h2 className="font-heading text-lg font-extrabold tracking-tight text-primary">
@@ -188,22 +242,26 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             </div>
 
             <div className="mt-2.5 space-y-2.5">
-              {sector.clusters.map((cluster) => (
+              {sector.clusters.map((cluster, ci) => (
                 <ClusterStoryCard
                   key={`c${cluster.id}`}
                   cluster={cluster}
                   locale={locale}
                   timeLabel={timeLabel(cluster.event_time)}
                   s={strings}
+                  eager={sectorIndex === 0 && ci === 0}
                 />
               ))}
-              {sector.items.map((item) => (
+              {sector.items.map((item, ii) => (
                 <ItemStoryCard
                   key={`i${item.id}`}
                   item={item}
                   locale={locale}
                   timeLabel={timeLabel(item.published_at)}
                   s={strings}
+                  eager={
+                    sectorIndex === 0 && sector.clusters.length === 0 && ii === 0
+                  }
                 />
               ))}
               {sector.clusters.length === 0 && sector.items.length === 0 ? (
@@ -240,13 +298,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           ))}
           {stateItems
             .slice(0, Math.max(0, PER_SECTOR - stateClusters.length))
-            .map((item) => (
+            .map((item, ii) => (
               <ItemStoryCard
                 key={`i${item.id}`}
                 item={item}
                 locale={locale}
                 timeLabel={timeLabel(item.published_at)}
                 s={strings}
+                eager={cards.length === 0 && stateClusters.length === 0 && ii === 0}
               />
             ))}
         </div>

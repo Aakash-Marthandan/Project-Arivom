@@ -349,6 +349,8 @@ export interface NewsCluster {
   district_lgd: string | null;
   discussion_locked: boolean;
   lock_category: string | null;
+  sources_disagree: boolean;
+  priority_high: boolean;
   retrieved_at: Date;
   source_name: string;
   source_url: string | null;
@@ -371,6 +373,7 @@ export interface NewsSingleItem {
   image_url: string | null;
   title_clean_en: string | null;
   title_clean_ta: string | null;
+  civic_priority: string | null;
 }
 
 /** Multi-outlet event clusters, newest first (M7). */
@@ -382,12 +385,12 @@ export async function getNewsClusters(
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
            c.citations, c.summary_long_en, c.summary_long_ta,
            c.coverage_notes, c.event_time, c.discussion_locked,
-           c.lock_category, c.retrieved_at,
+           c.lock_category, c.sources_disagree, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,
            s.publisher AS source_publisher, s.license AS source_license,
-           m.members
+           m.members, m.priority_high
     FROM news_clusters c
     JOIN sources s ON s.id = c.source_id
     LEFT JOIN localities d ON d.id = c.locality_id
@@ -397,6 +400,7 @@ export async function getNewsClusters(
                'headline', i.headline_orig, 'lang', i.lang,
                'published_at', i.published_at, 'image_url', i.image_url
              ) ORDER BY i.published_at) AS members,
+             bool_or(i.civic_priority = 'high') AS priority_high,
              count(*) AS n
       FROM cluster_coverage cc
       JOIN news_items i ON i.id = cc.news_item_id
@@ -424,7 +428,7 @@ export async function getUnclusteredItems(
   return sql<NewsSingleItem[]>`
     SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
            i.published_at, i.retrieved_at, i.image_url,
-           i.title_clean_en, i.title_clean_ta,
+           i.title_clean_en, i.title_clean_ta, i.civic_priority,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd
     FROM news_items i
@@ -511,7 +515,7 @@ export async function getPersonNewsItems(
   return sql<NewsSingleItem[]>`
     SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
            i.published_at, i.retrieved_at, i.image_url,
-           i.title_clean_en, i.title_clean_ta,
+           i.title_clean_en, i.title_clean_ta, i.civic_priority,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd
     FROM news_items i
@@ -536,12 +540,12 @@ export async function getNewsClusterById(
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
            c.citations, c.summary_long_en, c.summary_long_ta,
            c.coverage_notes, c.event_time, c.discussion_locked,
-           c.lock_category, c.retrieved_at,
+           c.lock_category, c.sources_disagree, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,
            s.publisher AS source_publisher, s.license AS source_license,
-           m.members
+           m.members, m.priority_high
     FROM news_clusters c
     JOIN sources s ON s.id = c.source_id
     LEFT JOIN localities d ON d.id = c.locality_id
@@ -551,6 +555,7 @@ export async function getNewsClusterById(
                'headline', i.headline_orig, 'lang', i.lang,
                'published_at', i.published_at, 'image_url', i.image_url
              ) ORDER BY i.published_at) AS members,
+             bool_or(i.civic_priority = 'high') AS priority_high,
              count(*) AS n
       FROM cluster_coverage cc
       JOIN news_items i ON i.id = cc.news_item_id
@@ -559,6 +564,168 @@ export async function getNewsClusterById(
     WHERE c.id = ${id}
   `;
   return rows[0] ?? null;
+}
+
+export interface PersonSearchRow {
+  person_id: number;
+  name_en: string;
+  name_ta: string | null;
+  seat_level: string;
+  seat_code: string;
+  seat_en: string;
+  seat_ta: string;
+}
+
+/** Search-everything (D-026): current officeholders by name. */
+export async function searchPersons(q: string): Promise<PersonSearchRow[]> {
+  const like = `%${q}%`;
+  return sql<PersonSearchRow[]>`
+    SELECT p.id AS person_id, p.name_en, p.name_ta,
+           l.level::text AS seat_level, l.eci_code AS seat_code,
+           l.name_en AS seat_en, l.name_ta AS seat_ta
+    FROM persons p
+    JOIN tenures t ON t.person_id = p.id
+      AND t.end_date IS NULL AND t.status = 'active'
+    JOIN offices o ON o.id = t.office_id
+    JOIN localities l ON l.id = o.locality_id
+    WHERE p.name_en ILIKE ${like} OR p.name_ta LIKE ${like}
+    ORDER BY p.name_en
+    LIMIT 6
+  `;
+}
+
+export interface StorySearchRow {
+  kind: "cluster" | "item";
+  id: number;
+  title: string;
+  lang: string;
+  url: string | null;
+  outlet: string | null;
+}
+
+/** Search-everything (D-026): stories by our titles first, headlines second. */
+export async function searchStories(
+  q: string,
+  lang: "ta" | "en",
+): Promise<StorySearchRow[]> {
+  const like = `%${q}%`;
+  return sql<StorySearchRow[]>`
+    (
+      SELECT 'cluster' AS kind, c.id, COALESCE(
+               ${lang === "ta" ? sql`c.title_ta` : sql`c.title_en`},
+               c.title_en, c.title_ta
+             ) AS title,
+             ${lang} AS lang, NULL AS url, NULL AS outlet
+      FROM news_clusters c
+      WHERE (c.title_en ILIKE ${like} OR c.title_ta LIKE ${like})
+        AND c.event_time > now() - interval '30 days'
+    )
+    UNION ALL
+    (
+      SELECT 'item' AS kind, i.id, COALESCE(
+               ${lang === "ta" ? sql`i.title_clean_ta` : sql`i.title_clean_en`},
+               i.headline_orig
+             ) AS title,
+             i.lang, i.url, i.outlet
+      FROM news_items i
+      WHERE (i.headline_orig ILIKE ${like}
+             OR i.title_clean_en ILIKE ${like}
+             OR i.title_clean_ta LIKE ${like})
+        AND (i.civic_class IS NULL OR i.civic_class <> 'soft')
+        AND i.published_at > now() - interval '14 days'
+      ORDER BY i.published_at DESC
+      LIMIT 6
+    )
+    LIMIT 8
+  `;
+}
+
+export interface ClusterNumberRow {
+  person_id: number;
+  name_en: string;
+  name_ta: string | null;
+  seat_level: string;
+  seat_code: string;
+  seat_en: string;
+  seat_ta: string;
+  election_result: unknown;
+  result_retrieved_at: Date | null;
+  result_source_name: string | null;
+  result_source_url: string | null;
+  result_source_publisher: string | null;
+  result_source_license: string | null;
+}
+
+/**
+ * "In numbers" (D-026): our own sourced records touched by a story — the
+ * matched persons' seats and election figures. Facts only, provenance
+ * attached; renders nothing when the story matches nobody we track.
+ */
+export async function getClusterNumbers(
+  clusterId: number,
+): Promise<ClusterNumberRow[]> {
+  return sql<ClusterNumberRow[]>`
+    WITH member_persons AS (
+      SELECT DISTINCT (p ->> 'person_id')::bigint AS person_id
+      FROM cluster_coverage cc
+      JOIN news_items i ON i.id = cc.news_item_id,
+           jsonb_array_elements(i.entities -> 'persons') AS p
+      WHERE cc.cluster_id = ${clusterId} AND p ? 'person_id'
+    )
+    SELECT p.id AS person_id, p.name_en, p.name_ta,
+           l.level::text AS seat_level, l.eci_code AS seat_code,
+           l.name_en AS seat_en, l.name_ta AS seat_ta,
+           f.value AS election_result, f.retrieved_at AS result_retrieved_at,
+           s.name AS result_source_name, s.url AS result_source_url,
+           s.publisher AS result_source_publisher,
+           s.license AS result_source_license
+    FROM member_persons mp
+    JOIN persons p ON p.id = mp.person_id
+    JOIN tenures t ON t.person_id = p.id
+      AND t.end_date IS NULL AND t.status = 'active'
+    JOIN offices o ON o.id = t.office_id
+    JOIN localities l ON l.id = o.locality_id
+    LEFT JOIN facts f ON f.subject_type = 'locality' AND f.subject_id = l.id
+      AND f.key = 'election_result'
+    LEFT JOIN sources s ON s.id = f.source_id
+    ORDER BY p.name_en
+    LIMIT 4
+  `;
+}
+
+/** Deterministic daily brief: today's top civic clusters, explainably
+ * ranked (priority, then breadth of coverage). No opaque scoring. */
+export async function getDailyBrief(limit = 5): Promise<NewsCluster[]> {
+  return sql<NewsCluster[]>`
+    SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
+           c.citations, c.summary_long_en, c.summary_long_ta,
+           c.coverage_notes, c.event_time, c.discussion_locked,
+           c.lock_category, c.sources_disagree, c.retrieved_at,
+           d.name_en AS district_en, d.name_ta AS district_ta,
+           d.lgd_code AS district_lgd,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license,
+           m.members, m.priority_high
+    FROM news_clusters c
+    JOIN sources s ON s.id = c.source_id
+    LEFT JOIN localities d ON d.id = c.locality_id
+    JOIN LATERAL (
+      SELECT json_agg(json_build_object(
+               'id', i.id, 'outlet', i.outlet, 'url', i.url,
+               'headline', i.headline_orig, 'lang', i.lang,
+               'published_at', i.published_at, 'image_url', i.image_url
+             ) ORDER BY i.published_at) AS members,
+             bool_or(i.civic_priority = 'high') AS priority_high,
+             count(DISTINCT i.outlet) AS outlets
+      FROM cluster_coverage cc
+      JOIN news_items i ON i.id = cc.news_item_id
+      WHERE cc.cluster_id = c.id
+    ) m ON m.outlets >= 2
+    WHERE c.event_time > now() - interval '24 hours'
+      AND c.summary_en IS NOT NULL
+    ORDER BY m.priority_high DESC, m.outlets DESC, c.event_time DESC
+    LIMIT ${limit}
+  `;
 }
 
 /** The outlets currently flowing into news_items (coverage-table universe). */

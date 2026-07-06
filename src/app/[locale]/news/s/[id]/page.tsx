@@ -17,7 +17,11 @@ import {
 import { ShareButton } from "@/components/share-button";
 import { StoryThumb } from "@/components/story-thumb";
 import { clusterImage } from "@/components/story-card";
-import { getNewsClusterById, getTrackedOutlets } from "@/lib/queries";
+import {
+  getClusterNumbers,
+  getNewsClusterById,
+  getTrackedOutlets,
+} from "@/lib/queries";
 
 export const revalidate = 600;
 
@@ -100,11 +104,12 @@ export default async function StoryPage({
   const cluster = await load(clusterId);
   if (!cluster) notFound();
 
-  const [t, format, strings, trackedOutlets] = await Promise.all([
+  const [t, format, strings, trackedOutlets, numbers] = await Promise.all([
     getTranslations("news"),
     getFormatter(),
     buildNewsStrings(),
     getTrackedOutlets(),
+    getClusterNumbers(clusterId),
   ]);
   const isTa = locale === "ta";
 
@@ -196,7 +201,7 @@ export default async function StoryPage({
       {image ? (
         <StoryThumb
           src={image}
-          className="mt-4 h-52 w-full rounded-xl sm:h-64"
+          className="mt-4 h-44 w-full rounded-xl sm:h-52"
         />
       ) : null}
 
@@ -313,7 +318,132 @@ export default async function StoryPage({
         ) : null}
       </section>
 
-      <p className="mt-8 rounded-xl border border-border bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground">
+      {numbers.length > 0 ? (
+        <section className="mt-8" aria-labelledby="numbers-heading">
+          <h2
+            id="numbers-heading"
+            className="font-heading text-lg font-extrabold tracking-tight"
+          >
+            {t("inNumbersHeading")}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t("inNumbersIntro")}
+          </p>
+          <ul className="mt-3 space-y-2.5">
+            {numbers.map((row) => {
+              const result = row.election_result as {
+                votes?: number;
+                margin?: number | null;
+                vote_pct?: number | null;
+              } | null;
+              return (
+                <li
+                  key={row.person_id}
+                  className="rounded-xl border border-border bg-card p-4"
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <Link
+                      href={`/constituencies/${row.seat_level}/${row.seat_code}`}
+                      className="font-heading text-sm font-bold text-primary underline-offset-4 hover:underline"
+                    >
+                      {isTa ? (row.name_ta ?? row.name_en) : row.name_en} ·{" "}
+                      {isTa ? row.seat_ta : row.seat_en}
+                    </Link>
+                    {row.result_source_name ? (
+                      <ProvenanceChip
+                        label={strings.provenance.chipLabel}
+                        heading={strings.provenance.title}
+                        fieldLabels={strings.provenance.fieldLabels}
+                        entries={[
+                          {
+                            title: t("inNumbersHeading"),
+                            sourceName: row.result_source_name,
+                            url: row.result_source_url,
+                            publisher: row.result_source_publisher ?? "",
+                            license: row.result_source_license,
+                            retrievedOn: row.result_retrieved_at
+                              ? format.dateTime(row.result_retrieved_at, {
+                                  dateStyle: "long",
+                                })
+                              : "",
+                            method: strings.provenance.method,
+                          },
+                        ]}
+                      />
+                    ) : null}
+                  </div>
+                  {result?.votes != null ? (
+                    <p className="mt-1.5 text-sm tabular-nums text-muted-foreground">
+                      2026 · {format.number(result.votes)}
+                      {result.vote_pct != null
+                        ? ` · ${result.vote_pct}%`
+                        : ""}
+                      {result.margin != null
+                        ? ` · +${format.number(result.margin)}`
+                        : ""}
+                    </p>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
+      <section className="mt-8" aria-labelledby="timeline-heading">
+        <h2
+          id="timeline-heading"
+          className="font-heading text-lg font-extrabold tracking-tight"
+        >
+          {t("timelineHeading")}
+        </h2>
+        <ol className="mt-3 space-y-0 border-s-2 border-accent ps-4">
+          {cluster.members.map((member, i) => (
+            <li key={member.id} className="relative pb-3">
+              <span
+                aria-hidden="true"
+                className="absolute -start-[21.5px] top-1.5 size-2.5 rounded-full bg-primary"
+              />
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="font-heading text-sm font-bold">
+                  {strings.outletName(member.outlet)}
+                </span>
+                {member.published_at ? (
+                  <time
+                    dateTime={new Date(member.published_at).toISOString()}
+                    className="text-xs tabular-nums text-muted-foreground"
+                  >
+                    {format.dateTime(new Date(member.published_at), {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </time>
+                ) : null}
+                {i === 0 ? (
+                  <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-accent-foreground">
+                    {t("timelineFirst")}
+                  </span>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <p className="mt-8 text-center">
+        <a
+          href={`https://github.com/Aakash-Marthandan/Project-Arivom/issues/new?title=${encodeURIComponent(
+            `[story ${cluster.id}] `,
+          )}&body=${encodeURIComponent(`Story: /news/s/${cluster.id}\n\n`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="press inline-block rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary"
+        >
+          {t("reportIssue")} ↗
+        </a>
+      </p>
+
+      <p className="mt-6 rounded-xl border border-border bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground">
         {t("methodNote")}
       </p>
     </article>

@@ -10,9 +10,12 @@ import { useState } from "react";
 export function StoryThumb({
   src,
   className,
+  eager = false,
 }: {
   src: string | null;
   className: string;
+  /** First in-viewport image: skip lazy-loading so LCP isn't delayed. */
+  eager?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
 
@@ -43,7 +46,8 @@ export function StoryThumb({
     <img
       src={src}
       alt=""
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
+      fetchPriority={eager ? "high" : "auto"}
       decoding="async"
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}

@@ -70,7 +70,9 @@
       "caughtUp": "You're caught up.",
       "lastChecked": "News checked {time}",
       "manageHint": "Manage your places in the More tab.",
-      "quiet": "No recent stories for this district. Statewide news is below."
+      "quiet": "No recent stories for this district. Statewide news is below.",
+      "followedSection": "People you follow",
+      "followHint": "Follow representatives to see their stories here."
     }
   },
   "locate": {
@@ -123,7 +125,10 @@
     "parliamentary": "Parliamentary constituencies",
     "assemblyCount": "{count} constituencies",
     "noResults": "No matching constituency. Try a different spelling.",
-    "emptyState": "Constituency data has not been imported yet. Once the data pipelines run, all 234 assembly and 39 parliamentary constituencies will appear here."
+    "emptyState": "Constituency data has not been imported yet. Once the data pipelines run, all 234 assembly and 39 parliamentary constituencies will appear here.",
+    "groupConstituencies": "Constituencies",
+    "groupPeople": "People",
+    "groupStories": "Stories"
   },
   "constituency": {
     "types": {
@@ -213,7 +218,9 @@
     "addPlace": "Add to my places",
     "removePlace": "In my places · Remove",
     "placesFull": "Your places list is full (5). Remove one in More.",
-    "inTheNews": "In the news"
+    "inTheNews": "In the news",
+    "follow": "Follow",
+    "following": "Following ✓"
   },
   "provenance": {
     "chipLabel": "Source",
@@ -348,7 +355,21 @@
     "linkCopied": "Link copied",
     "readAtOutlet": "Read at {outlet}",
     "storyNotFound": "This story is not available.",
-    "detailPending": "The detailed summary and coverage notes for this story are being prepared. The outlets' own reporting is below."
+    "detailPending": "The detailed summary and coverage notes for this story are being prepared. The outlets' own reporting is below.",
+    "markers": {
+      "priority": "Priority",
+      "sourcesDiffer": "Sources differ"
+    },
+    "timelineHeading": "Coverage timeline",
+    "timelineFirst": "First reported",
+    "timelineLater": "{offset} later",
+    "inNumbersHeading": "In numbers",
+    "inNumbersIntro": "Figures from our own sourced records that this story touches.",
+    "reportIssue": "Report an issue with this story",
+    "brief": {
+      "title": "Today in Tamil Nadu",
+      "pending": "The daily brief starts once story clustering is running."
+    }
   },
   "more": {
     "title": "More",

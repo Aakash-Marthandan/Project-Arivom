@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Input } from "@/components/ui/input";
-import { listConstituencies, type ConstituencyListItem } from "@/lib/queries";
+import {
+  listConstituencies,
+  searchPersons,
+  searchStories,
+  type ConstituencyListItem,
+} from "@/lib/queries";
 import type { Locale } from "@/i18n/routing";
 
 export const revalidate = 3600;
@@ -57,7 +62,12 @@ export default async function ConstituenciesPage({
 
   const { q } = (await searchParams) as { q?: string };
   const query = typeof q === "string" ? q.slice(0, 100) : undefined;
-  const items = await listConstituencies(query);
+  const lang = locale === "ta" ? ("ta" as const) : ("en" as const);
+  const [items, persons, stories] = await Promise.all([
+    listConstituencies(query),
+    query ? searchPersons(query) : Promise.resolve([]),
+    query ? searchStories(query, lang) : Promise.resolve([]),
+  ]);
   const acs = items.filter((item) => item.level === "ac");
   const pcs = items.filter((item) => item.level === "pc");
 
@@ -87,8 +97,73 @@ export default async function ConstituenciesPage({
         </p>
       ) : null}
 
-      {items.length === 0 && query ? (
+      {items.length === 0 && persons.length === 0 && stories.length === 0 && query ? (
         <p className="mt-12 text-sm text-muted-foreground">{t("noResults")}</p>
+      ) : null}
+
+      {persons.length > 0 ? (
+        <section aria-labelledby="people-title" className="mt-10">
+          <div className="flex items-baseline justify-between gap-4 border-b border-border pb-2">
+            <h2 id="people-title" className="font-heading text-xl font-bold">
+              {t("groupPeople")}
+            </h2>
+          </div>
+          <ul className="mt-3 grid gap-x-6 sm:grid-cols-2">
+            {persons.map((person) => (
+              <li key={person.person_id}>
+                <Link
+                  href={`/constituencies/${person.seat_level}/${person.seat_code}`}
+                  className="press flex flex-col rounded-md border border-transparent px-3 py-2 transition-colors hover:border-border hover:bg-card"
+                >
+                  <span className="truncate font-medium">
+                    {locale === "ta"
+                      ? (person.name_ta ?? person.name_en)
+                      : person.name_en}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {locale === "ta" ? person.seat_ta : person.seat_en}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {stories.length > 0 ? (
+        <section aria-labelledby="stories-title" className="mt-10">
+          <div className="flex items-baseline justify-between gap-4 border-b border-border pb-2">
+            <h2 id="stories-title" className="font-heading text-xl font-bold">
+              {t("groupStories")}
+            </h2>
+          </div>
+          <ul className="mt-3 space-y-1">
+            {stories.map((story) =>
+              story.kind === "cluster" ? (
+                <li key={`c${story.id}`}>
+                  <Link
+                    href={`/news/s/${story.id}`}
+                    className="press block rounded-md border border-transparent px-3 py-2 font-medium transition-colors hover:border-border hover:bg-card"
+                  >
+                    {story.title}
+                  </Link>
+                </li>
+              ) : (
+                <li key={`i${story.id}`}>
+                  <a
+                    href={story.url ?? "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    lang={story.lang}
+                    className="press block rounded-md border border-transparent px-3 py-2 font-medium transition-colors hover:border-border hover:bg-card"
+                  >
+                    {story.title} ↗
+                  </a>
+                </li>
+              ),
+            )}
+          </ul>
+        </section>
       ) : null}
 
       {acs.length > 0 ? (

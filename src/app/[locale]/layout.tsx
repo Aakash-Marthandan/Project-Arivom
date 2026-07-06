@@ -12,14 +12,16 @@ import "../globals.css";
 
 const bodyFont = Noto_Sans_Tamil({
   subsets: ["tamil", "latin"],
+  weight: ["400", "600", "700"],
   variable: "--font-body",
-  display: "swap",
+  display: "optional",
 });
 
 const displayFont = Catamaran({
   subsets: ["tamil", "latin"],
+  weight: ["700", "800"],
   variable: "--font-display",
-  display: "swap",
+  display: "optional",
 });
 
 export function generateStaticParams() {

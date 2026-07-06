@@ -11,6 +11,23 @@ export interface Place {
   code: string;
 }
 
+export const FOLLOWS_COOKIE = "arivom_follows";
+export const MAX_FOLLOWS = 10;
+
+/** Person follows (D-026): device-only, like places. */
+export function parseFollows(raw: string | undefined): number[] {
+  if (!raw) return [];
+  try {
+    const value: unknown = JSON.parse(raw);
+    if (!Array.isArray(value)) return [];
+    return value
+      .filter((id): id is number => typeof id === "number" && Number.isInteger(id) && id > 0)
+      .slice(0, MAX_FOLLOWS);
+  } catch {
+    return [];
+  }
+}
+
 export function parsePlaces(raw: string | undefined): Place[] {
   if (!raw) return [];
   try {

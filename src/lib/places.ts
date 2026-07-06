@@ -1,5 +1,11 @@
 import { cookies } from "next/headers";
-import { parsePlaces, PLACES_COOKIE, type Place } from "./places-shared";
+import {
+  FOLLOWS_COOKIE,
+  parseFollows,
+  parsePlaces,
+  PLACES_COOKIE,
+  type Place,
+} from "./places-shared";
 
 /**
  * "My places" (M7.5, D-023): the constituencies a person follows. Device
@@ -12,4 +18,9 @@ export type { Place };
 export async function getMyPlaces(): Promise<Place[]> {
   const jar = await cookies();
   return parsePlaces(jar.get(PLACES_COOKIE)?.value);
+}
+
+export async function getMyFollows(): Promise<number[]> {
+  const jar = await cookies();
+  return parseFollows(jar.get(FOLLOWS_COOKIE)?.value);
 }

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { FollowToggle } from "@/components/follow-toggle";
 import { PlaceToggle } from "@/components/place-toggle";
 import { buildNewsStrings } from "@/components/news-feed";
 import { ClusterStoryCard, ItemStoryCard } from "@/components/story-card";
@@ -372,6 +373,15 @@ export default async function ConstituencyPage({
                     {t("representatives.nameTaPending")}
                   </p>
                 )}
+                <div className="mt-2.5">
+                  <FollowToggle
+                    personId={rep.person_id}
+                    labels={{
+                      follow: t("follow"),
+                      following: t("following"),
+                    }}
+                  />
+                </div>
               </div>
               <ProvenanceChip
                 label={tp("chipLabel")}
