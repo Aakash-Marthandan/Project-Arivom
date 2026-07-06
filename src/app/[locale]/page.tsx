@@ -96,11 +96,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   const timeLabel = (d: Date | string | null) =>
     d ? format.relativeTime(new Date(d)) : null;
-  const storyStrings = {
-    singleSource: strings.singleSource,
-    coverageLabel: strings.coverage,
-    outletName: strings.outletName,
-  };
   const vacantByLocality = new Map(
     vacantSeats.map((seat) => [seat.locality_id, seat]),
   );
@@ -200,11 +195,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                   cluster={cluster}
                   totalOutlets={trackedOutlets.length}
                   locale={locale}
-                  href={
-                    sector.districtLgd ? `/news/d/${sector.districtLgd}` : "/news"
-                  }
                   timeLabel={timeLabel(cluster.event_time)}
-                  s={storyStrings}
+                  s={strings}
                 />
               ))}
               {sector.items.map((item) => (
@@ -213,7 +205,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                   item={item}
                   totalOutlets={trackedOutlets.length}
                   timeLabel={timeLabel(item.published_at)}
-                  s={storyStrings}
+                  s={strings}
                 />
               ))}
               {sector.clusters.length === 0 && sector.items.length === 0 ? (
@@ -245,9 +237,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               cluster={cluster}
               totalOutlets={trackedOutlets.length}
               locale={locale}
-              href="/news"
               timeLabel={timeLabel(cluster.event_time)}
-              s={storyStrings}
+              s={strings}
             />
           ))}
           {stateItems
@@ -258,7 +249,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 item={item}
                 totalOutlets={trackedOutlets.length}
                 timeLabel={timeLabel(item.published_at)}
-                s={storyStrings}
+                s={strings}
               />
             ))}
         </div>

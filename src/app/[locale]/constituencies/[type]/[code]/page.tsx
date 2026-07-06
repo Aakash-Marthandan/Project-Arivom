@@ -759,17 +759,12 @@ export default async function ConstituencyPage({
                 cluster={cluster}
                 totalOutlets={trackedOutlets.length}
                 locale={locale}
-                href={c.district_lgd ? `/news/d/${c.district_lgd}` : "/news"}
                 timeLabel={
                   cluster.event_time
                     ? format.relativeTime(new Date(cluster.event_time))
                     : null
                 }
-                s={{
-                  singleSource: newsStrings.singleSource,
-                  coverageLabel: newsStrings.coverage,
-                  outletName: newsStrings.outletName,
-                }}
+                s={newsStrings}
               />
             ))}
             {[...districtItems, ...extraPersonItems].slice(0, 5).map((item) => (
@@ -782,11 +777,7 @@ export default async function ConstituencyPage({
                     ? format.relativeTime(item.published_at)
                     : null
                 }
-                s={{
-                  singleSource: newsStrings.singleSource,
-                  coverageLabel: newsStrings.coverage,
-                  outletName: newsStrings.outletName,
-                }}
+                s={newsStrings}
               />
             ))}
           </div>

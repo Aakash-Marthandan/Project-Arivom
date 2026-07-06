@@ -328,6 +328,7 @@ export interface NewsClusterMember {
   headline: string;
   lang: "ta" | "en";
   published_at: string | null;
+  image_url: string | null;
 }
 
 export interface NewsCluster {
@@ -337,6 +338,11 @@ export interface NewsCluster {
   summary_en: string | null;
   summary_ta: string | null;
   citations: number[] | null;
+  summary_long_en: string | null;
+  summary_long_ta: string | null;
+  coverage_notes:
+    | { news_item_id: number; note_en: string; note_ta: string }[]
+    | null;
   event_time: Date | null;
   district_en: string | null;
   district_ta: string | null;
@@ -362,6 +368,7 @@ export interface NewsSingleItem {
   district_ta: string | null;
   district_lgd: string | null;
   retrieved_at: Date;
+  image_url: string | null;
 }
 
 /** Multi-outlet event clusters, newest first (M7). */
@@ -371,8 +378,9 @@ export async function getNewsClusters(
 ): Promise<NewsCluster[]> {
   return sql<NewsCluster[]>`
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
-           c.citations, c.event_time, c.discussion_locked, c.lock_category,
-           c.retrieved_at,
+           c.citations, c.summary_long_en, c.summary_long_ta,
+           c.coverage_notes, c.event_time, c.discussion_locked,
+           c.lock_category, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,
@@ -385,7 +393,7 @@ export async function getNewsClusters(
       SELECT json_agg(json_build_object(
                'id', i.id, 'outlet', i.outlet, 'url', i.url,
                'headline', i.headline_orig, 'lang', i.lang,
-               'published_at', i.published_at
+               'published_at', i.published_at, 'image_url', i.image_url
              ) ORDER BY i.published_at) AS members,
              count(*) AS n
       FROM cluster_coverage cc
@@ -407,7 +415,7 @@ export async function getUnclusteredItems(
 ): Promise<NewsSingleItem[]> {
   return sql<NewsSingleItem[]>`
     SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
-           i.published_at, i.retrieved_at,
+           i.published_at, i.retrieved_at, i.image_url,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd
     FROM news_items i
@@ -488,7 +496,7 @@ export async function getPersonNewsItems(
   if (personIds.length === 0) return [];
   return sql<NewsSingleItem[]>`
     SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
-           i.published_at, i.retrieved_at,
+           i.published_at, i.retrieved_at, i.image_url,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd
     FROM news_items i
@@ -502,6 +510,39 @@ export async function getPersonNewsItems(
     ORDER BY i.published_at DESC
     LIMIT ${limit}
   `;
+}
+
+/** One cluster with members, for the dedicated story page (D-024). */
+export async function getNewsClusterById(
+  id: number,
+): Promise<NewsCluster | null> {
+  const rows = await sql<NewsCluster[]>`
+    SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
+           c.citations, c.summary_long_en, c.summary_long_ta,
+           c.coverage_notes, c.event_time, c.discussion_locked,
+           c.lock_category, c.retrieved_at,
+           d.name_en AS district_en, d.name_ta AS district_ta,
+           d.lgd_code AS district_lgd,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license,
+           m.members
+    FROM news_clusters c
+    JOIN sources s ON s.id = c.source_id
+    LEFT JOIN localities d ON d.id = c.locality_id
+    JOIN LATERAL (
+      SELECT json_agg(json_build_object(
+               'id', i.id, 'outlet', i.outlet, 'url', i.url,
+               'headline', i.headline_orig, 'lang', i.lang,
+               'published_at', i.published_at, 'image_url', i.image_url
+             ) ORDER BY i.published_at) AS members,
+             count(*) AS n
+      FROM cluster_coverage cc
+      JOIN news_items i ON i.id = cc.news_item_id
+      WHERE cc.cluster_id = c.id
+    ) m ON m.n >= 1
+    WHERE c.id = ${id}
+  `;
+  return rows[0] ?? null;
 }
 
 /** The outlets currently flowing into news_items (coverage-table universe). */

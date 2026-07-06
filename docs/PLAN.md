@@ -121,6 +121,11 @@ GH secret). Exit criteria (live clustered events with checked bilingual
 summaries) verified once the key lands and the first runs complete.
 
 ### M7.5 — The app experience (owner-directed) — `built, in owner review` (2026-07-06)
+Polish round (D-024): Ground-style story cards (outlet image hotlinks with
+kolam fallback, source-count pill, summary preview), dedicated story pages
+(/news/s/[id]) with long checked summaries, per-outlet coverage notes
+(content-descriptive only), share, and view-transition morphs. Pipeline
+extended to draft + spot-check the long summaries and notes.
 Owner direction after reviewing M6/M7 surfaces: Arivom must feel like an
 app, not a website with tabs (D-023; design artifact in session). Scope:
 design system v2 (motion, press states, skeletons, coverage dot-row,

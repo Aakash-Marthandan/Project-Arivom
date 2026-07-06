@@ -342,7 +342,16 @@
       "oneindia-tamil": "Oneindia Tamil"
     },
     "summaryLabel": "Summary",
-    "moreNews": "More news"
+    "moreNews": "More news",
+    "sourcesCount": "{count, plural, one {# source} other {# sources}}",
+    "coverageHeading": "What each outlet covers",
+    "coverageIntro": "How the tracked outlets that reported this story each tell it. Descriptions only. No ratings, no labels.",
+    "notCoveredHeading": "Not covered by",
+    "share": "Share",
+    "linkCopied": "Link copied",
+    "readAtOutlet": "Read at {outlet}",
+    "storyNotFound": "This story is not available.",
+    "detailPending": "The detailed summary and coverage notes for this story are being prepared. The outlets' own reporting is below."
   },
   "more": {
     "title": "More",

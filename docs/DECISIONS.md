@@ -5,6 +5,36 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-06 — M7.5 polish round: Ground-style stories
+
+### D-024: Story images, dedicated story pages, per-outlet coverage notes
+Owner direction: cards were too compact; Ground News is the reference for
+feed and detail. Decisions:
+- **Images are links, never copies.** news_items.image_url holds the URL
+  of the outlet's own published story image (RSS media:content /
+  media:thumbnail / enclosure at poll time; article og:image as a fallback
+  during extraction). The UI hotlinks it lazy, referrer-free, unoptimized,
+  with a kolam-dot placeholder when absent or blocked. We never download,
+  store, or re-serve the asset — the same posture as headlines + links.
+- **Clusters get dedicated story pages** (/news/s/[id]): checked long
+  summary (5-8 sentences, same citation and neutrality rules as the short
+  one), the coverage dot-row, per-outlet cards, share (native sheet or
+  clipboard), provenance chip, locked notice. Cards across every feed
+  route there; single-source items still link out to the outlet.
+- **Per-outlet coverage notes, strictly content-descriptive.** Because we
+  read every tracked outlet's reporting of an event, the story page shows
+  one checked sentence per outlet on what its coverage ADDS ("carries the
+  minister's full statement", "adds official figures") — never wording
+  that judges quality, accuracy, or slant. The frontier spot-check fails
+  any note that drifts from description into judgment (pillar 2). The UI
+  labels the section "What each outlet covers" and repeats the no-ratings
+  disclaimer.
+- **Feed cards** show source-count pill, title, marker-stripped summary
+  preview (2-line clamp), thumbnail, dots, relative time; card → story
+  page morphs via View Transitions where supported.
+
+---
+
 ## 2026-07-05 — M7.5 owner decisions: the app experience
 
 ### D-023: News-first home, geography scopes, PWA-now, build-before-key
