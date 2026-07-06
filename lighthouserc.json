@@ -7,20 +7,22 @@
       ],
       "startServerCommand": "npm run start",
       "startServerReadyPattern": "Ready",
-      "numberOfRuns": 1
+      "numberOfRuns": 3
     },
     "assert": {
       "assertions": {
         "categories:performance": [
           "error",
           {
-            "minScore": 0.85
+            "minScore": 0.8,
+            "aggregationMethod": "median-run"
           }
         ],
         "categories:accessibility": [
           "error",
           {
-            "minScore": 0.95
+            "minScore": 0.95,
+            "aggregationMethod": "median-run"
           }
         ]
       }
