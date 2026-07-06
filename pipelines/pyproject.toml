@@ -23,6 +23,7 @@ monitor-vacancies = "arivom.monitor_vacancies:main"
 import-ministers = "arivom.import_ministers:main"
 poll-news = "arivom.poll_news:main"
 cluster-news = "arivom.cluster_news:main"
+qa-sample = "arivom.qa_sample:main"
 
 [dependency-groups]
 dev = ["ruff>=0.8"]

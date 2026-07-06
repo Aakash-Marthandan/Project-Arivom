@@ -141,6 +141,7 @@ EXTRACT_SCHEMA = obj_schema(
         "gist_en": {"type": "string"},
         "department": {"anyOf": [{"type": "string"}, {"type": "null"}]},
         "civic_class": {"type": "string", "enum": ["civic", "adjacent", "soft"]},
+        "civic_priority": {"type": "string", "enum": ["high", "normal"]},
         "title_clean_en": {"type": "string"},
         "title_clean_ta": {"type": "string"},
     }
@@ -163,6 +164,10 @@ and possibly an article excerpt, return:
   infrastructure, prices that affect households.
   "soft" = entertainment, celebrity, sports, astrology or devotion, viral or
   voyeuristic items, and stories with no Tamil Nadu civic relevance.
+- civic_priority (D-026, only meaningful for civic/adjacent; use "normal" for soft):
+  "high" = statewide policy impact, elections and by-elections, court rulings,
+  legislature decisions, or public-safety matters affecting many people.
+  "normal" = everything else. Judge the subject, never who it favours.
 - title_clean_en and title_clean_ta: the same story retold as ONE calm,
   informative headline in each language, in Arivom's voice: state what
   happened; no exclamation marks, no teasers or cliffhangers, no
@@ -240,13 +245,14 @@ def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, A
             UPDATE news_items
             SET entities = %s, fetch_status = %s,
                 image_url = COALESCE(image_url, %s),
-                civic_class = %s,
+                civic_class = %s, civic_priority = %s,
                 title_clean_en = %s, title_clean_ta = %s
             WHERE id = %s
             """,
             (
                 json.dumps(entities, ensure_ascii=False), fetch_status, og_image,
-                result["civic_class"], title_en, title_ta, item_id,
+                result["civic_class"], result["civic_priority"],
+                title_en, title_ta, item_id,
             ),
         )
         report["extracted"] += 1
@@ -497,6 +503,7 @@ SUMMARY_SCHEMA = obj_schema(
         "summary_ta": {"type": "string"},
         "summary_long_en": {"type": "string"},
         "summary_long_ta": {"type": "string"},
+        "sources_disagree": {"type": "boolean"},
         "coverage_notes": arr(
             obj_schema(
                 {
@@ -536,7 +543,8 @@ Hard rules:
 - Short plain sentences. No em dashes. Use digits for numbers.
 - End every sentence with the citation marker(s) [n] of the source(s) supporting
   it, in both languages.
-- If sources disagree, say so plainly and cite each side.
+- If sources disagree, say so plainly and cite each side, and set
+  sources_disagree to true (else false).
 - Rank information by what a citizen needs to know, not by drama."""
 
 CHECK_SCHEMA = obj_schema(
@@ -767,6 +775,7 @@ def summarize_clusters(
                 UPDATE news_clusters
                 SET title_en = %s, title_ta = %s, summary_en = %s, summary_ta = %s,
                     summary_long_en = %s, summary_long_ta = %s,
+                    sources_disagree = %s,
                     coverage_notes = %s,
                     citations = %s, content_hash = %s, review_status = 'llm_checked',
                     source_id = %s, retrieved_at = %s, updated_at = now(),
@@ -778,6 +787,7 @@ def summarize_clusters(
                     draft["title_en"].strip(), draft["title_ta"].strip(),
                     draft["summary_en"].strip(), draft["summary_ta"].strip(),
                     draft["summary_long_en"].strip(), draft["summary_long_ta"].strip(),
+                    bool(draft["sources_disagree"]),
                     json.dumps(coverage_notes, ensure_ascii=False),
                     json.dumps([m["id"] for m in members]),
                     content_hash, source_id, retrieved_at,

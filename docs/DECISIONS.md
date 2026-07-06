@@ -5,6 +5,47 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-06 — Story markers and depth features (owner directive)
+
+### D-026: Data markers translated through the pillars; audit ideas executed
+Owner asked for card markers — "importance, controversy level, and user
+contributed statistic" — plus execution of the audit's further ideas.
+Translations, so every marker stays a fact rather than a judgment:
+- **Importance → civic priority tier.** The extraction stage assigns
+  `civic_priority` = high | normal with a published rubric (statewide
+  policy impact, elections, courts, public safety affecting many people =
+  high). D-021 explicitly sanctions ranking by civic usefulness; the chip
+  is shown only when high, labelled plainly, criteria going into the
+  methodology page with the D-025 section.
+- **Controversy level → the "sources differ" fact + escalation notices.**
+  A numeric or worded controversy SCORE is an opaque editorial judgment —
+  the exact class of thing pillar 2 bans (no composite scores, no
+  sentiment blending). What we can display truthfully: the summarizer
+  already detects when outlets report conflicting facts; that becomes a
+  boolean `sources_disagree` marker rendered as "sources differ" (the
+  summary text names the disagreement with citations), alongside the
+  existing communal/sub-judice/allegations lock notices. Factual,
+  verifiable, calm.
+- **User-contributed statistic → designed slot, filled at M9.** Community
+  signals (issue confirmations, ratings) require phone-verified accounts,
+  moderation, and the N>=25 display floor per DESIGN §8; anonymous or
+  fabricated interim numbers are on the never list. The card/story layout
+  reserves the slot; it renders nothing until real contributions exist.
+- **Audit ideas executed this round:** coverage timeline on story pages;
+  "in numbers" blocks (our sourced facts — seat, margin, vacancy status —
+  when a story's matched entities touch them, with provenance chips);
+  report-an-issue links (public GitHub issues, auditable); person
+  follows (device cookie, like places) with a home sector; search across
+  constituencies, people, and stories on the Search tab; daily
+  "Today in Tamil Nadu" brief (pipeline-selected top civic stories,
+  key-gated) surfaced on home; Lighthouse CI gate (perf >= 0.90,
+  a11y >= 0.95 on /ta and /ta/news); weekly editorial QA sample workflow
+  printing 20 displayed titles/summaries for a human read.
+- **Cards rebalanced** (owner: too much image): content-first with a
+  side thumbnail; the full-width hero lives on story pages only.
+
+---
+
 ## 2026-07-06 — Editorial doctrine (owner directive, after platform audit)
 
 ### D-025: Curate for the voting booth; rewrite for the kitchen table
