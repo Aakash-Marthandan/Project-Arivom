@@ -5,6 +5,50 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-06 — Editorial doctrine (owner directive, after platform audit)
+
+### D-025: Curate for the voting booth; rewrite for the kitchen table
+The audit (session artifact, 2026-07-06) measured ~40-45% of a random feed
+sample as non-civic noise (celebrity, cricket, astrology, viral items) and
+headlines displayed in the outlets' sensational voice. Owner directive:
+raise the editorial standard. Resolution, carefully scoped against
+pillar 2 (curation is subject-based selection with published criteria;
+never actor-based tilt; "editorializing" in the forbidden sense remains
+opinions/slant/labels, which stay banned):
+- **Civic classification** per item by the extraction stage:
+  `civic` (governance, courts, elections, public services, safety,
+  policy) / `adjacent` (economy, education, health, environment, weather,
+  infrastructure) / `soft` (entertainment, sports, astrology, celebrity,
+  viral, out-of-scope national masala). Feeds render civic + adjacent
+  only; `soft` stays in the database (registry/coverage analysis) but
+  never in product. Unclassified items still render until the backlog is
+  classified (no key yet) — honesty over emptiness.
+- **The Arivom headline.** Every displayed item gets clean bilingual
+  titles (`title_clean_en/ta`) written by the pipeline in our voice:
+  informative, calm, no exclamations, no teasers, no sensational
+  vocabulary, no unresolved pronouns; spot-checked by the same neutrality
+  test as summaries. The outlet's original headline stays one tap away on
+  the story page. This also delivers language purity: en mode renders our
+  English titles, ta mode our Tamil ones. Interim until classification
+  runs: feeds filter items to the mode's language.
+- **Selection criteria are actor-blind.** Within civic news nothing is
+  boosted or buried by party or person; the spot-check applies the same
+  test to our titles. Criteria get a public "How stories are chosen"
+  methodology section when classification goes live, plus an
+  excluded-count on /freshness.
+- **Ingest hygiene:** a section-URL blocklist (cinema, sports, astrology,
+  gallery, devotional, video etc.) drops the mechanically identifiable
+  ~15% at the poller, reported per outlet per run; existing
+  section-noise rows were deleted once (they were cached headlines, not
+  history). Low-civic-yield outlets (polimer-news, oneindia-tamil) stay
+  under watch in the registry after classification data lands.
+- **Coverage display loses its denominator** (owner: national outlets
+  will join the registry). Cards carry a sources-count pill; the dot-row
+  shows one dot per covering source; story pages keep covered /
+  not-covered lists which stay honest at any registry size.
+
+---
+
 ## 2026-07-06 — M7.5 polish round: Ground-style stories
 
 ### D-024: Story images, dedicated story pages, per-outlet coverage notes

@@ -41,6 +41,17 @@ ATOM = "{http://www.w3.org/2005/Atom}"
 # Query parameters that identify campaigns/visitors, not content.
 TRACKING_PARAMS = re.compile(r"^(utm_|fbclid$|gclid$|igshid$|mc_cid$|mc_eid$|ref$)")
 
+# D-025 ingest hygiene: URL sections that are never civic news. This is the
+# mechanical first pass (subject-based, actor-blind); the extraction stage's
+# civic classification covers what hides under generic /news/ paths.
+NON_CIVIC_SECTIONS = re.compile(
+    r"/(cinema|movies?|entertainment|astrology|astro|horoscope|panchangam|"
+    r"sports?|cricket|ipl|lifestyle|fashion|recipes?|gallery|photos?|"
+    r"photo-gallery|viral|web-stories|ampstories|videos?|spiritualit?y|"
+    r"devotional|temple|rasi-palan)[-/.]",
+    re.IGNORECASE,
+)
+
 # Newspaper spellings that differ from our LGD/DB district names.
 # Matching aid only — never displayed, never stored.
 EN_DISTRICT_ALIASES = {
@@ -276,6 +287,9 @@ def main() -> None:
             url = canonical_url(item["url"])
             if prefixes and not any(url.startswith(p) for p in prefixes):
                 entry["skipped_scope"] += 1
+                continue
+            if NON_CIVIC_SECTIONS.search(url):
+                entry["skipped_section"] = entry.get("skipped_section", 0) + 1
                 continue
             entry["items"] += 1
             locality_id = tagger.tag(item["title"])

@@ -140,11 +140,15 @@ EXTRACT_SCHEMA = obj_schema(
         "organizations": arr({"type": "string"}),
         "gist_en": {"type": "string"},
         "department": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+        "civic_class": {"type": "string", "enum": ["civic", "adjacent", "soft"]},
+        "title_clean_en": {"type": "string"},
+        "title_clean_ta": {"type": "string"},
     }
 )
 
-EXTRACT_SYSTEM = """You extract entities from Tamil Nadu news items for a civic data platform.
-Given a headline (Tamil or English) and possibly an article excerpt, return:
+EXTRACT_SYSTEM = """You process Tamil Nadu news items for Arivom, a civic information platform
+whose mission is an informed electorate. Given a headline (Tamil or English)
+and possibly an article excerpt, return:
 - persons: full names of people mentioned (as written, do not translate or transliterate).
 - places: cities, towns, districts, localities mentioned (as written).
 - organizations: parties, government bodies, companies, institutions (as written).
@@ -152,7 +156,20 @@ Given a headline (Tamil or English) and possibly an article excerpt, return:
 - department: the ONE Tamil Nadu government department the story chiefly concerns,
   named in English (for example "School Education", "Highways", "Health",
   "Municipal Administration"), or null when no department clearly applies.
-Be precise; include only entities actually present. The gist must be neutral and factual."""
+- civic_class (D-025, judge the SUBJECT of the story, never who it favours):
+  "civic" = governance, courts, elections, legislature, public services,
+  public safety, policy, corruption or accountability matters.
+  "adjacent" = economy, employment, education, health, environment, weather,
+  infrastructure, prices that affect households.
+  "soft" = entertainment, celebrity, sports, astrology or devotion, viral or
+  voyeuristic items, and stories with no Tamil Nadu civic relevance.
+- title_clean_en and title_clean_ta: the same story retold as ONE calm,
+  informative headline in each language, in Arivom's voice: state what
+  happened; no exclamation marks, no teasers or cliffhangers, no
+  sensational words (no அதிர்ச்சி/பகீர்/shocking/slams), no unresolved
+  pronouns, no ALL CAPS, under 90 characters. Tamil: warm formal register,
+  simple words. Do not add facts that are not in the material.
+Be precise; the gist and titles must be neutral and factual."""
 
 
 def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, Any]) -> None:
@@ -209,16 +226,32 @@ def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, A
             # (D-019: source-verbatim names differ per locale).
             "department": result["department"],
         }
+        # Arivom-voice titles (D-025): accept only when the language is
+        # genuinely right; a NULL falls back to the original headline in
+        # the UI rather than showing a bad rewrite.
+        title_en = result["title_clean_en"].strip()
+        title_ta = result["title_clean_ta"].strip()
+        if not title_en or has_tamil(title_en):
+            title_en = None
+        if not has_tamil(title_ta):
+            title_ta = None
         db.conn.execute(
             """
             UPDATE news_items
             SET entities = %s, fetch_status = %s,
-                image_url = COALESCE(image_url, %s)
+                image_url = COALESCE(image_url, %s),
+                civic_class = %s,
+                title_clean_en = %s, title_clean_ta = %s
             WHERE id = %s
             """,
-            (json.dumps(entities, ensure_ascii=False), fetch_status, og_image, item_id),
+            (
+                json.dumps(entities, ensure_ascii=False), fetch_status, og_image,
+                result["civic_class"], title_en, title_ta, item_id,
+            ),
         )
         report["extracted"] += 1
+        if result["civic_class"] == "soft":
+            report["classified_soft"] = report.get("classified_soft", 0) + 1
         if fetch_status != "fetched":
             report["fetch_failed"] += 1
 
