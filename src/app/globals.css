@@ -78,6 +78,75 @@
   --radius: 0.5rem;
 }
 
+/*
+ * M7.5 app-grade layer (D-023): motion, press states, skeletons, the
+ * coverage dot-row, and the mobile tab bar. All motion is transform or
+ * opacity only (performance pillar) and honors reduced-motion.
+ */
+:root {
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.25, 1.1);
+  --tabbar-h: 3.6rem;
+}
+
+.press {
+  transition: transform 120ms var(--ease-spring);
+}
+.press:active {
+  transform: scale(0.98);
+}
+
+.skeleton {
+  color: transparent !important;
+  border-color: transparent !important;
+  user-select: none;
+  background: linear-gradient(
+    100deg,
+    var(--muted) 40%,
+    var(--card) 50%,
+    var(--muted) 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: var(--radius-md);
+}
+.skeleton * {
+  visibility: hidden;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Page-to-page morphing where the browser supports it; free elsewhere. */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .press {
+    transition: none;
+  }
+  .skeleton {
+    animation: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Content breathing room above the mobile tab bar (PWA safe area aware). */
+@media (max-width: 767px) {
+  body.has-tabbar main {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 0.5rem);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

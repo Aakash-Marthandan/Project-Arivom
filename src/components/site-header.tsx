@@ -37,9 +37,10 @@ export async function SiteHeader() {
           />
         </Suspense>
       </div>
+      {/* Desktop nav; on mobile the bottom tab bar carries the IA (D-023). */}
       <nav
         aria-label={t("nav.home")}
-        className="mx-auto w-full max-w-5xl overflow-x-auto px-4"
+        className="mx-auto hidden w-full max-w-5xl overflow-x-auto px-4 md:block"
       >
         <ul className="flex gap-6 pb-2 text-sm font-medium">
           {nav.map((item) => (

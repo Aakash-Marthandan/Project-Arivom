@@ -10,7 +10,9 @@
       "news": "News",
       "vacancies": "Vacancies",
       "methodology": "Methodology",
-      "freshness": "Data status"
+      "freshness": "Data status",
+      "search": "Search",
+      "more": "More"
     },
     "localeSwitcher": {
       "label": "Change language",
@@ -53,6 +55,22 @@
       "title": "What is available now?",
       "body": "Arivom is just taking shape. Basic details for every constituency are available today. Coming in the next stages: your representatives, vacancies and by-election status, your district's news, and education and health indicators.",
       "note": "You can always see when each dataset was last updated on the <link>data status</link> page."
+    },
+    "feed": {
+      "onboardTitle": "Who represents you?",
+      "onboardSub": "Add your places once. Your civic feed starts there. Saved on this device only, no account needed.",
+      "browse": "Browse constituencies",
+      "statewide": "Across Tamil Nadu",
+      "districtSection": "{district} district",
+      "myMla": "Your MLA",
+      "myMp": "Your MP",
+      "seatVacant": "This seat is vacant",
+      "vacantCta": "By-election tracker",
+      "showMore": "More",
+      "caughtUp": "You're caught up.",
+      "lastChecked": "News checked {time}",
+      "manageHint": "Manage your places in the More tab.",
+      "quiet": "No recent stories for this district. Statewide news is below."
     }
   },
   "locate": {
@@ -191,7 +209,11 @@
       "title": "Contact details",
       "pending": "Officially published contact details (office address, phone, email) are not connected yet. They will appear here once the official assembly and parliament directories are available.",
       "policy": "We show only officially published contact channels. We never publish personal numbers."
-    }
+    },
+    "addPlace": "Add to my places",
+    "removePlace": "In my places · Remove",
+    "placesFull": "Your places list is full (5). Remove one in More.",
+    "inTheNews": "In the news"
   },
   "provenance": {
     "chipLabel": "Source",
@@ -319,6 +341,19 @@
       "news7-tamil": "News7 Tamil",
       "oneindia-tamil": "Oneindia Tamil"
     },
-    "summaryLabel": "Summary"
+    "summaryLabel": "Summary",
+    "moreNews": "More news"
+  },
+  "more": {
+    "title": "More",
+    "placesTitle": "My places",
+    "noPlaces": "No places added yet. Find your constituency to start your feed.",
+    "remove": "Remove",
+    "locateCta": "Find my constituency",
+    "aboutLink": "About Arivom",
+    "sections": {
+      "explore": "Explore",
+      "trust": "Trust and method"
+    }
   }
 }

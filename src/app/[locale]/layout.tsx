@@ -6,6 +6,8 @@ import { Catamaran, Noto_Sans_Tamil } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { SwRegister } from "@/components/sw-register";
+import { TabBar } from "@/components/tab-bar";
 import "../globals.css";
 
 const bodyFont = Noto_Sans_Tamil({
@@ -38,6 +40,10 @@ export async function generateMetadata({
   };
 }
 
+export const viewport = {
+  themeColor: "#16646e",
+};
+
 export default async function LocaleLayout({
   children,
   params,
@@ -49,10 +55,17 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const t = await getTranslations("common");
+  const tabs = [
+    { href: "/" as const, label: t("nav.home") },
+    { href: "/news" as const, label: t("nav.news") },
+    { href: "/constituencies" as const, label: t("nav.search") },
+    { href: "/government" as const, label: t("nav.government") },
+    { href: "/more" as const, label: t("nav.more") },
+  ];
 
   return (
     <html lang={locale} className={`${bodyFont.variable} ${displayFont.variable}`}>
-      <body className="flex min-h-svh flex-col">
+      <body className="has-tabbar flex min-h-svh flex-col">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -67,7 +80,9 @@ export default async function LocaleLayout({
             {children}
           </main>
           <SiteFooter />
+          <TabBar items={tabs} />
         </NextIntlClientProvider>
+        <SwRegister />
       </body>
     </html>
   );
