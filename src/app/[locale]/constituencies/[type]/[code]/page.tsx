@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PlaceToggle } from "@/components/place-toggle";
+import { buildNewsStrings } from "@/components/news-feed";
+import { ClusterStoryCard, ItemStoryCard } from "@/components/story-card";
 import {
   ProvenanceChip,
   type ProvenanceEntry,
@@ -21,8 +24,12 @@ import {
   getAssemblySegments,
   getConstituency,
   getLocalityFacts,
+  getNewsClusters,
   getPersonFacts,
+  getPersonNewsItems,
   getRepresentatives,
+  getTrackedOutlets,
+  getUnclusteredItems,
   type ConstituencyLevel,
 } from "@/lib/queries";
 
@@ -76,7 +83,26 @@ export default async function ConstituencyPage({
       getRepresentatives(c.id),
     ]);
   const rep = representatives[0] ?? null;
-  const repFacts = rep ? await getPersonFacts(rep.person_id) : [];
+  // News woven into the page (M7.5, D-023): the district's stories plus
+  // stories that mention this seat's representatives by name.
+  const [repFacts, newsClusters, districtItems, personItems, trackedOutlets, newsStrings] =
+    await Promise.all([
+      rep ? getPersonFacts(rep.person_id) : Promise.resolve([]),
+      c.district_id ? getNewsClusters(c.district_id, 2) : Promise.resolve([]),
+      c.district_id
+        ? getUnclusteredItems(c.district_id, 4, 7)
+        : Promise.resolve([]),
+      getPersonNewsItems(
+        representatives.map((r) => r.person_id),
+        4,
+      ),
+      getTrackedOutlets(),
+      buildNewsStrings(),
+    ]);
+  const districtItemIds = new Set(districtItems.map((i) => i.id));
+  const extraPersonItems = personItems.filter((i) => !districtItemIds.has(i.id));
+  const hasNews =
+    newsClusters.length + districtItems.length + extraPersonItems.length > 0;
 
   // Self-declared affidavit facts (M4/M5.5). Keys mirror the importer.
   const affidavitFacts = {
@@ -246,6 +272,18 @@ export default async function ConstituencyPage({
           {reservedStatus ? (
             <Badge variant="outline">{t("reserved", { status: reservedStatus })}</Badge>
           ) : null}
+        </div>
+        {/* My-places toggle (M7.5, D-023): the home feed starts here. */}
+        <div className="mt-4">
+          <PlaceToggle
+            level={c.level}
+            code={c.eci_code}
+            labels={{
+              add: t("addPlace"),
+              remove: t("removePlace"),
+              full: t("placesFull"),
+            }}
+          />
         </div>
       </header>
 
@@ -696,6 +734,62 @@ export default async function ConstituencyPage({
               {t("result.figuresNote")}
             </p>
           ) : null}
+        </section>
+      ) : null}
+
+      {hasNews ? (
+        <section aria-labelledby="news-title" className="mt-10">
+          <div className="flex items-baseline justify-between gap-2">
+            <h2 id="news-title" className="font-heading text-xl font-bold">
+              {t("inTheNews")}
+            </h2>
+            {c.district_lgd ? (
+              <Link
+                href={`/news/d/${c.district_lgd}`}
+                className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              >
+                {tn("moreNews")} →
+              </Link>
+            ) : null}
+          </div>
+          <div className="mt-4 max-w-2xl space-y-2.5">
+            {newsClusters.map((cluster) => (
+              <ClusterStoryCard
+                key={`c${cluster.id}`}
+                cluster={cluster}
+                totalOutlets={trackedOutlets.length}
+                locale={locale}
+                href={c.district_lgd ? `/news/d/${c.district_lgd}` : "/news"}
+                timeLabel={
+                  cluster.event_time
+                    ? format.relativeTime(new Date(cluster.event_time))
+                    : null
+                }
+                s={{
+                  singleSource: newsStrings.singleSource,
+                  coverageLabel: newsStrings.coverage,
+                  outletName: newsStrings.outletName,
+                }}
+              />
+            ))}
+            {[...districtItems, ...extraPersonItems].slice(0, 5).map((item) => (
+              <ItemStoryCard
+                key={`i${item.id}`}
+                item={item}
+                totalOutlets={trackedOutlets.length}
+                timeLabel={
+                  item.published_at
+                    ? format.relativeTime(item.published_at)
+                    : null
+                }
+                s={{
+                  singleSource: newsStrings.singleSource,
+                  coverageLabel: newsStrings.coverage,
+                  outletName: newsStrings.outletName,
+                }}
+              />
+            ))}
+          </div>
         </section>
       ) : null}
 

@@ -403,6 +403,7 @@ export async function getNewsClusters(
 export async function getUnclusteredItems(
   districtId?: number,
   limit = 30,
+  days = 3,
 ): Promise<NewsSingleItem[]> {
   return sql<NewsSingleItem[]>`
     SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
@@ -414,8 +415,90 @@ export async function getUnclusteredItems(
     WHERE NOT EXISTS (
       SELECT 1 FROM cluster_coverage cc WHERE cc.news_item_id = i.id
     )
-    AND i.published_at > now() - interval '3 days'
+    AND i.published_at > now() - make_interval(days => ${days})
     ${districtId ? sql`AND i.locality_id = ${districtId}` : sql``}
+    ORDER BY i.published_at DESC
+    LIMIT ${limit}
+  `;
+}
+
+export interface PlaceCard {
+  id: number;
+  eci_code: string;
+  level: ConstituencyLevel;
+  name_en: string;
+  name_ta: string;
+  district_id: number | null;
+  district_en: string | null;
+  district_ta: string | null;
+  district_lgd: string | null;
+  rep_en: string | null;
+  rep_ta: string | null;
+  party_en: string | null;
+  party_ta: string | null;
+}
+
+/** The home feed's per-place strip: constituency, district, current rep. */
+export async function getPlaceCards(
+  places: { level: string; code: string }[],
+): Promise<PlaceCard[]> {
+  if (places.length === 0) return [];
+  const keys = places.map((p) => `${p.level}:${p.code}`);
+  const rows = await sql<PlaceCard[]>`
+    SELECT l.id, l.eci_code, l.level::text AS level, l.name_en, l.name_ta,
+           d.id AS district_id, d.name_en AS district_en,
+           d.name_ta AS district_ta, d.lgd_code AS district_lgd,
+           p.name_en AS rep_en, p.name_ta AS rep_ta,
+           p.party_en, p.party_ta
+    FROM localities l
+    LEFT JOIN localities d ON d.id = l.district_id
+    LEFT JOIN offices o ON o.locality_id = l.id
+      AND ((l.level = 'ac' AND o.office_type = 'mla')
+        OR (l.level = 'pc' AND o.office_type = 'mp_ls'))
+    LEFT JOIN tenures t ON t.office_id = o.id
+      AND t.end_date IS NULL AND t.status = 'active'
+    LEFT JOIN persons p ON p.id = t.person_id
+    WHERE l.level::text || ':' || l.eci_code = ANY(${keys})
+  `;
+  // Preserve the user's ordering.
+  const byKey = new Map(rows.map((r) => [`${r.level}:${r.eci_code}`, r]));
+  return keys
+    .map((k) => byKey.get(k))
+    .filter((r): r is PlaceCard => r !== undefined);
+}
+
+/** When the news poller last completed (null before its first run). */
+export async function getNewsLastChecked(): Promise<Date | null> {
+  const rows = await sql<{ retrieved_at: Date }[]>`
+    SELECT retrieved_at FROM facts
+    WHERE key = 'news_poll_run'
+    ORDER BY retrieved_at DESC LIMIT 1
+  `;
+  return rows[0]?.retrieved_at ?? null;
+}
+
+/**
+ * Items whose extracted entities mention any of these persons (M7.5).
+ * Empty until the clustering pipeline's extraction stage has run.
+ */
+export async function getPersonNewsItems(
+  personIds: number[],
+  limit = 5,
+): Promise<NewsSingleItem[]> {
+  if (personIds.length === 0) return [];
+  return sql<NewsSingleItem[]>`
+    SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
+           i.published_at, i.retrieved_at,
+           d.name_en AS district_en, d.name_ta AS district_ta,
+           d.lgd_code AS district_lgd
+    FROM news_items i
+    LEFT JOIN localities d ON d.id = i.locality_id
+    WHERE i.entities IS NOT NULL
+      AND EXISTS (
+        SELECT 1 FROM jsonb_array_elements(i.entities -> 'persons') AS p
+        WHERE (p ->> 'person_id')::bigint = ANY(${personIds})
+      )
+      AND i.published_at > now() - interval '14 days'
     ORDER BY i.published_at DESC
     LIMIT ${limit}
   `;

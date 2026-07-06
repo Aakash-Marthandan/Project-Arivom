@@ -142,5 +142,7 @@ and TN-government-site access arrive when the owner relocates to India
 
 ## Do NOT build (any phase, without explicit user instruction)
 
-Native app · free-text comments · outlet bias labels · composite locality scores ·
-anonymous write paths · user media uploads.
+Native app (PWA is approved and built per D-023; a store-wrapped native
+app stays gated on an explicit v0.5 evaluation) · free-text comments ·
+outlet bias labels · composite locality scores · anonymous write paths ·
+user media uploads.

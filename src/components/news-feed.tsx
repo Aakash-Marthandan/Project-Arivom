@@ -1,9 +1,11 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
+import { CoverageDots } from "@/components/coverage-dots";
 import {
   ProvenanceChip,
   type ProvenanceEntry,
 } from "@/components/provenance-chip";
+import { ItemStoryCard } from "@/components/story-card";
 import type { NewsCluster, NewsSingleItem } from "@/lib/queries";
 
 const KNOWN_OUTLETS = [
@@ -231,8 +233,15 @@ function ClusterCard({
       )}
 
       <details className="mt-3">
-        <summary className="cursor-pointer text-sm font-medium text-primary">
-          {s.coverage(covered.size, trackedOutlets.length)}
+        <summary className="press flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
+          <CoverageDots
+            covered={covered.size}
+            total={trackedOutlets.length}
+            label={s.coverage(covered.size, trackedOutlets.length)}
+          />
+          <span className="underline-offset-4 hover:underline">
+            {s.coverage(covered.size, trackedOutlets.length)}
+          </span>
         </summary>
         <div className="mt-2 grid gap-4 text-sm sm:grid-cols-2">
           <div>
@@ -275,32 +284,29 @@ function ClusterCard({
 
 function ItemCard({
   item,
+  totalOutlets,
   format,
   s,
 }: {
   item: NewsSingleItem;
+  totalOutlets: number;
   format: Formatter;
   s: NewsStrings;
 }) {
   return (
-    <li className="rounded-lg border border-border bg-card/50 p-4">
-      <a
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-medium underline-offset-4 hover:underline"
-        lang={item.lang}
-      >
-        {item.headline} ↗
-      </a>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {s.outletName(item.outlet)}
-        {item.published_at ? (
-          <> · {format.dateTime(item.published_at, { dateStyle: "medium" })}</>
-        ) : null}
-        {" · "}
-        {s.singleSource}
-      </p>
+    <li>
+      <ItemStoryCard
+        item={item}
+        totalOutlets={totalOutlets}
+        timeLabel={
+          item.published_at ? format.relativeTime(item.published_at) : null
+        }
+        s={{
+          singleSource: s.singleSource,
+          coverageLabel: s.coverage,
+          outletName: s.outletName,
+        }}
+      />
     </li>
   );
 }
@@ -334,7 +340,13 @@ export function NewsFeed({
             s={strings}
           />
         ) : (
-          <ItemCard key={`i${entry.item.id}`} item={entry.item} format={format} s={strings} />
+          <ItemCard
+            key={`i${entry.item.id}`}
+            item={entry.item}
+            totalOutlets={trackedOutlets.length}
+            format={format}
+            s={strings}
+          />
         ),
       )}
     </ul>

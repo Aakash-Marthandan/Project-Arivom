@@ -120,6 +120,24 @@ hourly key-gated cron. **Blocked on:** owner's ANTHROPIC_API_KEY (local +
 GH secret). Exit criteria (live clustered events with checked bilingual
 summaries) verified once the key lands and the first runs complete.
 
+### M7.5 — The app experience (owner-directed) — `built, in owner review` (2026-07-06)
+Owner direction after reviewing M6/M7 surfaces: Arivom must feel like an
+app, not a website with tabs (D-023; design artifact in session). Scope:
+design system v2 (motion, press states, skeletons, coverage dot-row,
+kolam accents) on the existing editorial-paper identity; mobile bottom
+tab bar + refined desktop header; installable PWA (manifest, icons,
+offline shell) — native wrapper deferred to a v0.5 decision; home becomes
+a news-first feed sectioned by the user's geographies (added
+constituencies → districts → statewide; wider sectors reserved for the
+beyond-TN future), device-remembered places, explicit end-of-feed; news
+woven into constituency, person, and department surfaces (department
+tagging added to extraction); /news redesigned as the card feed. Built
+against already-ingested M6 news; clustering surfaces light up when the
+owner adds ANTHROPIC_API_KEY (M7 exit check runs then).
+- **Exit criteria:** owner signs off on the experience on a phone; feed
+  routes hold the performance budget; both locales at parity; no
+  engagement mechanics anywhere.
+
 ### M8 — Data indicators: education (UDISE+) — `planned`
 - UDISE+ ingest (district aggregation, TN codes 33xx) → `facts` with methodology
   metadata; label as voluntary self-reported data.

@@ -5,6 +5,45 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-05 — M7.5 owner decisions: the app experience
+
+### D-023: News-first home, geography scopes, PWA-now, build-before-key
+Owner review of the M6/M7 surfaces ("clean but bare-bones; news feels like
+a tab, not baked in") produced a design direction (see the session's design
+artifact) and four decisions:
+- **News IS the home.** The home page becomes a personalized feed of news
+  sectioned by the user's geographies: their added constituencies (plural,
+  device-remembered, no account), those constituencies' districts, and
+  Tamil Nadu statewide. Each sector shows a LIMITED number of stories with
+  a "show more" into that scope's full feed; the feed has an explicit end
+  ("you're caught up"). No doomscroll mechanics, ever (D-021). The
+  geography-scope model is built to admit wider sectors later (regions,
+  South India, pan-India) — the owner intends to expand beyond Tamil Nadu
+  in the future, always from a Tamil citizen's central perspective; no
+  non-TN ingestion is built until that milestone exists.
+- **Packaging: PWA now, native evaluated at v0.5.** Installable PWA
+  (manifest, offline shell, standalone display) ships now; a store-wrapped
+  native app stays on the do-not-build list until an explicit v0.5
+  evaluation alongside accounts (M9). This amends the CLAUDE.md
+  do-not-build entry from "Native app" to "Native app (PWA allowed as of
+  D-023; native gated on v0.5 evaluation)".
+- **Sequence: experience first, key later.** The owner wants to feel the
+  app on the news already ingested (M6 items) BEFORE providing the
+  ANTHROPIC_API_KEY; clustering then lights up cluster cards, summaries,
+  and coverage dots on surfaces that already render honestly with
+  single-source items. Nothing may fabricate clusters or stats in the
+  meantime; empty/singleton states are the design.
+- **Visual identity: deepen, don't replace.** The party-neutral
+  "editorial paper + peacock" palette and Catamaran/Noto Sans Tamil stack
+  stay; M7.5 takes them to app-grade: motion tokens (transform/opacity
+  only, reduced-motion honored), press states, skeleton loading, the
+  coverage dot-row as the signature transparency visual, kolam-dot
+  accents, bottom tab bar on mobile, View Transitions where supported.
+  Client JS budget on feed routes: under ~40KB gzipped; fonts stay
+  self-hosted/subset via next/font.
+
+---
+
 ## 2026-07-05 — M7 decisions
 
 ### D-022: News clustering — owner-approved LLM setup and posture

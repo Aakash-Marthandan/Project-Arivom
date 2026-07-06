@@ -139,6 +139,7 @@ EXTRACT_SCHEMA = obj_schema(
         "places": arr({"type": "string"}),
         "organizations": arr({"type": "string"}),
         "gist_en": {"type": "string"},
+        "department": {"anyOf": [{"type": "string"}, {"type": "null"}]},
     }
 )
 
@@ -148,6 +149,9 @@ Given a headline (Tamil or English) and possibly an article excerpt, return:
 - places: cities, towns, districts, localities mentioned (as written).
 - organizations: parties, government bodies, companies, institutions (as written).
 - gist_en: what specifically happened, in your OWN words, in English, at most 15 words.
+- department: the ONE Tamil Nadu government department the story chiefly concerns,
+  named in English (for example "School Education", "Highways", "Health",
+  "Municipal Administration"), or null when no department clearly applies.
 Be precise; include only entities actually present. The gist must be neutral and factual."""
 
 
@@ -201,6 +205,9 @@ def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, A
             "orgs": result["organizations"],
             "district_ids": sorted(district_ids),
             "gist": result["gist_en"][:200],
+            # Loose-matched to /government department cards at display time
+            # (D-019: source-verbatim names differ per locale).
+            "department": result["department"],
         }
         db.conn.execute(
             "UPDATE news_items SET entities = %s, fetch_status = %s WHERE id = %s",
