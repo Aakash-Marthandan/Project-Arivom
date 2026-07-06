@@ -70,28 +70,55 @@ no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
 - News aggregation policy (hard): headlines + links + own-words neutral summaries
   only — never store or republish full article text.
 
-## Current status (as of 2026-07-05)
+## Current status (handoff, as of 2026-07-06)
 
-v0 milestones M1–M6 are `done` plus an owner-requested spine-completion pass
-(see docs/PLAN.md for detail, docs/DECISIONS.md D-001…D-022 for every resolved
-decision; D-021 records the owner's north star: an informed electorate).
-Live: constituency pages with representatives, self-declared
-affidavit profiles, election results; /locate (point-in-polygon); /vacancies
-tracker (7 vacant seats, daily monitor cron); /government (department-first
-cards with anchor ids, built as future click-targets for department-tagged
-news); news ingestion (11-outlet §4E registry, poll-news 30-min cron,
-headline+link only, conservative district tagging — D-020); /methodology and
-live /freshness (now including per-outlet news freshness). **M7 news
-clustering is built** (cluster-news pipeline, /news and /news/d/[lgd] feeds,
-story pages /news/s/[id] with per-outlet coverage notes, D-022/D-024)
-**and awaits the owner's ANTHROPIC_API_KEY** (.env.local + GH Actions
-secret) for the live run and exit-criteria check; the hourly cron skips
-politely until the secret exists. **D-025 editorial doctrine** (post-audit
-owner directive): pipeline classifies items civic/adjacent/soft and writes
-Arivom-voice bilingual titles; feeds are language-pure per locale, show
-civic+adjacent only once classified, and never a coverage denominator;
-section-noise is blocked at ingest. Production = Supabase (Mumbai),
-repo = github.com/Aakash-Marthandan/Project-Arivom, CI green.
+M1–M6 `done`; M7 fully built and **deliberately dark**; M7.5 app-experience
+rounds shipped (D-023…D-026). Every decision is in docs/DECISIONS.md
+(D-001…D-026); D-021 is the north star (informed electorate).
+
+**The one gate: ANTHROPIC_API_KEY.** Owner will provide it when the app is
+near-complete so API testing happens once, efficiently — do not ask for it
+early. Until then the hourly cluster-news cron skips politely, and every
+LLM-dependent surface renders an honest interim (language-filtered original
+headlines, no clusters/markers/brief). Built-and-waiting on the key:
+clustering, checked bilingual summaries (short+long), per-outlet coverage
+notes, civic/adjacent/soft classification, Arivom-voice titles,
+civic-priority + sources-differ markers, department tagging, story pages'
+full depth, the daily brief, entity-matched person news.
+
+**Live today** (all CI-gated, prod schema current): the civic spine
+(constituencies, representatives, affidavits, /locate, /vacancies,
+/government); the app experience — PWA shell with bottom tabs, news-first
+home sectioned by device-remembered places (my-places + person follows,
+cookies, no accounts), content-first story cards with hotlinked outlet
+images (D-024: linked, never copied), /news + /news/d/[lgd] +
+/news/s/[id], search across constituencies/people/stories, /more, /about;
+ingest hygiene (D-025 section blocklist at the poller); Lighthouse CI
+floors (perf ≥0.80 median-of-3 on CI hardware, a11y ≥0.95; local measures
+0.89–0.93) and a Monday editorial-QA sample workflow.
+
+**Key-day runbook** (when the owner hands over the key):
+1. Add `ANTHROPIC_API_KEY=` to `.env.local` AND as a GitHub Actions secret.
+2. `cd pipelines && DATABASE_URL=postgresql://localhost/arivom uv run
+   cluster-news` — first run processes the extraction backlog in capped
+   batches (300 extract / 250 confirm / 40 summaries per run; rerun until
+   backlog clears; all calls disk-cached under `.cache/llm/`).
+3. Verify in browser (both locales): clustered story cards with markers,
+   /news/s/[id] summaries + coverage notes + timeline + in-numbers, home
+   brief + MLA-mentions, feeds now civic+adjacent-only with Arivom titles.
+4. Run against prod (`DATABASE_URL="$SUPABASE_DB_URL"`), confirm the
+   hourly cron goes from skip to live.
+5. Close M7 exit criteria in docs/PLAN.md; write the promised
+   "How stories are chosen" methodology section (D-025/D-026 rubrics) and
+   surface an excluded-items count on /freshness.
+6. Watch cost + spot-check quality via the qa-sample output; escalate the
+   summary-draft model only if the spot-check failure rate is high (D-022).
+
+**Product backlog next** (beyond the roadmap milestones): department feeds
+UI behind /government cards (data arrives with the key); image-proxy
+decision to right-size thumbnails (the M11 perf lever; hotlink policy in
+D-024); dark mode ("paper at night"); PWA push for by-election alerts
+(pairs with M9 accounts). Then M8 (UDISE education indicators) per PLAN.
 
 Known pending (all reported by importer runs, never hidden): 26 MLA + 3 MP
 affidavits awaiting ADR analysis; representative contacts awaiting official
@@ -118,9 +145,11 @@ and TN-government-site access arrive when the owner relocates to India
   `import-representatives` → `import-affidavits` → `import-vacancies` →
   `import-ministers`. Order-independent: `monitor-vacancies` (detection-only,
   daily GH Actions cron), `poll-news` (outlet registry → news_items,
-  30-min cron; registry in `pipelines/data/outlets.json`), and
-  `cluster-news` (clusters + checked bilingual summaries, hourly cron;
-  the only LLM pipeline — needs `ANTHROPIC_API_KEY`, D-022). Lint:
+  30-min cron; registry in `pipelines/data/outlets.json`),
+  `cluster-news` (clusters + checked bilingual summaries + classification
+  + Arivom titles, hourly cron; the only LLM pipeline — needs
+  `ANTHROPIC_API_KEY`, D-022/D-025/D-026), and `qa-sample` (weekly
+  editorial QA print for human review). Lint:
   `uv run ruff check .`. All importers are idempotent and print
   audit/pending reports; read them.
 - **Production deploys:** `SUPABASE_DB_URL` in `.env.local` is the Mumbai

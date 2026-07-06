@@ -47,7 +47,8 @@ Independent of the order above (each needs only the localities spine):
 ```sh
 uv run monitor-vacancies       # detection-only; daily GitHub Actions cron
 uv run poll-news               # outlet registry → news_items; 30-min cron
-uv run cluster-news            # cluster + summarize; hourly cron; needs ANTHROPIC_API_KEY
+uv run cluster-news            # classify + cluster + summarize; hourly cron; needs ANTHROPIC_API_KEY
+uv run qa-sample               # weekly editorial QA print for a human read
 ```
 
 poll-news ingests headline + link + feed metadata only — the parser never
