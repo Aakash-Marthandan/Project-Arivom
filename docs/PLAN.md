@@ -126,6 +126,13 @@ kolam fallback, source-count pill, summary preview), dedicated story pages
 (/news/s/[id]) with long checked summaries, per-outlet coverage notes
 (content-descriptive only), share, and view-transition morphs. Pipeline
 extended to draft + spot-check the long summaries and notes.
+Markers-and-depth round (D-026): civic-priority and sources-differ
+markers (facts, never scores); content-first cards v3; story-page
+coverage timeline, in-numbers blocks, report-an-issue; person follows
+with a home sector; search across constituencies, people and stories;
+deterministic daily brief on home; Lighthouse CI floors (perf 0.85 hard /
+0.90 target at M11, a11y 0.95) and a weekly editorial QA sample
+workflow.
 Owner direction after reviewing M6/M7 surfaces: Arivom must feel like an
 app, not a website with tabs (D-023; design artifact in session). Scope:
 design system v2 (motion, press states, skeletons, coverage dot-row,

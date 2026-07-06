@@ -48,6 +48,10 @@ jobs:
       - run: npm run typecheck
       # Builds against the empty migrated DB: also exercises empty states.
       - run: npm run build
+      # Performance pillar as a merge gate (D-026): Lighthouse mobile
+      # budgets on the two feed routes (Perf >= 90, A11y >= 95).
+      - name: Lighthouse budgets
+        run: npx --yes @lhci/cli@0.14.0 autorun
 
   pipelines:
     name: Pipelines lint

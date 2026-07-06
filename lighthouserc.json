@@ -1,0 +1,29 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:3000/ta",
+        "http://localhost:3000/ta/news"
+      ],
+      "startServerCommand": "npm run start",
+      "startServerReadyPattern": "Ready",
+      "numberOfRuns": 1
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": [
+          "error",
+          {
+            "minScore": 0.85
+          }
+        ],
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ]
+      }
+    }
+  }
+}
