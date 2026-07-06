@@ -1,35 +1,35 @@
 /**
- * The coverage dot-row: Arivom's signature transparency visual (D-023).
- * One dot per tracked outlet; filled = that outlet covered the story.
- * Pure presentation — says which, never why, no bias labels (pillar 2).
+ * Source dots (D-025): one dot per outlet that covered the story. No
+ * denominator — the registry will grow (national outlets to come), so a
+ * fraction would mislead. Which outlets, and which tracked outlets did
+ * not cover it, live on the story page. Never a rating (pillar 2).
  */
-export function CoverageDots({
-  covered,
-  total,
+const CAP = 12;
+
+export function SourceDots({
+  count,
   label,
 }: {
-  covered: number;
-  total: number;
+  count: number;
   label: string;
 }) {
+  const shown = Math.min(count, CAP);
   return (
     <span
       className="inline-flex items-center gap-[3px]"
       role="img"
       aria-label={label}
     >
-      {Array.from({ length: total }, (_, i) => (
+      {Array.from({ length: shown }, (_, i) => (
         <span
           key={i}
           aria-hidden="true"
-          className={`size-[7px] rounded-full ${
-            i < covered ? "bg-primary" : "bg-border"
-          }`}
+          className="size-[7px] rounded-full bg-primary"
         />
       ))}
-      <span className="ms-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
-        {covered}/{total}
-      </span>
+      {count > CAP ? (
+        <span className="text-[10px] font-bold text-primary">+{count - CAP}</span>
+      ) : null}
     </span>
   );
 }

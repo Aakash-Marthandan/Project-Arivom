@@ -28,7 +28,6 @@ import {
   getPersonFacts,
   getPersonNewsItems,
   getRepresentatives,
-  getTrackedOutlets,
   getUnclusteredItems,
   type ConstituencyLevel,
 } from "@/lib/queries";
@@ -85,18 +84,18 @@ export default async function ConstituencyPage({
   const rep = representatives[0] ?? null;
   // News woven into the page (M7.5, D-023): the district's stories plus
   // stories that mention this seat's representatives by name.
-  const [repFacts, newsClusters, districtItems, personItems, trackedOutlets, newsStrings] =
+  const newsLang = locale === "ta" ? ("ta" as const) : ("en" as const);
+  const [repFacts, newsClusters, districtItems, personItems, newsStrings] =
     await Promise.all([
       rep ? getPersonFacts(rep.person_id) : Promise.resolve([]),
       c.district_id ? getNewsClusters(c.district_id, 2) : Promise.resolve([]),
       c.district_id
-        ? getUnclusteredItems(c.district_id, 4, 7)
+        ? getUnclusteredItems(newsLang, c.district_id, 4, 7)
         : Promise.resolve([]),
       getPersonNewsItems(
         representatives.map((r) => r.person_id),
         4,
       ),
-      getTrackedOutlets(),
       buildNewsStrings(),
     ]);
   const districtItemIds = new Set(districtItems.map((i) => i.id));
@@ -757,7 +756,6 @@ export default async function ConstituencyPage({
               <ClusterStoryCard
                 key={`c${cluster.id}`}
                 cluster={cluster}
-                totalOutlets={trackedOutlets.length}
                 locale={locale}
                 timeLabel={
                   cluster.event_time
@@ -771,7 +769,7 @@ export default async function ConstituencyPage({
               <ItemStoryCard
                 key={`i${item.id}`}
                 item={item}
-                totalOutlets={trackedOutlets.length}
+                locale={locale}
                 timeLabel={
                   item.published_at
                     ? format.relativeTime(item.published_at)

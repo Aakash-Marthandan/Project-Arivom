@@ -82,11 +82,15 @@ cards with anchor ids, built as future click-targets for department-tagged
 news); news ingestion (11-outlet §4E registry, poll-news 30-min cron,
 headline+link only, conservative district tagging — D-020); /methodology and
 live /freshness (now including per-outlet news freshness). **M7 news
-clustering is built** (cluster-news pipeline, /news and /news/d/[lgd] feeds
-with coverage tables and locked-state UI, D-022) **and awaits the owner's
-ANTHROPIC_API_KEY** (.env.local + GH Actions secret) for the live run and
-exit-criteria check; the hourly cron skips politely until the secret
-exists. Production = Supabase (Mumbai),
+clustering is built** (cluster-news pipeline, /news and /news/d/[lgd] feeds,
+story pages /news/s/[id] with per-outlet coverage notes, D-022/D-024)
+**and awaits the owner's ANTHROPIC_API_KEY** (.env.local + GH Actions
+secret) for the live run and exit-criteria check; the hourly cron skips
+politely until the secret exists. **D-025 editorial doctrine** (post-audit
+owner directive): pipeline classifies items civic/adjacent/soft and writes
+Arivom-voice bilingual titles; feeds are language-pure per locale, show
+civic+adjacent only once classified, and never a coverage denominator;
+section-noise is blocked at ingest. Production = Supabase (Mumbai),
 repo = github.com/Aakash-Marthandan/Project-Arivom, CI green.
 
 Known pending (all reported by importer runs, never hidden): 26 MLA + 3 MP

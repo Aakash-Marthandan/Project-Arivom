@@ -10,7 +10,6 @@ import { buildNewsStrings, NewsFeed } from "@/components/news-feed";
 import {
   getDistrictByLgd,
   getNewsClusters,
-  getTrackedOutlets,
   getUnclusteredItems,
 } from "@/lib/queries";
 
@@ -37,21 +36,20 @@ export default async function DistrictNewsPage({
   const district = await getDistrictByLgd(lgd);
   if (!district) notFound();
 
-  const [t, format, strings, clusters, items, trackedOutlets] =
-    await Promise.all([
-      getTranslations("news"),
-      getFormatter(),
-      buildNewsStrings(),
-      getNewsClusters(district.id),
-      getUnclusteredItems(district.id),
-      getTrackedOutlets(),
-    ]);
+  const lang = locale === "ta" ? ("ta" as const) : ("en" as const);
+  const [t, format, strings, clusters, items] = await Promise.all([
+    getTranslations("news"),
+    getFormatter(),
+    buildNewsStrings(),
+    getNewsClusters(district.id),
+    getUnclusteredItems(lang, district.id),
+  ]);
   const districtName = locale === "ta" ? district.name_ta : district.name_en;
   const isEmpty = clusters.length === 0 && items.length === 0;
 
   // Empty district feeds fall back to the statewide feed (M7 exit criteria).
   const [fallbackClusters, fallbackItems] = isEmpty
-    ? await Promise.all([getNewsClusters(), getUnclusteredItems()])
+    ? await Promise.all([getNewsClusters(), getUnclusteredItems(lang)])
     : [[], []];
 
   return (
@@ -76,7 +74,6 @@ export default async function DistrictNewsPage({
           <NewsFeed
             clusters={fallbackClusters}
             items={fallbackItems}
-            trackedOutlets={trackedOutlets}
             locale={locale}
             format={format}
             strings={strings}
@@ -86,7 +83,6 @@ export default async function DistrictNewsPage({
         <NewsFeed
           clusters={clusters}
           items={items}
-          trackedOutlets={trackedOutlets}
           locale={locale}
           format={format}
           strings={strings}

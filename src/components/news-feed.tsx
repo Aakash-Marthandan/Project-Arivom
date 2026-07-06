@@ -31,11 +31,8 @@ const LOCK_CATEGORIES = ["communal", "sub_judice", "allegations"] as const;
 type Formatter = Awaited<ReturnType<typeof getFormatter>>;
 
 export interface NewsStrings extends StoryStrings {
-  coverage: (covered: number, total: number) => string;
   aiNote: string;
   summaryPending: string;
-  coveredList: string;
-  notCoveredList: string;
   locked: string;
   lockedReason: (category: string | null) => string;
   provenance: {
@@ -63,11 +60,7 @@ export async function buildNewsStrings(): Promise<NewsStrings> {
     singleSource: t("singleSource"),
     aiNote: t("aiNote"),
     summaryPending: t("summaryPending"),
-    coverage: (covered, total) => t("coverage", { covered, total }),
-    coverageLabel: (covered, total) => t("coverage", { covered, total }),
     sourcesCount: (count) => t("sourcesCount", { count }),
-    coveredList: t("coveredList"),
-    notCoveredList: t("notCoveredList"),
     locked: t("locked"),
     lockedReason: (category) => {
       const known = LOCK_CATEGORIES.find((c) => c === category);
@@ -119,14 +112,12 @@ export function interleave(
 export function NewsFeed({
   clusters,
   items,
-  trackedOutlets,
   locale,
   format,
   strings,
 }: {
   clusters: NewsCluster[];
   items: NewsSingleItem[];
-  trackedOutlets: string[];
   locale: string;
   format: Formatter;
   strings: NewsStrings;
@@ -139,7 +130,6 @@ export function NewsFeed({
           {entry.kind === "cluster" ? (
             <ClusterStoryCard
               cluster={entry.cluster}
-              totalOutlets={trackedOutlets.length}
               locale={locale}
               timeLabel={
                 entry.cluster.event_time
@@ -151,7 +141,7 @@ export function NewsFeed({
           ) : (
             <ItemStoryCard
               item={entry.item}
-              totalOutlets={trackedOutlets.length}
+              locale={locale}
               timeLabel={
                 entry.item.published_at
                   ? format.relativeTime(entry.item.published_at)

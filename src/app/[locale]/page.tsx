@@ -13,7 +13,6 @@ import {
   getNewsClusters,
   getNewsLastChecked,
   getPlaceCards,
-  getTrackedOutlets,
   getUnclusteredItems,
   getVacantSeats,
   type NewsCluster,
@@ -44,14 +43,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   setRequestLocale(locale);
   const isTa = locale === "ta";
 
+  const lang = locale === "ta" ? ("ta" as const) : ("en" as const);
   const places = await getMyPlaces();
-  const [t, tl, format, strings, trackedOutlets, lastChecked] =
+  const [t, tl, format, strings, lastChecked] =
     await Promise.all([
       getTranslations("home.feed"),
       getTranslations("locate"),
       getFormatter(),
       buildNewsStrings(),
-      getTrackedOutlets(),
       getNewsLastChecked(),
     ]);
 
@@ -74,7 +73,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       const sectorPlaces = byDistrict.get(districtId) ?? [];
       const [clusters, items] = await Promise.all([
         getNewsClusters(districtId, 3),
-        getUnclusteredItems(districtId, PER_SECTOR, 7),
+        getUnclusteredItems(lang, districtId, PER_SECTOR, 7),
       ]);
       const first = sectorPlaces[0]!; // districts only enter via a place
       return {
@@ -91,7 +90,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   const [stateClusters, stateItems] = await Promise.all([
     getNewsClusters(undefined, 3),
-    getUnclusteredItems(undefined, PER_SECTOR),
+    getUnclusteredItems(lang, undefined, PER_SECTOR),
   ]);
 
   const timeLabel = (d: Date | string | null) =>
@@ -193,7 +192,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 <ClusterStoryCard
                   key={`c${cluster.id}`}
                   cluster={cluster}
-                  totalOutlets={trackedOutlets.length}
                   locale={locale}
                   timeLabel={timeLabel(cluster.event_time)}
                   s={strings}
@@ -203,7 +201,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 <ItemStoryCard
                   key={`i${item.id}`}
                   item={item}
-                  totalOutlets={trackedOutlets.length}
+                  locale={locale}
                   timeLabel={timeLabel(item.published_at)}
                   s={strings}
                 />
@@ -235,7 +233,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             <ClusterStoryCard
               key={`c${cluster.id}`}
               cluster={cluster}
-              totalOutlets={trackedOutlets.length}
               locale={locale}
               timeLabel={timeLabel(cluster.event_time)}
               s={strings}
@@ -247,7 +244,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               <ItemStoryCard
                 key={`i${item.id}`}
                 item={item}
-                totalOutlets={trackedOutlets.length}
+                locale={locale}
                 timeLabel={timeLabel(item.published_at)}
                 s={strings}
               />

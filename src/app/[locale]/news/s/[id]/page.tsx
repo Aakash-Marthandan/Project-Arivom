@@ -8,7 +8,7 @@ import {
 import { cache } from "react";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
-import { CoverageDots } from "@/components/coverage-dots";
+import { SourceDots } from "@/components/coverage-dots";
 import { buildNewsStrings } from "@/components/news-feed";
 import {
   ProvenanceChip,
@@ -237,10 +237,9 @@ export default async function StoryPage({
           {t("coverageIntro")}
         </p>
         <div className="mt-2.5">
-          <CoverageDots
-            covered={covered.size}
-            total={trackedOutlets.length}
-            label={strings.coverage(covered.size, trackedOutlets.length)}
+          <SourceDots
+            count={covered.size}
+            label={strings.sourcesCount(covered.size)}
           />
         </div>
 

@@ -369,6 +369,8 @@ export interface NewsSingleItem {
   district_lgd: string | null;
   retrieved_at: Date;
   image_url: string | null;
+  title_clean_en: string | null;
+  title_clean_ta: string | null;
 }
 
 /** Multi-outlet event clusters, newest first (M7). */
@@ -407,8 +409,14 @@ export async function getNewsClusters(
   `;
 }
 
-/** Recent items not (yet) part of any cluster: single-source stories. */
+/**
+ * Recent items not (yet) part of any cluster: single-source stories.
+ * D-025: soft-classified items never render; until an item has an
+ * Arivom-voice title in the reader's language, feeds fall back to
+ * language-filtered original headlines (honest interim).
+ */
 export async function getUnclusteredItems(
+  lang: "ta" | "en",
   districtId?: number,
   limit = 30,
   days = 3,
@@ -416,12 +424,18 @@ export async function getUnclusteredItems(
   return sql<NewsSingleItem[]>`
     SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
            i.published_at, i.retrieved_at, i.image_url,
+           i.title_clean_en, i.title_clean_ta,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd
     FROM news_items i
     LEFT JOIN localities d ON d.id = i.locality_id
     WHERE NOT EXISTS (
       SELECT 1 FROM cluster_coverage cc WHERE cc.news_item_id = i.id
+    )
+    AND (i.civic_class IS NULL OR i.civic_class <> 'soft')
+    AND (
+      ${lang === "ta" ? sql`i.title_clean_ta IS NOT NULL` : sql`i.title_clean_en IS NOT NULL`}
+      OR i.lang = ${lang}
     )
     AND i.published_at > now() - make_interval(days => ${days})
     ${districtId ? sql`AND i.locality_id = ${districtId}` : sql``}
@@ -497,11 +511,13 @@ export async function getPersonNewsItems(
   return sql<NewsSingleItem[]>`
     SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
            i.published_at, i.retrieved_at, i.image_url,
+           i.title_clean_en, i.title_clean_ta,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd
     FROM news_items i
     LEFT JOIN localities d ON d.id = i.locality_id
     WHERE i.entities IS NOT NULL
+      AND (i.civic_class IS NULL OR i.civic_class <> 'soft')
       AND EXISTS (
         SELECT 1 FROM jsonb_array_elements(i.entities -> 'persons') AS p
         WHERE (p ->> 'person_id')::bigint = ANY(${personIds})

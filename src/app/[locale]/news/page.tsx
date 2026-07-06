@@ -5,11 +5,7 @@ import {
   setRequestLocale,
 } from "next-intl/server";
 import { buildNewsStrings, NewsFeed } from "@/components/news-feed";
-import {
-  getNewsClusters,
-  getTrackedOutlets,
-  getUnclusteredItems,
-} from "@/lib/queries";
+import { getNewsClusters, getUnclusteredItems } from "@/lib/queries";
 
 export const revalidate = 600;
 
@@ -26,15 +22,14 @@ export default async function NewsPage({
 }: PageProps<"/[locale]/news">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, format, strings, clusters, items, trackedOutlets] =
-    await Promise.all([
-      getTranslations("news"),
-      getFormatter(),
-      buildNewsStrings(),
-      getNewsClusters(),
-      getUnclusteredItems(),
-      getTrackedOutlets(),
-    ]);
+  const lang = locale === "ta" ? ("ta" as const) : ("en" as const);
+  const [t, format, strings, clusters, items] = await Promise.all([
+    getTranslations("news"),
+    getFormatter(),
+    buildNewsStrings(),
+    getNewsClusters(),
+    getUnclusteredItems(lang),
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -51,7 +46,6 @@ export default async function NewsPage({
         <NewsFeed
           clusters={clusters}
           items={items}
-          trackedOutlets={trackedOutlets}
           locale={locale}
           format={format}
           strings={strings}
