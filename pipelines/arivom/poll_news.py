@@ -106,9 +106,29 @@ def parse_when(text: str | None) -> datetime | None:
     return None
 
 
+MEDIA = "{http://search.yahoo.com/mrss/}"
+
+
+def item_image(item: Any) -> str | None:
+    """The outlet's own story-image URL from feed media metadata (D-024):
+    media:content / media:thumbnail / enclosure. Only the URL is kept."""
+    for el in (
+        item.find(f"{MEDIA}content"),
+        item.find(f"{MEDIA}thumbnail"),
+        item.find("enclosure"),
+    ):
+        if el is None:
+            continue
+        url = (el.get("url") or "").strip()
+        mime = el.get("type") or ""
+        if url.startswith("http") and (mime.startswith("image/") or not mime):
+            return url
+    return None
+
+
 def parse_feed(content: bytes) -> list[dict[str, Any]]:
-    """Minimal RSS 2.0 / Atom parser: title, url, published. Nothing else —
-    descriptions and content are deliberately never read (§4E policy)."""
+    """Minimal RSS 2.0 / Atom parser: title, url, published, image URL.
+    Descriptions and content are deliberately never read (§4E policy)."""
     root = ET.fromstring(content)
     items = []
     for item in root.iter("item"):  # RSS 2.0
@@ -118,7 +138,12 @@ def parse_feed(content: bytes) -> list[dict[str, Any]]:
             guid = (item.findtext("guid") or "").strip()
             link = guid if guid.startswith("http") else ""
         items.append(
-            {"title": title, "url": link, "published": parse_when(item.findtext("pubDate"))}
+            {
+                "title": title,
+                "url": link,
+                "published": parse_when(item.findtext("pubDate")),
+                "image": item_image(item),
+            }
         )
     if not items:
         for entry in root.iter(f"{ATOM}entry"):
@@ -129,7 +154,14 @@ def parse_feed(content: bytes) -> list[dict[str, Any]]:
                     link = (el.get("href") or "").strip()
                     break
             when = entry.findtext(f"{ATOM}published") or entry.findtext(f"{ATOM}updated")
-            items.append({"title": title, "url": link, "published": parse_when(when)})
+            items.append(
+                {
+                    "title": title,
+                    "url": link,
+                    "published": parse_when(when),
+                    "image": item_image(entry),
+                }
+            )
     return [i for i in items if i["title"] and i["url"]]
 
 
@@ -252,14 +284,16 @@ def main() -> None:
                 """
                 INSERT INTO news_items
                   (outlet, url, headline_orig, lang, published_at, locality_id,
-                   source_id, retrieved_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                   source_id, retrieved_at, image_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (url) DO UPDATE
                   SET headline_orig = EXCLUDED.headline_orig,
                       published_at = COALESCE(EXCLUDED.published_at,
                                               news_items.published_at),
                       locality_id = EXCLUDED.locality_id,
-                      retrieved_at = EXCLUDED.retrieved_at
+                      retrieved_at = EXCLUDED.retrieved_at,
+                      image_url = COALESCE(EXCLUDED.image_url,
+                                           news_items.image_url)
                 RETURNING (xmax = 0) AS inserted
                 """,
                 (
@@ -271,6 +305,7 @@ def main() -> None:
                     locality_id,
                     source_id,
                     retrieved_at,
+                    item["image"],
                 ),
             ).fetchone()
             assert row is not None

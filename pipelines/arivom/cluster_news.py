@@ -170,7 +170,7 @@ def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, A
     rows = rows[:EXTRACT_CAP]
 
     for item_id, headline, url, _outlet, _lang in rows:
-        excerpt, fetch_status = fetch_excerpt(session, url)
+        excerpt, fetch_status, og_image = fetch_excerpt(session, url)
         user = f"Headline: {headline}"
         if excerpt:
             user += f"\n\nArticle excerpt:\n{excerpt}"
@@ -210,8 +210,13 @@ def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, A
             "department": result["department"],
         }
         db.conn.execute(
-            "UPDATE news_items SET entities = %s, fetch_status = %s WHERE id = %s",
-            (json.dumps(entities, ensure_ascii=False), fetch_status, item_id),
+            """
+            UPDATE news_items
+            SET entities = %s, fetch_status = %s,
+                image_url = COALESCE(image_url, %s)
+            WHERE id = %s
+            """,
+            (json.dumps(entities, ensure_ascii=False), fetch_status, og_image, item_id),
         )
         report["extracted"] += 1
         if fetch_status != "fetched":
@@ -457,6 +462,17 @@ SUMMARY_SCHEMA = obj_schema(
         "title_ta": {"type": "string"},
         "summary_en": {"type": "string"},
         "summary_ta": {"type": "string"},
+        "summary_long_en": {"type": "string"},
+        "summary_long_ta": {"type": "string"},
+        "coverage_notes": arr(
+            obj_schema(
+                {
+                    "source": {"type": "integer"},
+                    "note_en": {"type": "string"},
+                    "note_ta": {"type": "string"},
+                }
+            )
+        ),
     }
 )
 
@@ -466,8 +482,17 @@ outlets' reporting of ONE event, numbered [1], [2], ...
 
 Produce:
 - title_en and title_ta: short neutral titles naming the event (under 80 characters each).
-- summary_en: 2 to 4 short plain sentences describing what happened.
+- summary_en: 2 to 4 short plain sentences describing what happened (feed preview).
 - summary_ta: the same summary in Tamil. Warm formal register. Simple words average readers know.
+- summary_long_en and summary_long_ta: a fuller account, 5 to 8 short sentences,
+  same citation and neutrality rules, covering the facts across ALL sources
+  (background a reader needs, numbers, who said what, what happens next if stated).
+- coverage_notes: for EVERY source [n], one entry {source: n, note_en, note_ta}
+  describing in ONE sentence per language what THAT outlet's coverage adds or
+  focuses on compared to the others ("adds official casualty figures",
+  "carries the minister's full statement", "reports from the scene with
+  eyewitness accounts", "matches the shared account with no extra detail").
+  Content description ONLY: never words that judge quality, accuracy, or slant.
 
 Hard rules:
 - Use only facts present in the provided reporting. Attribute claims, numbers in
@@ -504,15 +529,20 @@ CHECK_SYSTEM = """You verify a draft bilingual news summary against source repor
 for Arivom, a Tamil Nadu civic platform with a strict neutrality policy (no
 editorializing anywhere, ever).
 
-Check, strictly:
-1. claims_supported: every factual claim in BOTH summaries is supported by the
-   sources its [n] markers point to.
+Check, strictly, across the short summaries, the long summaries, AND the
+per-source coverage notes:
+1. claims_supported: every factual claim is supported by the sources its [n]
+   markers point to; every coverage note accurately describes what that
+   source's provided reporting actually contains.
 2. neutral: no editorializing, loaded language, unattributed allegations, or
-   speculation in either language. Attributed claims ("according to [1]") are fine.
-3. tamil_faithful: the Tamil summary conveys the same content as the English one,
-   in genuine Tamil script, warm formal register, simple vocabulary, no em dashes.
-4. citations_valid: every marker refers to a provided source; every sentence
-   carries at least one marker.
+   speculation in either language. Attributed claims ("according to [1]") are
+   fine. Coverage notes must be content-descriptive ONLY — any wording that
+   judges an outlet's quality, accuracy, or slant fails this check.
+3. tamil_faithful: every Tamil text conveys the same content as its English
+   counterpart, in genuine Tamil script, warm formal register, simple
+   vocabulary, no em dashes.
+4. citations_valid: every marker refers to a provided source; every summary
+   sentence carries at least one marker.
 
 Separately, classify the EVENT for the escalation protocol (regardless of summary quality):
 - communal: the story touches communal or religious tension.
@@ -553,7 +583,7 @@ def members_for_summary(db: Db, session: Any, cluster_id: int) -> list[dict[str,
             seen_outlets.add(outlet)
     members = members[:6]
     for m in members:
-        excerpt, _status = fetch_excerpt(session, m["url"])
+        excerpt, _status, _image = fetch_excerpt(session, m["url"])
         m["excerpt"] = (excerpt or "")[:1800]
     return members
 
@@ -622,22 +652,38 @@ def summarize_clusters(
 
         draft = structured(
             model=SONNET, system=SUMMARY_SYSTEM,
-            user=f"Sources:\n\n{evidence}", schema=SUMMARY_SCHEMA, max_tokens=3000,
+            user=f"Sources:\n\n{evidence}", schema=SUMMARY_SCHEMA, max_tokens=5000,
         )
         verdict = None
         for attempt in range(2):
             if draft is None:
                 break
+            notes_ok = (
+                len(draft["coverage_notes"]) == n
+                and {note["source"] for note in draft["coverage_notes"]}
+                == set(range(1, n + 1))
+                and all(
+                    has_tamil(note["note_ta"]) and note["note_en"].strip()
+                    for note in draft["coverage_notes"]
+                )
+            )
             if not (
-                markers_valid(draft["summary_en"], n)
+                notes_ok
+                and markers_valid(draft["summary_en"], n)
                 and markers_valid(draft["summary_ta"], n)
+                and markers_valid(draft["summary_long_en"], n)
+                and markers_valid(draft["summary_long_ta"], n)
                 and has_tamil(draft["summary_ta"])
+                and has_tamil(draft["summary_long_ta"])
                 and has_tamil(draft["title_ta"])
                 and draft["title_en"].strip()
             ):
                 verdict = {
                     "verdict": "revise",
-                    "feedback": "invalid citation markers or missing Tamil",
+                    "feedback": (
+                        "invalid citation markers, missing Tamil, or coverage_notes "
+                        "not covering every source exactly once"
+                    ),
                 }
             else:
                 verdict = structured(
@@ -657,7 +703,7 @@ def summarize_clusters(
                         f"A previous draft failed review with this feedback; fix it:\n"
                         f"{verdict.get('feedback', '')}\n{'; '.join(verdict.get('issues', []))}"
                     ),
-                    schema=SUMMARY_SCHEMA, max_tokens=3000,
+                    schema=SUMMARY_SCHEMA, max_tokens=5000,
                 )
 
         moderation = (verdict or {}).get("moderation", {})
@@ -675,10 +721,20 @@ def summarize_clusters(
         )
 
         if draft is not None and verdict is not None and verdict["verdict"] == "pass":
+            coverage_notes = [
+                {
+                    "news_item_id": members[note["source"] - 1]["id"],
+                    "note_en": note["note_en"].strip(),
+                    "note_ta": note["note_ta"].strip(),
+                }
+                for note in sorted(draft["coverage_notes"], key=lambda x: x["source"])
+            ]
             db.conn.execute(
                 """
                 UPDATE news_clusters
                 SET title_en = %s, title_ta = %s, summary_en = %s, summary_ta = %s,
+                    summary_long_en = %s, summary_long_ta = %s,
+                    coverage_notes = %s,
                     citations = %s, content_hash = %s, review_status = 'llm_checked',
                     source_id = %s, retrieved_at = %s, updated_at = now(),
                     discussion_locked = discussion_locked OR %s,
@@ -688,6 +744,8 @@ def summarize_clusters(
                 (
                     draft["title_en"].strip(), draft["title_ta"].strip(),
                     draft["summary_en"].strip(), draft["summary_ta"].strip(),
+                    draft["summary_long_en"].strip(), draft["summary_long_ta"].strip(),
+                    json.dumps(coverage_notes, ensure_ascii=False),
                     json.dumps([m["id"] for m in members]),
                     content_hash, source_id, retrieved_at,
                     lock_category is not None, lock_category, cluster_id,
