@@ -131,7 +131,7 @@ export default async function GovernmentPage({
         <h2 id="departments-title" className="font-heading text-xl font-bold">
           {t("departments")}
         </h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {entries.map((entry, i) => {
             const m = entry.minister;
             return (
