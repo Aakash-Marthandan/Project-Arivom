@@ -230,19 +230,18 @@
       "sectionLabel": "Data indicators",
       "title": "Education",
       "selfReported": "Reported by schools",
-      "latestYear": "Latest published year: {year}",
       "students": "Students",
       "schools": "Schools",
       "teachers": "Teachers",
       "girlsBoys": "{girls} girls · {boys} boys",
       "womenTeachers": "{count} women",
-      "byLevelTitle": "Students by level, {year}",
+      "byLevelTitle": "Students by level",
       "level": "Level",
       "total": "Total",
       "girls": "Girls",
       "boys": "Boys",
       "levels": {
-        "prePrimary": "Pre-primary",
+        "prePrimary": "Pre-primary (before class 1)",
         "primary": "Primary (classes 1–5)",
         "upperPrimary": "Middle (classes 6–8)",
         "secondary": "Secondary (classes 9–10)",
@@ -250,11 +249,9 @@
       },
       "ptrTitle": "Students per teacher",
       "ptrNote": "How many students there are for each teacher at that school level.",
-      "trendTitle": "Across the years",
       "year": "Academic year",
       "notPublished": "Not published",
-      "infraTitle": "School facilities, {year}",
-      "infraCount": "{count} of {total} schools",
+      "infraTitle": "School facilities",
       "facilities": {
         "functionalElectricity": "Electricity in working condition",
         "functionalDrinkingWater": "Drinking water in working condition",
@@ -269,7 +266,11 @@
       },
       "sourceNote": "Schools upload this data themselves to UDISE+, the education ministry's national system. It is not independently verified. Counts are as of 30 September of each academic year.",
       "methodologyLink": "How we handle this data",
-      "unavailable": "Education data for this district is not published yet. It will appear here when UDISE+ publishes it."
+      "unavailable": "Education data for this district is not published yet. It will appear here when UDISE+ publishes it.",
+      "snapshotTitle": "As of {year}",
+      "changeTitle": "Change across years",
+      "totalsTitle": "Students, schools, teachers",
+      "infraIntro": "Out of {total} schools. Each row shows how many have that facility."
     },
     "health": {
       "title": "Health",
@@ -296,7 +297,10 @@
       },
       "sourceNote": "NFHS-5 is a sample survey of households run in 2019-21 by the Union health ministry with IIPS. District figures are estimates from a sample and carry uncertainty.",
       "methodologyLink": "How we handle this data",
-      "unavailable": "NFHS-5 (2019-21) does not publish a separate factsheet for this district. The survey used the district list from before 2019."
+      "unavailable": "NFHS-5 (2019-21) does not publish a separate factsheet for this district. The survey used the district list from before 2019.",
+      "groupNotes": {
+        "nutrition": "These numbers show how common each condition is in the survey sample."
+      }
     }
   },
   "provenance": {

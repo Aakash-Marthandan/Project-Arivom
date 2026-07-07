@@ -80,12 +80,9 @@ const ENROLLMENT_LEVELS = [
   "higherSecondary",
 ] as const;
 
-const PTR_LEVELS = [
-  "primary",
-  "upperPrimary",
-  "secondary",
-  "higherSecondary",
-] as const;
+// Higher-secondary PTR is unpublished at district level (null across every
+// district and year), so the table has no column for it.
+const PTR_LEVELS = ["primary", "upperPrimary", "secondary"] as const;
 
 // Mirrors pipelines/arivom/import_nfhs.py (D-030).
 interface HealthFact {
@@ -303,11 +300,13 @@ export default async function DistrictPage({
         </p>
       </header>
 
-      <section aria-labelledby="education-title" className="mt-10">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("education.sectionLabel")}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-3">
+      {/* One label over the whole indicators block (education + health). */}
+      <p className="mt-10 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {t("education.sectionLabel")}
+      </p>
+
+      <section aria-labelledby="education-title" className="mt-1">
+        <div className="flex flex-wrap items-center gap-3">
           <h2 id="education-title" className="font-heading text-xl font-bold">
             {t("education.title")}
           </h2>
@@ -328,9 +327,10 @@ export default async function DistrictPage({
           </p>
         ) : (
           <>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t("education.latestYear", { year: latestEnrollment!.year })}
-            </p>
+            {/* Part 1 — the latest published year, all in one place. */}
+            <h3 className="mt-5 font-heading text-lg font-bold">
+              {t("education.snapshotTitle", { year: latestEnrollment!.year })}
+            </h3>
 
             <dl className="mt-4 grid gap-4 sm:grid-cols-3">
               <div className="rounded-lg border border-border bg-card p-4">
@@ -374,9 +374,9 @@ export default async function DistrictPage({
               ) : null}
             </dl>
 
-            <h3 className="mt-8 font-heading text-base font-bold">
-              {t("education.byLevelTitle", { year: latestEnrollment!.year })}
-            </h3>
+            <h4 className="mt-8 font-heading text-base font-bold">
+              {t("education.byLevelTitle")}
+            </h4>
             <div className="mt-3 overflow-x-auto rounded-lg border border-border bg-card">
               <table className="w-full min-w-[26rem] text-sm">
                 <thead>
@@ -416,57 +416,53 @@ export default async function DistrictPage({
               </table>
             </div>
 
-            {ptr.length > 0 ? (
+            {latestInfra ? (
               <>
-                <h3 className="mt-8 font-heading text-base font-bold">
-                  {t("education.ptrTitle")}
-                </h3>
+                <h4 className="mt-8 font-heading text-base font-bold">
+                  {t("education.infraTitle")}
+                </h4>
                 <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                  {t("education.ptrNote")}
+                  {t("education.infraIntro", {
+                    total: num(latestInfra.schools),
+                  })}
                 </p>
-                <div className="mt-3 overflow-x-auto rounded-lg border border-border bg-card">
-                  <table className="w-full min-w-[26rem] text-sm">
-                    <thead>
-                      <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                        <th scope="col" className="px-4 py-2 font-semibold">
-                          {t("education.year")}
-                        </th>
-                        {PTR_LEVELS.map((level) => (
-                          <th
-                            scope="col"
-                            key={level}
-                            className="px-4 py-2 text-right font-semibold"
-                          >
-                            {t(`education.levels.${level}`)}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {ptr.map((point) => (
-                        <tr key={point.year}>
-                          <th scope="row" className="px-4 py-2 text-left font-medium">
-                            {point.year}
-                          </th>
-                          {PTR_LEVELS.map((level) => (
-                            <td
-                              key={level}
-                              className="px-4 py-2 text-right tabular-nums"
-                            >
-                              {point[level] != null ? num(point[level]) : "—"}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <ul className="mt-3 grid gap-x-10 gap-y-3 md:grid-cols-2">
+                  {FACILITIES.map((facility) => {
+                    const count = latestInfra[facility];
+                    const total = latestInfra.schools;
+                    const share = total > 0 ? count / total : 0;
+                    return (
+                      <li key={facility} className="max-w-2xl">
+                        <div className="flex items-baseline justify-between gap-4 text-sm">
+                          <span>{t(`education.facilities.${facility}`)}</span>
+                          <span className="shrink-0 tabular-nums text-muted-foreground">
+                            {pct(count, total)} · {num(count)}
+                          </span>
+                        </div>
+                        <div
+                          className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary"
+                          role="presentation"
+                        >
+                          <div
+                            className="h-full rounded-full bg-primary/70"
+                            style={{ width: `${Math.round(share * 1000) / 10}%` }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
               </>
             ) : null}
 
-            <h3 className="mt-8 font-heading text-base font-bold">
-              {t("education.trendTitle")}
+            {/* Part 2 — how the totals moved across published years. */}
+            <h3 className="mt-10 font-heading text-lg font-bold">
+              {t("education.changeTitle")}
             </h3>
+
+            <h4 className="mt-4 font-heading text-base font-bold">
+              {t("education.totalsTitle")}
+            </h4>
             <div className="mt-3 overflow-x-auto rounded-lg border border-border bg-card">
               <table className="w-full min-w-[26rem] text-sm">
                 <thead>
@@ -512,41 +508,51 @@ export default async function DistrictPage({
               </table>
             </div>
 
-            {latestInfra ? (
+            {ptr.length > 0 ? (
               <>
-                <h3 className="mt-8 font-heading text-base font-bold">
-                  {t("education.infraTitle", { year: latestInfra.year })}
-                </h3>
-                <ul className="mt-3 space-y-3">
-                  {FACILITIES.map((facility) => {
-                    const count = latestInfra[facility];
-                    const total = latestInfra.schools;
-                    const share = total > 0 ? count / total : 0;
-                    return (
-                      <li key={facility} className="max-w-2xl">
-                        <div className="flex items-baseline justify-between gap-4 text-sm">
-                          <span>{t(`education.facilities.${facility}`)}</span>
-                          <span className="shrink-0 tabular-nums text-muted-foreground">
-                            {t("education.infraCount", {
-                              count: num(count),
-                              total: num(total),
-                            })}{" "}
-                            ({pct(count, total)})
-                          </span>
-                        </div>
-                        <div
-                          className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary"
-                          role="presentation"
-                        >
-                          <div
-                            className="h-full rounded-full bg-primary/70"
-                            style={{ width: `${Math.round(share * 1000) / 10}%` }}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <h4 className="mt-8 font-heading text-base font-bold">
+                  {t("education.ptrTitle")}
+                </h4>
+                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                  {t("education.ptrNote")}
+                </p>
+                <div className="mt-3 overflow-x-auto rounded-lg border border-border bg-card">
+                  <table className="w-full min-w-[26rem] text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+                        <th scope="col" className="px-4 py-2 font-semibold">
+                          {t("education.year")}
+                        </th>
+                        {PTR_LEVELS.map((level) => (
+                          <th
+                            scope="col"
+                            key={level}
+                            className="px-4 py-2 text-right font-semibold"
+                          >
+                            {t(`education.levels.${level}`)}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {ptr.map((point) => (
+                        <tr key={point.year}>
+                          <th scope="row" className="px-4 py-2 text-left font-medium">
+                            {point.year}
+                          </th>
+                          {PTR_LEVELS.map((level) => (
+                            <td
+                              key={level}
+                              className="px-4 py-2 text-right tabular-nums"
+                            >
+                              {point[level] != null ? num(point[level]) : "—"}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </>
             ) : null}
 
@@ -589,41 +595,69 @@ export default async function DistrictPage({
               {t("health.surveyLine")}
             </p>
             {(Object.keys(HEALTH_GROUPS) as (keyof typeof HEALTH_GROUPS)[]).map(
-              (group) => (
-                <div key={group}>
-                  <h3 className="mt-6 font-heading text-base font-bold">
-                    {t(`health.groups.${group}`)}
-                  </h3>
-                  <ul className="mt-3 space-y-3">
-                    {HEALTH_GROUPS[group].map((key) => {
-                      const value = health.indicators[key];
-                      if (value == null) return null;
-                      return (
-                        <li key={key} className="max-w-2xl">
-                          <div className="flex items-baseline justify-between gap-4 text-sm">
-                            <span>{t(`health.indicators.${key}`)}</span>
-                            <span className="shrink-0 tabular-nums text-muted-foreground">
-                              {format.number(value / 100, {
-                                style: "percent",
-                                maximumFractionDigits: 1,
-                              })}
-                            </span>
-                          </div>
-                          <div
-                            className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary"
-                            role="presentation"
+              (group) => {
+                // Coverage groups get progress bars (share of households /
+                // births reached). Prevalence rows (nutrition, anaemia) get
+                // plain figures: a filled bar would read as an achievement.
+                const isPrevalence = group === "nutrition";
+                return (
+                  <div key={group}>
+                    <h3 className="mt-6 font-heading text-base font-bold">
+                      {t(`health.groups.${group}`)}
+                    </h3>
+                    {isPrevalence ? (
+                      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                        {t("health.groupNotes.nutrition")}
+                      </p>
+                    ) : null}
+                    <ul
+                      className={
+                        isPrevalence
+                          ? "mt-3 max-w-2xl divide-y divide-border rounded-lg border border-border bg-card"
+                          : "mt-3 space-y-3"
+                      }
+                    >
+                      {HEALTH_GROUPS[group].map((key) => {
+                        const value = health.indicators[key];
+                        if (value == null) return null;
+                        const pctLabel = format.number(value / 100, {
+                          style: "percent",
+                          maximumFractionDigits: 1,
+                        });
+                        return isPrevalence ? (
+                          <li
+                            key={key}
+                            className="flex items-baseline justify-between gap-4 px-4 py-2.5 text-sm"
                           >
+                            <span>{t(`health.indicators.${key}`)}</span>
+                            <span className="shrink-0 tabular-nums">
+                              {pctLabel}
+                            </span>
+                          </li>
+                        ) : (
+                          <li key={key} className="max-w-2xl">
+                            <div className="flex items-baseline justify-between gap-4 text-sm">
+                              <span>{t(`health.indicators.${key}`)}</span>
+                              <span className="shrink-0 tabular-nums text-muted-foreground">
+                                {pctLabel}
+                              </span>
+                            </div>
                             <div
-                              className="h-full rounded-full bg-primary/70"
-                              style={{ width: `${value}%` }}
-                            />
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ),
+                              className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary"
+                              role="presentation"
+                            >
+                              <div
+                                className="h-full rounded-full bg-primary/70"
+                                style={{ width: `${value}%` }}
+                              />
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              },
             )}
             <p className="mt-8 max-w-2xl rounded-md border border-border bg-secondary/50 p-4 text-sm leading-relaxed text-muted-foreground">
               {t("health.sourceNote")}{" "}
