@@ -326,6 +326,17 @@
       "withheld": "UDISE+ also publishes enrollment ratios and dropout rates. We do not show them yet. We could not verify how their level groups are computed, and a ratio we cannot explain can mislead. They will appear once we can document their computation.",
       "facilities": "Facility figures count schools that report the facility in working condition. Percentages are out of all schools in the district for that year. One education district, Chennai (extended GCC area), exists only in UDISE+ and is counted in state totals only."
     },
+    "stories": {
+      "title": "How stories are chosen",
+      "intro": "The news feed is selected by subject, never by who a story favours. The rules are published here in full.",
+      "pool": "We track a fixed registry of Tamil Nadu news outlets and store headlines and links only, never article text. Clearly non-civic sections (cinema, sports, astrology, video galleries) are dropped at collection, before anything is stored.",
+      "classification": "Each stored item is classified by its subject: civic (governance, courts, elections, the legislature, public services, public safety, policy), adjacent (economy, employment, education, health, environment, weather, infrastructure, prices), or soft (entertainment, celebrity, sports, astrology, viral items). Feeds show civic and adjacent items only. Soft items never appear in the product; they stay in the database for coverage analysis, and their count is shown on the data status page.",
+      "priority": "Some stories carry a priority chip. It is applied when the subject has statewide policy impact, concerns elections or by-elections, court rulings, legislature decisions, or public safety affecting many people. The judgement is about the subject, never about who it favours.",
+      "differ": "When outlets report conflicting facts about the same event, the story carries a \"sources differ\" marker and the summary names the disagreement with citations. We never compute controversy scores.",
+      "titles": "Displayed headlines are written by our pipeline in a calm, informative voice: no exclamation marks, no teasers, no sensational words. The outlet's original headline stays one tap away on the story page.",
+      "actorBlind": "Within the feed nothing is boosted or buried by party or person. A weekly sample of displayed titles and summaries is reviewed by a human against these same rules.",
+      "interim": "Story analysis has not started yet. Until it does, feeds show original headlines in your language, and no stored item is excluded by classification."
+    },
     "corrections": {
       "title": "Corrections",
       "body": "A structured form for reporting incorrect information is coming soon. Every accepted correction will be published in a public corrections log alongside the original value."
@@ -343,7 +354,11 @@
       "caption": "Data sources and their status"
     },
     "emptyState": "No data has been imported yet. Once the data pipelines start running, this table will fill in automatically.",
-    "slaNote": "Expected update windows (SLAs) for each dataset, with green/amber/red status against them, arrive in a later milestone."
+    "slaNote": "Expected update windows (SLAs) for each dataset, with green/amber/red status against them, arrive in a later milestone.",
+    "pool": {
+      "title": "The story pool",
+      "body": "News items collected: {total}. Excluded from feeds as non-civic: {soft}. Awaiting analysis: {unclassified}. The selection rules are on the methodology page."
+    }
   },
   "notFound": {
     "title": "Page not found",

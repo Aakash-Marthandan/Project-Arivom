@@ -448,6 +448,23 @@ export async function getUnclusteredItems(
   `;
 }
 
+/** The story pool in one line (D-025): stored, excluded, awaiting. */
+export async function getNewsPoolStats(): Promise<{
+  total: number;
+  soft: number;
+  unclassified: number;
+}> {
+  const rows = await sql<
+    { total: number; soft: number; unclassified: number }[]
+  >`
+    SELECT count(*)::int AS total,
+           (count(*) FILTER (WHERE civic_class = 'soft'))::int AS soft,
+           (count(*) FILTER (WHERE civic_class IS NULL))::int AS unclassified
+    FROM news_items
+  `;
+  return rows[0] ?? { total: 0, soft: 0, unclassified: 0 };
+}
+
 /**
  * Distinct department tags the extraction has produced, both languages
  * (D-019: matched loosely to /government card names at display time).

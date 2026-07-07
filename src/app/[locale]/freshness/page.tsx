@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getFreshness } from "@/lib/queries";
+import { getFreshness, getNewsPoolStats } from "@/lib/queries";
 
 export const revalidate = 3600;
 
@@ -26,10 +26,11 @@ export default async function FreshnessPage({
 }: PageProps<"/[locale]/freshness">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, format, rows] = await Promise.all([
+  const [t, format, rows, pool] = await Promise.all([
     getTranslations("freshness"),
     getFormatter(),
     getFreshness(),
+    getNewsPoolStats(),
   ]);
 
   return (
@@ -87,6 +88,20 @@ export default async function FreshnessPage({
           </Table>
         </div>
       )}
+
+      {/* The story pool (D-025): stored vs excluded-by-classification. */}
+      <section aria-labelledby="pool-title" className="mt-10">
+        <h2 id="pool-title" className="font-heading text-xl font-bold">
+          {t("pool.title")}
+        </h2>
+        <p className="mt-2 max-w-2xl leading-relaxed text-muted-foreground">
+          {t("pool.body", {
+            total: format.number(pool.total),
+            soft: format.number(pool.soft),
+            unclassified: format.number(pool.unclassified),
+          })}
+        </p>
+      </section>
 
       <p className="mt-8 max-w-2xl rounded-md border border-border bg-secondary/50 p-4 text-sm leading-relaxed text-muted-foreground">
         {t("slaNote")}
