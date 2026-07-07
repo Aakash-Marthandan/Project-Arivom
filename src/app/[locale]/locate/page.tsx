@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -55,9 +56,10 @@ export default async function LocatePage({
 }: PageProps<"/[locale]/locate">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, tc, tp, format] = await Promise.all([
+  const [t, tc, tnav, tp, format] = await Promise.all([
     getTranslations("locate"),
     getTranslations("constituency"),
+    getTranslations("common"),
     getTranslations("provenance"),
     getFormatter(),
   ]);
@@ -182,7 +184,7 @@ export default async function LocatePage({
           method="get"
           action={`/${locale}/constituencies`}
           role="search"
-          className="mt-4 max-w-md"
+          className="mt-4 flex max-w-md gap-2"
         >
           <label htmlFor="locate-q" className="sr-only">
             {t("pickerTitle")}
@@ -194,6 +196,9 @@ export default async function LocatePage({
             placeholder={t("pickerPlaceholder")}
             className="bg-card"
           />
+          <Button type="submit" variant="secondary" className="shrink-0">
+            {tnav("nav.search")}
+          </Button>
         </form>
       </section>
     </div>

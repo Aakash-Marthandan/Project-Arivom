@@ -17,6 +17,7 @@ import {
   departmentEntries,
   type StoredPortfolios,
 } from "@/lib/departments";
+import { FilterList } from "@/components/filter-list";
 
 export const revalidate = 3600;
 
@@ -133,6 +134,11 @@ export default async function GovernmentPage({
         <h2 id="departments-title" className="font-heading text-xl font-bold">
           {t("departments")}
         </h2>
+        <div className="mt-3">
+        <FilterList
+          placeholder={t("filterPlaceholder")}
+          emptyLabel={t("filterEmpty")}
+        >
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {entries.map((entry, i) => {
             const m = entry.minister;
@@ -140,6 +146,7 @@ export default async function GovernmentPage({
               <div
                 key={`${entry.department}-${m.person_id}-${i}`}
                 id={entry.department.replace(/\s+/g, "-")}
+                data-filter={`${entry.department} ${entry.subjects ?? ""} ${m.name_en ?? ""} ${m.name_ta ?? ""}`.toLowerCase()}
                 className="rounded-lg border border-border bg-card p-4"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -203,6 +210,8 @@ export default async function GovernmentPage({
               </div>
             );
           })}
+        </div>
+        </FilterList>
         </div>
         <p className="mt-3 max-w-2xl text-xs leading-relaxed text-muted-foreground">
           {t("departmentsNote")}

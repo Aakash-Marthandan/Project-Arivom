@@ -68,7 +68,7 @@
       "vacantCta": "By-election tracker",
       "showMore": "More",
       "caughtUp": "You're caught up.",
-      "lastChecked": "News checked {time}",
+      "lastChecked": "Last checked: {time}",
       "manageHint": "Manage your places in the More tab.",
       "quiet": "No recent stories for this district. Statewide news is below.",
       "followedSection": "People you follow",
@@ -220,7 +220,8 @@
     "placesFull": "Your places list is full (5). Remove one in More.",
     "inTheNews": "In the news",
     "follow": "Follow",
-    "following": "Following ✓"
+    "following": "Following ✓",
+    "districtIndicatorsLink": "School, health and water data"
   },
   "district": {
     "metaTitle": "{district} district",
@@ -483,7 +484,9 @@
       "empty": "No stories are tagged with this department yet. Story analysis has not started; this page fills in on its own once it does.",
       "note": "Stories are matched to departments by name. The match is approximate until the official department directory becomes available."
     },
-    "deptNewsLink": "Department news"
+    "deptNewsLink": "Department news",
+    "filterPlaceholder": "Type a department or minister's name…",
+    "filterEmpty": "Nothing matches. Try a shorter word."
   },
   "news": {
     "title": "News",

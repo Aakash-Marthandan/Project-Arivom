@@ -47,11 +47,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   const lang = locale === "ta" ? ("ta" as const) : ("en" as const);
   const [places, follows] = await Promise.all([getMyPlaces(), getMyFollows()]);
-  const [t, tn, tl, format, strings, lastChecked, brief, followItems] =
+  const [t, tn, tl, tc, format, strings, lastChecked, brief, followItems] =
     await Promise.all([
       getTranslations("home.feed"),
       getTranslations("news"),
       getTranslations("locate"),
+      getTranslations("common"),
       getFormatter(),
       buildNewsStrings(),
       getNewsLastChecked(),
@@ -172,6 +173,11 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 locating: tl("locating"),
                 denied: tl("denied"),
                 failed: tl("failed"),
+              }}
+              fallback={{
+                action: `/${locale}/constituencies`,
+                placeholder: tl("pickerPlaceholder"),
+                submit: tc("nav.search"),
               }}
             />
             <Button asChild size="lg" variant="outline" className="press">

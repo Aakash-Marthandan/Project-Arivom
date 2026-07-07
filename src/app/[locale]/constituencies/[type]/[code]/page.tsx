@@ -304,7 +304,16 @@ export default async function ConstituencyPage({
               )}
             </dd>
             {c.district_lgd ? (
-              <dd className="mt-2 text-sm">
+              <dd className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                {/* The bridge from the civic spine to the district data:
+                    both destinations spelled out, neither hidden behind
+                    a bare name link. */}
+                <Link
+                  href={`/d/${c.district_lgd}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  {t("districtIndicatorsLink")} →
+                </Link>
                 <Link
                   href={`/news/d/${c.district_lgd}`}
                   className="text-primary underline-offset-4 hover:underline"

@@ -51,8 +51,14 @@ export function PlaceToggle({
   const state = override ?? parseState(cookie, level, code);
 
   if (state === "unknown") {
-    // Stable footprint pre-hydration; no layout shift.
-    return <div className="h-9 w-40 rounded-lg" aria-hidden="true" />;
+    // Stable footprint pre-hydration; a button-shaped shimmer reads as
+    // "loading", never as an empty hole in the page.
+    return (
+      <div
+        className="h-9 w-40 animate-pulse rounded-lg bg-secondary"
+        aria-hidden="true"
+      />
+    );
   }
   if (state === "full") {
     return <p className="text-sm text-muted-foreground">{labels.full}</p>;
