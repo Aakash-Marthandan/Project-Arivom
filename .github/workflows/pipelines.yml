@@ -6,7 +6,7 @@ on:
       importer:
         description: Which importer to run
         type: choice
-        options: [all, lgd, constituencies]
+        options: [all, lgd, constituencies, udise]
         default: all
   schedule:
     # LGD hierarchy + constituency universe: monthly refresh (data changes
@@ -34,3 +34,8 @@ jobs:
       - name: Import constituencies
         if: ${{ inputs.importer == 'constituencies' || inputs.importer == 'all' || github.event_name == 'schedule' }}
         run: uv run import-constituencies
+      - name: Import UDISE+ education indicators
+        # Annual data; the monthly run picks up new academic years and
+        # revisions when UDISE+ publishes them.
+        if: ${{ inputs.importer == 'udise' || inputs.importer == 'all' || github.event_name == 'schedule' }}
+        run: uv run import-udise

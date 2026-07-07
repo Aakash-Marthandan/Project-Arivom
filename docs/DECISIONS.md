@@ -5,6 +5,49 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-07 — M8: UDISE+ education indicators
+
+### D-028: UDISE+ via the public dashboard API; counts only, rates deferred
+DESIGN §4D names UDISE+ as the education source with district as the
+display unit. Resolved ambiguities:
+- **Access path.** data.gov.in's UDISE mirrors stop around 2019 and are
+  fragmented per district, and bulk report cards are PDFs. The UDISE+
+  dashboard itself renders from a public API
+  (`api.udiseplus.gov.in/open-services/v1.1/`), authenticated by a static
+  public client token shipped in the dashboard's own JS bundle — public
+  data through the publisher's own public channel, same class as the
+  D-006 curl fetches. The importer pins that token with a comment on how
+  to re-read it if it rotates (the run fails loudly, never silently).
+  District-wise rows: `regionType 22` + state code 33; the same call
+  pattern the dashboard's report grids use.
+- **Scope: counts and PTR only, outcome rates deferred.** The API also
+  publishes GER/NER/dropout, but its level bucketing for TN produced
+  figures we could not reconcile (e.g. primary GER 54.3 with primary
+  enrollment far below the classes-1–5 sum), and a misread ratio
+  misinforms in exactly the way pillar 1 exists to prevent. M8 ships
+  what is unambiguous: enrollment by level and gender, schools, teachers,
+  pupil-teacher ratios, and functional infrastructure counts. Rates join
+  when their semantics are verified against the published state report
+  card PDFs.
+- **Built-in cross-validation.** Every run must reproduce UDISE's own
+  independently published state totals from our district-wise sums
+  (tolerance 1%, else the run fails). 2022-23 through 2024-25 match
+  exactly today.
+- **CHENNAI (EXT. GCC).** UDISE carries an education district for the
+  extended Greater Chennai Corporation area with no LGD counterpart. It
+  counts toward the state rollup and is reported on every run; it never
+  attaches to an LGD district.
+- **Coverage.** District-wise data exists for 2021-22 onward (37
+  districts in 2021-22 — Mayiladuthurai reports from 2022-23); earlier
+  years and 2025-26 are advertised but unpublished, reported as pending.
+- **Facts shape.** One fact per indicator per locality,
+  `key='education.*'`, value `{"series": [{"year": "2021-22", …}]}`
+  ascending, `extraction_method='api'`, monthly cron alongside LGD.
+  State rollup facts attach to the state locality; PTR (not summable)
+  reads the state-wise row directly.
+
+---
+
 ## 2026-07-06 — Brand identity
 
 ### D-027: The Arivom mark — four layers, one emergence
