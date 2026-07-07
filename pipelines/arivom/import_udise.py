@@ -190,6 +190,7 @@ def main() -> None:
         ),
         license=None,
         access_mode="api",
+        cadence="monthly",
         notes=(
             "District-wise education statistics for Tamil Nadu from the public"
             " UDISE+ dashboard API (open-services v1.1). Data is voluntarily"

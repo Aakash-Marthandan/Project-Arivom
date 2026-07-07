@@ -832,6 +832,7 @@ def main() -> None:
         publisher="Arivom pipeline over tracked outlets' reporting",
         license=None,
         access_mode="api",
+        cadence="hourly",
         notes=(
             "Clusters registry outlets' items by event and writes neutral bilingual "
             "summaries with inline citations. Drafts: claude-sonnet-5; entity/merge "

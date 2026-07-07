@@ -408,13 +408,27 @@
       "source": "Source",
       "retrieved": "Last retrieved",
       "records": "Records",
-      "caption": "Data sources and their status"
+      "caption": "Data sources and their status",
+      "status": "Status"
     },
     "emptyState": "No data has been imported yet. Once the data pipelines start running, this table will fill in automatically.",
     "slaNote": "Expected update windows (SLAs) for each dataset, with green/amber/red status against them, arrive in a later milestone.",
     "pool": {
       "title": "The story pool",
       "body": "News items collected: {total}. Excluded from feeds as non-civic: {soft}. Awaiting analysis: {unclassified}. The selection rules are on the methodology page."
+    },
+    "sla": {
+      "current": "On schedule",
+      "late": "Overdue",
+      "stalled": "Stopped",
+      "onDemand": "On demand",
+      "legend": "The status compares the last successful check with each source's checking schedule. News feeds are checked every 30 minutes and count as overdue after 3 hours, stopped after 24. The vacancy watch runs daily: overdue after 2 days, stopped after 4. Monthly imports: overdue after 45 days, stopped after 75. Sources checked on demand carry no colour. The time column shows when we last checked, not when the source last published."
+    },
+    "cadence": {
+      "half-hourly": "checked every 30 minutes",
+      "hourly": "checked hourly",
+      "daily": "checked daily",
+      "monthly": "checked monthly"
     }
   },
   "notFound": {

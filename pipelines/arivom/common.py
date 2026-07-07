@@ -123,20 +123,25 @@ class Db:
         license: str | None,
         access_mode: str,
         notes: str | None = None,
+        cadence: str | None = None,
     ) -> int:
+        """cadence = how often pipelines CHECK this source (drives the
+        /freshness SLA colours). COALESCE keeps an already-set cadence
+        when a caller does not pass one."""
         row = self.conn.execute(
             """
-            INSERT INTO sources (name, url, publisher, license, access_mode, notes)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO sources (name, url, publisher, license, access_mode, notes, cadence)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (name) DO UPDATE
               SET url = EXCLUDED.url,
                   publisher = EXCLUDED.publisher,
                   license = EXCLUDED.license,
                   access_mode = EXCLUDED.access_mode,
-                  notes = EXCLUDED.notes
+                  notes = EXCLUDED.notes,
+                  cadence = COALESCE(EXCLUDED.cadence, sources.cadence)
             RETURNING id
             """,
-            (name, url, publisher, license, access_mode, notes),
+            (name, url, publisher, license, access_mode, notes, cadence),
         ).fetchone()
         assert row is not None
         return row[0]

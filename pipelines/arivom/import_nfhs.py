@@ -63,6 +63,7 @@ def main() -> None:
         ),
         license="Government Open Data License - India (GODL)",
         access_mode="api",
+        cadence="monthly",
         notes=(
             "National Family Health Survey round 5 (2019-21) district"
             " factsheet indicators. Sample-survey estimates, displayed as"

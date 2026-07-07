@@ -88,6 +88,7 @@ def main() -> None:
         publisher="Arivom pipeline over Google News RSS",
         license=None,
         access_mode="scrape",
+        cadence="daily",
         notes=(
             "Discovery aid only (DESIGN.md §4E): raises unreviewed signals about TN "
             "by-election and vacancy news for human review. Signals never change seat "

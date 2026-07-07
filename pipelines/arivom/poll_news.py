@@ -258,6 +258,7 @@ def main() -> None:
             publisher=outlet["name"],
             license=None,
             access_mode="api",
+        cadence="half-hourly",
             notes=outlet_source_notes(outlet),
         )
 
@@ -337,6 +338,7 @@ def main() -> None:
         publisher="Arivom pipeline over the §4E outlet registry",
         license=None,
         access_mode="api",
+        cadence="half-hourly",
         notes=(
             "Health record of the 30-minute news poll: per-outlet item/new/failure "
             "counts. Items themselves carry the outlet's own source row."

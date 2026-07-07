@@ -256,6 +256,7 @@ def main() -> None:
         publisher="Election Commission of India",
         license=None,
         access_mode="scrape",
+        cadence="monthly",
         notes=(
             "Authority for the 234-AC universe (numbers + English names). The portal "
             "notes results are preliminary RO-entered trends until Form 20."
@@ -267,6 +268,7 @@ def main() -> None:
         publisher="Department of Economics and Statistics, Government of Tamil Nadu",
         license="Government Open Data License – India (GODL)",
         access_mode="api",
+        cadence="monthly",
         notes="Authority for the 39-PC universe: numbers, English names, reservation status.",
     )
     datameet_source = db.ensure_source(
@@ -275,6 +277,7 @@ def main() -> None:
         publisher="DataMeet community",
         license="CC BY 2.5 IN",
         access_mode="bulk",
+        cadence="monthly",
         notes=(
             "Assembly-constituency attribute table scraped from ECI delimitation data. "
             "Authority for AC→PC linkage (numeric) and AC reservation; district names "
@@ -287,6 +290,7 @@ def main() -> None:
         publisher="Wikimedia Foundation (community-curated)",
         license="CC BY-SA 4.0",
         access_mode="api",
+        cadence="monthly",
         notes=(
             "AC→district and AC→PC linkage plus AC reservation status. Community-curated; "
             "cross-checked against the ECI universe on every import."
@@ -298,6 +302,7 @@ def main() -> None:
         publisher="Wikimedia Foundation",
         license="CC0 1.0",
         access_mode="api",
+        cadence="monthly",
         notes="Tamil names for entities whose LGD local-language field is missing or not Tamil.",
     )
 

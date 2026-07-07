@@ -71,6 +71,7 @@ def main() -> None:
         ),
         license=None,
         access_mode="api",
+        cadence="monthly",
         notes=(
             "District-wise rural household tap-connection coverage from"
             " the public JJM dashboard's JSON endpoint. Administrative"

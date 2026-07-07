@@ -61,7 +61,9 @@ export interface FreshnessRow {
   publisher: string;
   license: string | null;
   access_mode: string;
+  cadence: "half-hourly" | "hourly" | "daily" | "monthly" | "manual" | null;
   last_retrieved: Date;
+  age_hours: number;
   record_count: number;
 }
 
@@ -871,12 +873,15 @@ export async function getFreshness(): Promise<FreshnessRow[]> {
       SELECT source_id, retrieved_at FROM news_clusters
     )
     SELECT s.name AS source_name, s.url AS source_url,
-           s.publisher, s.license, s.access_mode,
+           s.publisher, s.license, s.access_mode, s.cadence,
            MAX(u.retrieved_at) AS last_retrieved,
+           (EXTRACT(EPOCH FROM (now() - MAX(u.retrieved_at))) / 3600)::float
+             AS age_hours,
            COUNT(*)::int AS record_count
     FROM usage u
     JOIN sources s ON s.id = u.source_id
-    GROUP BY s.id, s.name, s.url, s.publisher, s.license, s.access_mode
+    GROUP BY s.id, s.name, s.url, s.publisher, s.license, s.access_mode,
+             s.cadence
     ORDER BY s.name
   `;
 }

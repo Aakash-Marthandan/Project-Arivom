@@ -75,6 +75,7 @@ def main() -> None:
         publisher="Ministry of Panchayati Raj, Government of India",
         license="Government Open Data License – India (GODL)",
         access_mode="api",
+        cadence="monthly",
         notes=(
             "Authoritative administrative hierarchy codes for Tamil Nadu (state 33). "
             "Mirrored on data.gov.in; the LGD portal itself requires a captcha for bulk "
@@ -87,6 +88,7 @@ def main() -> None:
         publisher="Wikimedia Foundation",
         license="CC0 1.0",
         access_mode="api",
+        cadence="monthly",
         notes="Tamil names for entities whose LGD local-language field is missing or not Tamil.",
     )
 
