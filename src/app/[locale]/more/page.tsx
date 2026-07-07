@@ -31,7 +31,7 @@ export default async function MorePage({
   const cards = places.length ? await getPlaceCards(places) : [];
 
   const explore = [
-    { href: "/constituencies" as const, label: tc("nav.constituencies") },
+    { href: "/constituencies" as const, label: tc("nav.search") },
     { href: "/government" as const, label: tc("nav.government") },
     { href: "/vacancies" as const, label: tc("nav.vacancies") },
   ];

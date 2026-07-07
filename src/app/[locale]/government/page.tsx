@@ -12,27 +12,32 @@ import {
   getVacantSeats,
   type Minister,
 } from "@/lib/queries";
-import { departmentList } from "@/lib/departments";
+import {
+  departmentEntries,
+  type StoredPortfolios,
+} from "@/lib/departments";
 
 export const revalidate = 3600;
 
 interface MinisterValue {
   position_ta: string;
-  portfolios_ta: string[] | string;
-  portfolios_en: string[] | string;
+  portfolios_ta: StoredPortfolios;
+  portfolios_en: StoredPortfolios;
   is_chief_minister: boolean;
 }
 
-/** One department entry: the card unit, and the future anchor for
- *  department-tagged news (D-016: rational-citizen navigation). */
-interface DepartmentEntry {
+/** One department card: the department (its identity from the source's
+ *  link target, D-033), the allocation subjects under it when they
+ *  differ, and the minister who holds it. */
+interface DepartmentCard {
   department: string;
+  subjects: string | null;
   positionKey: "cm" | "deputyCm" | "minister";
   minister: Minister;
 }
 
 
-function positionKeyOf(v: MinisterValue): DepartmentEntry["positionKey"] {
+function positionKeyOf(v: MinisterValue): DepartmentCard["positionKey"] {
   if (v.is_chief_minister) return "cm";
   if (/துணை\s*முதல்?வமைச்சர்|துணை\s*முதலமைச்சர்/.test(v.position_ta)) return "deputyCm";
   return "minister";
@@ -65,15 +70,16 @@ export default async function GovernmentPage({
     (m) => (m.minister as MinisterValue).is_chief_minister,
   );
 
-  // Department-first: split each minister's portfolios into department
-  // entries and sort by department name in the reader's language.
-  const entries: DepartmentEntry[] = ministers.flatMap((m) => {
+  // Department-first: one card per source-listed department entry,
+  // sorted by department name in the reader's language.
+  const entries: DepartmentCard[] = ministers.flatMap((m) => {
     const v = m.minister as MinisterValue;
     const portfolios = isTa
       ? v.portfolios_ta || v.portfolios_en
       : v.portfolios_en || v.portfolios_ta;
-    return departmentList(portfolios).map((department) => ({
-      department,
+    return departmentEntries(portfolios).map((entry) => ({
+      department: entry.name,
+      subjects: entry.subjects,
       positionKey: positionKeyOf(v),
       minister: m,
     }));
@@ -150,6 +156,11 @@ export default async function GovernmentPage({
                     entries={provenanceFor(m)}
                   />
                 </div>
+                {entry.subjects ? (
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {entry.subjects}
+                  </p>
+                ) : null}
                 <p className="mt-2 text-sm">
                   <span
                     className={

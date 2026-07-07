@@ -22,7 +22,7 @@ export async function SiteFooter() {
           <ul className="space-y-1 text-sm text-muted-foreground">
             <li>
               <Link href="/constituencies" className="hover:text-primary hover:underline">
-                {t("nav.constituencies")}
+                {t("nav.search")}
               </Link>
             </li>
             <li>

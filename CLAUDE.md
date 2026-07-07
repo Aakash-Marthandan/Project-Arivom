@@ -100,7 +100,7 @@ indicators, importer `import-nfhs`) and the JJM drinking-water panel
 (D-031: rural tap coverage from the mission dashboard's own endpoint,
 importer `import-jjm`; **prod data imports pending — owner runs
 `import-udise`, `import-nfhs`, `import-jjm` and `import-ministers`
-(D-032 re-import) against $SUPABASE_DB_URL**); the app experience — PWA shell with bottom tabs,
+(D-032/D-033 re-import) against $SUPABASE_DB_URL**); the app experience — PWA shell with bottom tabs,
 news-first home sectioned by device-remembered places (my-places +
 person follows, cookies, no accounts), content-first story cards with
 hotlinked outlet images (D-024: linked, never copied), /news +

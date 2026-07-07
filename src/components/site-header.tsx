@@ -9,7 +9,9 @@ export async function SiteHeader() {
   const otherLocale = locale === "ta" ? "en" : "ta";
 
   const nav = [
-    { href: "/constituencies", label: t("nav.constituencies") },
+    // One name for one destination (owner, audit round): the tab bar,
+    // header and /more all say "Search" for /constituencies.
+    { href: "/constituencies", label: t("nav.search") },
     { href: "/government", label: t("nav.government") },
     { href: "/news", label: t("nav.news") },
     { href: "/vacancies", label: t("nav.vacancies") },

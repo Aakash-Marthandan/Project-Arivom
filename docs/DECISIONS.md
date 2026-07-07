@@ -5,6 +5,35 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-07 — Audit round 2: department identity from the source's links
+
+### D-033: Cards carry the department; allocation subjects sit under it
+The owner's second catch: a card named "Governor". Not a split bug this
+time — the enwiki cell genuinely has an item whose VISIBLE text is
+"Governor" (the official allocation subject "matters relating to the
+Governor") while its LINK TARGET is the actual department (Department
+of Legislative Assembly). The visible text is the editor's shorthand;
+the link target is the identity. Resolution:
+- Portfolio entries are now {name, subjects}: name = the linked
+  department (title minus " (Tamil Nadu)"/" (தமிழ்நாடு)", en also minus
+  "Department of "), subjects = the visible allocation text when it
+  differs. Unlinked items keep their text as the name. Plain comma
+  cells bind each segment to a link whose text sits inside it.
+- /government renders one card per entry: department as the title,
+  subjects as a muted line ("Legislative Assembly" / "Governor";
+  "Law" / "Law, Courts, Prisons, Prevention of Corruption").
+- This also exposed that D-032 still comma-split SINGLE-item lists
+  (en 79 → 55 truly faithful entries). ta stays at 116 subject-level
+  entries — its table is plain text; faithful to each source.
+- Import tripwire: any entry NAME matching a constitutional office
+  word (Governor/Speaker/CM, both languages) prints a SUSPECT line in
+  every run's report. Trailing punctuation trimmed from names.
+- Label unification (owner, audit round 1): /constituencies is
+  "Search / தேடல்" everywhere — tab bar, header, /more, footer; the
+  unused nav.constituencies key is removed from both catalogs.
+
+---
+
 ## 2026-07-07 — Audit round: department extraction fidelity
 
 ### D-032: Departments keep the source's own list structure

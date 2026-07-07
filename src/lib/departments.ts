@@ -6,15 +6,36 @@
  * matches a card when either normalized form contains the other.
  */
 
+/** One department card: name is the department's identity (the source's
+ *  link target when it has one, D-033); subjects is the allocation text
+ *  shown under it when the two differ. */
+export interface DepartmentEntry {
+  name: string;
+  subjects: string | null;
+}
+
+export type StoredPortfolios = DepartmentEntry[] | string[] | string;
+
 /** The ministers importer stores one entry per source-listed department
- *  (D-032). Legacy rows are flat strings; comma-splitting them is
- *  best-effort until the re-import lands everywhere. */
-export function departmentList(portfolios: string[] | string): string[] {
-  if (Array.isArray(portfolios)) return portfolios;
+ *  (D-032/D-033). Older rows are flat strings or plain string arrays;
+ *  normalization keeps prod rendering until its re-import lands. */
+export function departmentEntries(
+  portfolios: StoredPortfolios,
+): DepartmentEntry[] {
+  if (Array.isArray(portfolios)) {
+    return portfolios.map((p) =>
+      typeof p === "string" ? { name: p, subjects: null } : p,
+    );
+  }
   return portfolios
     .split(",")
     .map((d) => d.trim().replace(/\s+/g, " "))
-    .filter((d) => d.length > 1);
+    .filter((d) => d.length > 1)
+    .map((name) => ({ name, subjects: null }));
+}
+
+export function departmentList(portfolios: StoredPortfolios): string[] {
+  return departmentEntries(portfolios).map((e) => e.name);
 }
 
 const STRIP_WORDS = /\b(department|dept|of|and|the)\b|துறை|மற்றும்/g;

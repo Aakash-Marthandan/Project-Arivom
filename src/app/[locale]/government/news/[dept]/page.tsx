@@ -7,7 +7,11 @@ import {
 } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { buildNewsStrings, NewsFeed } from "@/components/news-feed";
-import { departmentList, departmentMatches } from "@/lib/departments";
+import {
+  departmentList,
+  departmentMatches,
+  type StoredPortfolios,
+} from "@/lib/departments";
 import {
   getDepartmentTags,
   getMinisters,
@@ -18,8 +22,8 @@ export const revalidate = 600;
 
 interface MinisterValue {
   position_ta: string;
-  portfolios_ta: string[] | string;
-  portfolios_en: string[] | string;
+  portfolios_ta: StoredPortfolios;
+  portfolios_en: StoredPortfolios;
   is_chief_minister: boolean;
 }
 

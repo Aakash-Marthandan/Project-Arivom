@@ -38,24 +38,82 @@ EN_SEAT_ALIASES = {
 }
 
 
-def split_plain_departments(text: str) -> list[str]:
-    """Comma-split a PLAIN portfolio cell (no list markup in the source).
+# Constitutional offices are allocation SUBJECTS ("matters relating to the
+# Governor"), never departments; when one surfaces as a card name the
+# import report flags it loudly (owner audit, D-033).
+OFFICE_WORDS = re.compile(
+    r"^(governor|speaker|deputy speaker|chief minister"
+    r"|ஆளுநர்|சபாநாயகர்|முதலமைச்சர்|முதல்வர்)$",
+    re.IGNORECASE,
+)
 
-    Only used when the source itself gave no item structure; a cell that
-    had <li>/<br> items keeps each item whole, commas and all (D-032)."""
-    parts = [" ".join(p.split()) for p in text.split(",")]
-    return [p for p in parts if len(p) > 1]
+
+def clean_dept_title(title: str, lang: str) -> str:
+    """A wiki article title as a displayable department name."""
+    title = " ".join(title.split())
+    for suffix in (" (Tamil Nadu)", " (தமிழ்நாடு)"):
+        title = title.removesuffix(suffix)
+    if lang == "en" and title.startswith("Department of "):
+        title = title.removeprefix("Department of ")
+    return title.strip()
+
+
+def node_text(node: Any) -> str:
+    return " ".join(node.get_text(" ", strip=True).split())
+
+
+def portfolio_entries(cell: Any, lang: str) -> list[dict[str, Any]]:
+    """A portfolio cell as department entries: {name, subjects}.
+
+    The source's own structure carries the meaning (D-032/D-033):
+    - an <li>'s LINK TARGET is the department; its visible text is the
+      allocation subjects (which can be commas inside one name, or an
+      office word like "Governor");
+    - a plain cell is the official comma-separated allocation string;
+      a comma segment that carries a link gets that department name.
+    Entries render as one card each; subjects show under the name when
+    they differ.
+    """
+    entries: list[dict[str, Any]] = []
+
+    def entry_from(text: str, link: Any) -> dict[str, Any]:
+        text = text.strip(" .;")  # trailing punctuation is formatting, not name
+        dept = clean_dept_title(link["title"], lang) if link and link.get("title") else None
+        name = dept or text
+        subjects = text if dept and text.lower() != name.lower() else None
+        return {"name": name, "subjects": subjects}
+
+    items = cell.find_all("li")
+    if items:
+        for li in items:
+            text = node_text(li)
+            if len(text) <= 1:
+                continue
+            entries.append(entry_from(text, li.find("a")))
+        return entries
+
+    # Plain cell: the official comma-separated allocation string. Bind
+    # each segment to a link whose visible text sits inside it.
+    links = [(node_text(a), a) for a in cell.find_all("a")]
+    for part in node_text(cell).split(","):
+        text = " ".join(part.split())
+        if len(text) <= 1:
+            continue
+        link = next((a for a_text, a in links if a_text and a_text in text), None)
+        entries.append(entry_from(text, link))
+    return entries
 
 
 def parse_ministers_table(
-    html: str, name_col_marker: str, seat_col_marker: str, extra_cols: dict[str, str]
+    html: str, name_col_marker: str, seat_col_marker: str, extra_cols: dict[str, str],
+    lang: str,
 ) -> list[dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     for table in soup.find_all("table", class_="wikitable"):
-        grid = expand_table_grid(table, segments=True)
+        grid = expand_table_grid(table, cells="nodes")
         if not (10 < len(grid) < 80):
             continue
-        header = [" ".join(h).lower() for h in grid[0]]
+        header = [node_text(h).lower() if h is not None else "" for h in grid[0]]
         joined = " ".join(header)
         if name_col_marker.lower() not in joined or seat_col_marker.lower() not in joined:
             continue
@@ -75,23 +133,17 @@ def parse_ministers_table(
         for row in grid[1:]:
             if len(row) <= max(name_i, seat_i):
                 continue
-            name = " ".join(row[name_i]).strip()
-            seat = " ".join(row[seat_i]).strip()
+            name = node_text(row[name_i]) if row[name_i] is not None else ""
+            seat = node_text(row[seat_i]) if row[seat_i] is not None else ""
             if not name or not seat or name.lower() == header[name_i]:
                 continue
             entry: dict[str, Any] = {"name": name, "seat": seat}
             for key, idx in extras.items():
-                segments = row[idx] if idx is not None and len(row) > idx else []
+                node = row[idx] if idx is not None and len(row) > idx else None
                 if key == "portfolio":
-                    # One department per source item; a lone plain segment
-                    # falls back to comma-splitting (the source's own
-                    # convention when it uses no list markup).
-                    if len(segments) == 1:
-                        entry[key] = split_plain_departments(segments[0])
-                    else:
-                        entry[key] = [s for s in segments if len(s) > 1]
+                    entry[key] = portfolio_entries(node, lang) if node is not None else []
                 else:
-                    entry[key] = " ".join(segments).strip()
+                    entry[key] = node_text(node) if node is not None else ""
             rows.append(entry)
         if len(rows) >= 10:
             return rows
@@ -138,12 +190,14 @@ def main() -> None:
         name_col_marker="பெயர்",
         seat_col_marker="தொகுதி",
         extra_cols={"position": "பதவி", "portfolio": "துறை"},
+        lang="ta",
     )
     en_rows = parse_ministers_table(
         fetch_wiki_html(session, ENWIKI_API, ENWIKI_PAGE),
         name_col_marker="name",
         seat_col_marker="constituency",
         extra_cols={"portfolio": "portfolio", "party": "party"},
+        lang="en",
     )
     print(f"  tawiki rows: {len(ta_rows)}, enwiki rows: {len(en_rows)}")
 
@@ -183,7 +237,10 @@ def main() -> None:
         pid, code = hit
         entry = merged.setdefault(pid, {"ac": code, "is_cm": False})
         entry["portfolios_en"] = row.get("portfolio", [])
-        if CM_MARKERS.search(" ".join(row.get("portfolio", []))):
+        joined = " ".join(
+            f"{e['name']} {e.get('subjects') or ''}" for e in row.get("portfolio", [])
+        )
+        if CM_MARKERS.search(joined):
             entry["is_cm"] = True
 
     only_ta = sum(1 for v in merged.values() if "portfolios_en" not in v)
@@ -221,9 +278,20 @@ def main() -> None:
     cm = [pid for pid, v in merged.items() if v["is_cm"]]
     dep_ta = sum(len(v.get("portfolios_ta", [])) for v in merged.values())
     dep_en = sum(len(v.get("portfolios_en", [])) for v in merged.values())
+    # Accuracy tripwire (D-033): a constitutional office surfacing as a
+    # department NAME means the source structure changed under us.
+    suspects = [
+        f"{lang}: '{e['name']}'"
+        for v in merged.values()
+        for lang in ("portfolios_ta", "portfolios_en")
+        for e in v.get(lang, [])
+        if OFFICE_WORDS.match(e["name"].strip())
+    ]
     print("\n=== Ministers import report ===")
     print(f"ministers: {len(merged)} (chief minister rows: {len(cm)})")
     print(f"department entries: ta {dep_ta}, en {dep_en}")
+    for s in suspects:
+        print(f"  SUSPECT department name (office word) — review: {s}")
     print(f"bilingual: {len(merged) - only_ta - only_en}, ta-only: {only_ta}, en-only: {only_en}")
     print(f"stale minister facts removed: {removed}")
     for line in problems:

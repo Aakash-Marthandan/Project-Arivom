@@ -266,20 +266,21 @@ def cell_segments(cell: Any) -> list[str]:
 
 
 def expand_table_grid(
-    table: Any, *, segments: bool = False
+    table: Any, *, cells: str = "text"
 ) -> list[list[Any]]:
     """Expand an HTML table into a dense grid, resolving row/colspans.
 
-    Cells are flattened strings by default; with segments=True each cell
-    is a list of source-visible segments (see cell_segments)."""
+    cells="text" (default): each cell is its flattened string.
+    cells="nodes": each cell is the BeautifulSoup td/th node (rowspan
+    copies share the node) — for callers that need markup structure,
+    e.g. portfolio lists whose item names contain commas (D-032)."""
     grid: list[list[Any]] = []
     pending: dict[int, tuple[Any, int]] = {}  # col index -> (content, remaining rows)
-    empty: Any = [] if segments else ""
+    empty: Any = None if cells == "nodes" else ""
     for tr in table.find_all("tr"):
         row: list[Any] = []
         col = 0
-        cells = tr.find_all(["td", "th"])
-        cell_iter = iter(cells)
+        cell_iter = iter(tr.find_all(["td", "th"]))
         while True:
             if col in pending:
                 content, remaining = pending[col]
@@ -307,8 +308,8 @@ def expand_table_grid(
                             row.append(empty)
                         col += 1
                 break
-            if segments:
-                content: Any = cell_segments(cell)
+            if cells == "nodes":
+                content: Any = cell
             else:
                 content = " ".join(cell.get_text(" ", strip=True).split())
             rowspan = int(cell.get("rowspan", 1) or 1)
