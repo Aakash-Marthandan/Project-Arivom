@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SwRegister } from "@/components/sw-register";
 import { TabBar } from "@/components/tab-bar";
+import { siteOrigin } from "@/lib/site";
 import "../globals.css";
 
 const bodyFont = Noto_Sans_Tamil({
@@ -34,6 +35,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "common" });
   return {
+    metadataBase: new URL(siteOrigin()),
     title: {
       default: `${t("appName")} — ${t("tagline")}`,
       template: `%s · ${t("appName")}`,
@@ -69,9 +71,31 @@ export default async function LocaleLayout({
     { href: "/more" as const, label: t("nav.more") },
   ];
 
+  // WebSite + publisher JSON-LD (M11 SEO): factual identity only.
+  const origin = siteOrigin();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: t("appName"),
+    url: `${origin}/${locale}`,
+    inLanguage: locale === "ta" ? "ta-IN" : "en-IN",
+    description: t("footer.mission"),
+    publisher: {
+      "@type": "Organization",
+      name: t("appName"),
+      url: `${origin}/ta`,
+      logo: `${origin}/logo.svg`,
+    },
+  };
+
   return (
     <html lang={locale} className={`${bodyFont.variable} ${displayFont.variable}`}>
       <body className="has-tabbar flex min-h-svh flex-col">
+        <script
+          type="application/ld+json"
+          // Static, server-built JSON with no user input.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
