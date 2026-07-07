@@ -114,6 +114,12 @@ floors (perf ≥0.80 median-of-3 on CI hardware, a11y ≥0.95; local measures
 6. Watch cost + spot-check quality via the qa-sample output; escalate the
    summary-draft model only if the spot-check failure rate is high (D-022).
 
+**Brand identity (D-027):** the mark is final — AdS/CFT tensor network /
+screen / reader pages / white Tamil Nadu (our real served boundary) on the
+peacock tile. Assets: `public/logo.svg`, `public/logo-dark.svg` (dark
+mode), PWA icons regenerated from it. Never hand-edit the PNGs; re-run the
+generator against the state geometry (see D-027).
+
 **Product backlog next** (beyond the roadmap milestones): department feeds
 UI behind /government cards (data arrives with the key); image-proxy
 decision to right-size thumbnails (the M11 perf lever; hotlink policy in
