@@ -37,8 +37,9 @@ export default async function DistrictNewsPage({
   if (!district) notFound();
 
   const lang = locale === "ta" ? ("ta" as const) : ("en" as const);
-  const [t, format, strings, clusters, items] = await Promise.all([
+  const [t, td, format, strings, clusters, items] = await Promise.all([
     getTranslations("news"),
+    getTranslations("district"),
     getFormatter(),
     buildNewsStrings(),
     getNewsClusters(district.id),
@@ -57,12 +58,18 @@ export default async function DistrictNewsPage({
       <h1 className="font-heading text-3xl font-bold">
         {t("districtTitle", { district: districtName })}
       </h1>
-      <p className="mt-2 text-sm">
+      <p className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
         <Link
           href="/news"
           className="text-primary underline-offset-4 hover:underline"
         >
           ← {t("backToAll")}
+        </Link>
+        <Link
+          href={`/d/${lgd}`}
+          className="text-primary underline-offset-4 hover:underline"
+        >
+          {td("metaTitle", { district: districtName })} →
         </Link>
       </p>
 

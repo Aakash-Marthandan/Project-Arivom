@@ -291,7 +291,18 @@ export default async function ConstituencyPage({
         {districtName ? (
           <div className="rounded-lg border border-border bg-card p-4">
             <dt className="text-sm text-muted-foreground">{t("district")}</dt>
-            <dd className="mt-1 font-medium">{districtName}</dd>
+            <dd className="mt-1 font-medium">
+              {c.district_lgd ? (
+                <Link
+                  href={`/d/${c.district_lgd}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  {districtName}
+                </Link>
+              ) : (
+                districtName
+              )}
+            </dd>
             {c.district_lgd ? (
               <dd className="mt-2 text-sm">
                 <Link

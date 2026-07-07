@@ -746,6 +746,50 @@ export async function getDistrictByLgd(
   return rows[0] ?? null;
 }
 
+export interface DistrictDetail {
+  id: number;
+  lgd_code: string;
+  name_en: string;
+  name_ta: string;
+  retrieved_at: Date;
+  source_name: string;
+  source_url: string | null;
+  source_publisher: string;
+  source_license: string | null;
+  source_access_mode: string;
+}
+
+/** District page detail: the locality row plus its record provenance. */
+export async function getDistrict(
+  lgdCode: string,
+): Promise<DistrictDetail | null> {
+  const rows = await sql<DistrictDetail[]>`
+    SELECT l.id, l.lgd_code, l.name_en, l.name_ta, l.retrieved_at,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license,
+           s.access_mode AS source_access_mode
+    FROM localities l
+    JOIN sources s ON s.id = l.source_id
+    WHERE l.level = 'district' AND l.lgd_code = ${lgdCode}
+  `;
+  return rows[0] ?? null;
+}
+
+/** Assembly constituencies whose seats lie in a district (cross-links). */
+export async function getDistrictAcs(
+  districtId: number,
+): Promise<ConstituencyListItem[]> {
+  return sql<ConstituencyListItem[]>`
+    SELECT l.id, l.eci_code, l.name_en, l.name_ta,
+           l.level::text AS level,
+           d.name_en AS district_en, d.name_ta AS district_ta
+    FROM localities l
+    LEFT JOIN localities d ON d.id = l.district_id
+    WHERE l.level = 'ac' AND l.district_id = ${districtId}
+    ORDER BY (l.eci_code)::int
+  `;
+}
+
 /**
  * /freshness is generated from the database, never by hand: last retrieval
  * time and row count per source, across localities, facts and news items.

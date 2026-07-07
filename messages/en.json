@@ -222,6 +222,56 @@
     "follow": "Follow",
     "following": "Following ✓"
   },
+  "district": {
+    "metaTitle": "{district} district",
+    "badge": "District",
+    "acsTitle": "Assembly constituencies in this district",
+    "education": {
+      "sectionLabel": "Data indicators",
+      "title": "Education",
+      "selfReported": "Reported by schools",
+      "latestYear": "Latest published year: {year}",
+      "students": "Students",
+      "schools": "Schools",
+      "teachers": "Teachers",
+      "girlsBoys": "{girls} girls · {boys} boys",
+      "womenTeachers": "{count} women",
+      "byLevelTitle": "Students by level, {year}",
+      "level": "Level",
+      "total": "Total",
+      "girls": "Girls",
+      "boys": "Boys",
+      "levels": {
+        "prePrimary": "Pre-primary",
+        "primary": "Primary (classes 1–5)",
+        "upperPrimary": "Middle (classes 6–8)",
+        "secondary": "Secondary (classes 9–10)",
+        "higherSecondary": "Higher secondary (classes 11–12)"
+      },
+      "ptrTitle": "Students per teacher",
+      "ptrNote": "How many students there are for each teacher at that school level.",
+      "trendTitle": "Across the years",
+      "year": "Academic year",
+      "notPublished": "Not published",
+      "infraTitle": "School facilities, {year}",
+      "infraCount": "{count} of {total} schools",
+      "facilities": {
+        "functionalElectricity": "Electricity in working condition",
+        "functionalDrinkingWater": "Drinking water in working condition",
+        "functionalGirlsToilet": "Girls' toilets in working condition",
+        "functionalBoysToilet": "Boys' toilets in working condition",
+        "library": "Library",
+        "playground": "Playground",
+        "functionalComputers": "Computers in working condition",
+        "internet": "Internet connection",
+        "ramps": "Ramps for wheelchair access",
+        "medicalCheckup": "Medical check-up held"
+      },
+      "sourceNote": "Schools upload this data themselves to UDISE+, the education ministry's national system. It is not independently verified. Counts are as of 30 September of each academic year.",
+      "methodologyLink": "How we handle this data",
+      "unavailable": "Education data for this district is not published yet. It will appear here when UDISE+ publishes it."
+    }
+  },
   "provenance": {
     "chipLabel": "Source",
     "title": "Where this fact comes from",
@@ -234,7 +284,8 @@
     "entries": {
       "record": "Constituency record",
       "nameTa": "Tamil name",
-      "reservation": "Reservation status"
+      "reservation": "Reservation status",
+      "education": "Education indicators"
     },
     "methods": {
       "api": "Official API",
