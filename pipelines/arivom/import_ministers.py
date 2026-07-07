@@ -62,7 +62,17 @@ def node_text(node: Any) -> str:
     return " ".join(node.get_text(" ", strip=True).split())
 
 
-def portfolio_entries(cell: Any, lang: str) -> list[dict[str, Any]]:
+def _phrase_key(text: str) -> str:
+    """Normalize for the position-echo test: token soup without the
+    role/department suffix words or punctuation."""
+    text = re.sub(r"அமைச்சர்|மற்றும்|\bதுறை\b", " ", text)
+    text = re.sub(r"[,.;·]+", " ", text)
+    return " ".join(text.split())
+
+
+def portfolio_entries(
+    cell: Any, lang: str, position_hint: str = ""
+) -> list[dict[str, Any]]:
     """A portfolio cell as department entries: {name, subjects}.
 
     The source's own structure carries the meaning (D-032/D-033):
@@ -70,7 +80,12 @@ def portfolio_entries(cell: Any, lang: str) -> list[dict[str, Any]]:
       allocation subjects (which can be commas inside one name, or an
       office word like "Governor");
     - a plain cell is the official comma-separated allocation string;
-      a comma segment that carries a link gets that department name.
+      a comma segment that carries a link gets that department name;
+    - when a plain cell echoes the minister's own POSITION title
+      ("சிறு, குறு, நடுத்தரத் தொழில் அமைச்சர்" beside the identical
+      portfolio text), the commas sit inside ONE ministry phrase and
+      the cell is a single entry — the source's own consistency, not
+      a guess (owner audit, D-033).
     Entries render as one card each; subjects show under the name when
     they differ.
     """
@@ -92,10 +107,21 @@ def portfolio_entries(cell: Any, lang: str) -> list[dict[str, Any]]:
             entries.append(entry_from(text, li.find("a")))
         return entries
 
+    cell_text = node_text(cell)
+
+    # Position echo: the whole cell is one ministry phrase.
+    if (
+        position_hint
+        and "," in cell_text
+        and _phrase_key(cell_text)
+        and _phrase_key(cell_text) == _phrase_key(position_hint)
+    ):
+        return [entry_from(cell_text, cell.find("a"))]
+
     # Plain cell: the official comma-separated allocation string. Bind
     # each segment to a link whose visible text sits inside it.
     links = [(node_text(a), a) for a in cell.find_all("a")]
-    for part in node_text(cell).split(","):
+    for part in cell_text.split(","):
         text = " ".join(part.split())
         if len(text) <= 1:
             continue
@@ -138,12 +164,21 @@ def parse_ministers_table(
             if not name or not seat or name.lower() == header[name_i]:
                 continue
             entry: dict[str, Any] = {"name": name, "seat": seat}
+            # Non-portfolio columns first: the position text disambiguates
+            # commas inside a single ministry phrase (position echo).
             for key, idx in extras.items():
-                node = row[idx] if idx is not None and len(row) > idx else None
                 if key == "portfolio":
-                    entry[key] = portfolio_entries(node, lang) if node is not None else []
-                else:
-                    entry[key] = node_text(node) if node is not None else ""
+                    continue
+                node = row[idx] if idx is not None and len(row) > idx else None
+                entry[key] = node_text(node) if node is not None else ""
+            if "portfolio" in extras:
+                idx = extras["portfolio"]
+                node = row[idx] if idx is not None and len(row) > idx else None
+                entry["portfolio"] = (
+                    portfolio_entries(node, lang, entry.get("position", ""))
+                    if node is not None
+                    else []
+                )
             rows.append(entry)
         if len(rows) >= 10:
             return rows

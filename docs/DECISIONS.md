@@ -28,6 +28,15 @@ the link target is the identity. Resolution:
 - Import tripwire: any entry NAME matching a constitutional office
   word (Governor/Speaker/CM, both languages) prints a SUSPECT line in
   every run's report. Trailing punctuation trimmed from names.
+- **Position echo (ta plain cells).** A Tamil portfolio cell that
+  echoes the minister's own position title ("சிறு, குறு, நடுத்தரத்
+  தொழில் அமைச்சர்" beside identical portfolio text) is ONE ministry
+  phrase, not a comma list — merged into a single card using the
+  source's own consistency. Kills the "குறு"/"சிறு" fragments;
+  ta 116 → 112 entries, remaining short names (சட்டம், பொது) are real
+  departments. Wikipedia's "Artificial Inteligence" typo is displayed
+  verbatim (source-faithful) — fix upstream on the wiki or wait for
+  the tn.gov.in directory to become canonical.
 - Label unification (owner, audit round 1): /constituencies is
   "Search / தேடல்" everywhere — tab bar, header, /more, footer; the
   unused nav.constituencies key is removed from both catalogs.
