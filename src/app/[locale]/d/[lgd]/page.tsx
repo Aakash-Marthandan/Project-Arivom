@@ -91,6 +91,18 @@ interface HealthFact {
   indicators: Record<string, number>;
 }
 
+// Mirrors pipelines/arivom/import_jjm.py (D-031).
+interface WaterFact {
+  mission: string;
+  scope: string;
+  asOn: string;
+  ruralHouseholds: number;
+  withTapConnection: number;
+  coveragePercent: number;
+  harGharJalReported: boolean;
+  harGharJalCertified: boolean;
+}
+
 const HEALTH_GROUPS = {
   households: [
     "electricity",
@@ -221,6 +233,22 @@ export default async function DistrictPage({
           license: educationSource.source_license,
           retrievedOn: formatDate(educationSource.retrieved_at),
           method: methodLabel(educationSource.extraction_method),
+        },
+      ]
+    : [];
+
+  const waterFact = facts.find((f) => f.key === "water.jjm");
+  const water = waterFact?.value as WaterFact | undefined;
+  const waterProvenance: ProvenanceEntry[] = waterFact
+    ? [
+        {
+          title: tp("entries.water"),
+          sourceName: waterFact.source_name,
+          url: waterFact.source_url,
+          publisher: waterFact.source_publisher,
+          license: waterFact.source_license,
+          retrievedOn: formatDate(waterFact.retrieved_at),
+          method: methodLabel(waterFact.extraction_method),
         },
       ]
     : [];
@@ -666,6 +694,81 @@ export default async function DistrictPage({
                 className="text-primary underline-offset-4 hover:underline"
               >
                 {t("health.methodologyLink")}
+              </Link>
+            </p>
+          </>
+        )}
+      </section>
+
+      <section aria-labelledby="water-title" className="mt-10">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 id="water-title" className="font-heading text-xl font-bold">
+            {t("water.title")}
+          </h2>
+          <Badge variant="outline">{t("water.badge")}</Badge>
+          {waterProvenance.length > 0 ? (
+            <ProvenanceChip
+              label={tp("chipLabel")}
+              heading={tp("title")}
+              fieldLabels={chipLabels}
+              entries={waterProvenance}
+            />
+          ) : null}
+        </div>
+
+        {!water ? (
+          <p className="mt-4 max-w-xl rounded-md border border-border bg-secondary/50 p-6 text-muted-foreground">
+            {t("water.unavailable")}
+          </p>
+        ) : (
+          <>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("water.missionLine", {
+                // Date-only string; parse at local midnight so the day
+                // doesn't shift across timezones.
+                date: format.dateTime(new Date(`${water.asOn}T00:00:00`), {
+                  dateStyle: "long",
+                }),
+              })}
+            </p>
+            <div className="mt-4 max-w-2xl rounded-lg border border-border bg-card p-4">
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="text-sm">{t("water.coverageLabel")}</span>
+                <span className="font-heading text-2xl font-bold tabular-nums">
+                  {format.number(water.coveragePercent / 100, {
+                    style: "percent",
+                    maximumFractionDigits: 1,
+                  })}
+                </span>
+              </div>
+              <div
+                className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary"
+                role="presentation"
+              >
+                <div
+                  className="h-full rounded-full bg-primary/70"
+                  style={{ width: `${water.coveragePercent}%` }}
+                />
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {t("water.ofHouseholds", {
+                  withTap: num(water.withTapConnection),
+                  total: num(water.ruralHouseholds),
+                })}
+              </p>
+              {water.harGharJalCertified ? (
+                <p className="mt-3 border-t border-border pt-3 text-sm leading-relaxed">
+                  {t("water.certified")}
+                </p>
+              ) : null}
+            </div>
+            <p className="mt-6 max-w-2xl rounded-md border border-border bg-secondary/50 p-4 text-sm leading-relaxed text-muted-foreground">
+              {t("water.sourceNote")}{" "}
+              <Link
+                href="/methodology"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                {t("water.methodologyLink")}
               </Link>
             </p>
           </>

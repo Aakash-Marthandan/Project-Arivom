@@ -213,16 +213,23 @@ tn.gov.in department directory becomes the canonical list.
 
 ## Phase v0.5
 
-### M12 — Health & water indicators — `in-progress` (NFHS-5 slice done 2026-07-07)
+### M12 — Health & water indicators — `in-progress` (NFHS-5 + JJM done 2026-07-07)
 HMIS (monthly) + NFHS-5 (per round) + JJM ingest → district panels with the same
 provenance/methodology treatment as education.
-Shipped so far (D-030): import-nfhs over the data.gov.in NFHS-5 district
+Shipped (D-030): import-nfhs over the data.gov.in NFHS-5 district
 factsheet mirror — twelve verified indicators (household environment,
 births, child nutrition/anaemia) on 32 districts, sample-survey framing,
 honest notes on the six post-2019 districts; district-page Health panel +
 methodology section. Vaccination and sex ratio at birth withheld pending
-verification against official factsheets. Remaining: HMIS monthly, JJM
-water, state factsheet row.
+verification against official factsheets.
+Shipped (D-031): import-jjm over the JJM dashboard's own JSON endpoint —
+rural tap-water coverage (percent verbatim + both counts, as-on date,
+Har Ghar Jal certification when village-assembly certified) on 37
+districts; Chennai (fully urban) renders an honest note; district-page
+Drinking water panel + methodology section; monthly cron.
+Remaining: HMIS monthly (blocked from current egress — data.gov.in
+mirrors end ~2019-20 and the portal is India-only; re-check ~2026-07-13
+per D-010/D-017), NFHS state factsheet row.
 
 ### M13 — Community sentiment display — `planned`
 Ratings display per sector above N=25 floor with sample size; temporal smoothing,

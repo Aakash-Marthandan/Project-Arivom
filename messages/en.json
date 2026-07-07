@@ -301,6 +301,17 @@
       "groupNotes": {
         "nutrition": "These numbers show how common each condition is in the survey sample."
       }
+    },
+    "water": {
+      "title": "Drinking water",
+      "badge": "Mission-reported data",
+      "missionLine": "Jal Jeevan Mission, cumulative as on {date}",
+      "coverageLabel": "Rural households with a tap water connection",
+      "ofHouseholds": "{withTap} of {total} rural households",
+      "certified": "Har Ghar Jal certified: village assemblies have certified that every rural household here has a tap connection.",
+      "sourceNote": "These figures are reported by the implementing agencies into the mission's records. They are administrative counts, not a survey.",
+      "methodologyLink": "How we handle this data",
+      "unavailable": "The Jal Jeevan Mission tracks rural households only and publishes no data for this district."
     }
   },
   "provenance": {
@@ -317,7 +328,8 @@
       "nameTa": "Tamil name",
       "reservation": "Reservation status",
       "education": "Education indicators",
-      "health": "Health indicators"
+      "health": "Health indicators",
+      "water": "Drinking water coverage"
     },
     "methods": {
       "api": "Official API",
@@ -364,6 +376,13 @@
       "computed": "We display selected percentages from the published district factsheets as they are. Nothing is computed or combined by us.",
       "withheld": "Two published indicators are not shown yet. Vaccination coverage arrives damaged in the data.gov.in mirror we read. Sex ratio at birth swings widely in district samples and is easy to misread. Both will appear once verified against the official factsheet documents.",
       "districts": "The survey used the district list from before 2019, so 32 districts have factsheets. The six districts created later were surveyed as part of their parent districts and show an honest note instead of data."
+    },
+    "water": {
+      "title": "Drinking water (Jal Jeevan Mission)",
+      "source": "District water figures come from the Jal Jeevan Mission dashboard run by the Union Ministry of Jal Shakti. Implementing agencies report progress into the mission's records; the dashboard publishes cumulative district totals. We read those totals as they are.",
+      "computed": "We display the mission's published coverage percentage and the two counts behind it. We compute nothing; a check on every import confirms the percentage matches the counts.",
+      "scope": "The mission covers rural households only. Chennai is fully urban and has no data here. 'Har Ghar Jal certified' means village assemblies have certified full coverage. A reported figure without certification is the agency's own claim.",
+      "caveat": "These are administrative counts, not a survey. They show reported infrastructure coverage, not water quality or supply hours."
     },
     "stories": {
       "title": "How stories are chosen",

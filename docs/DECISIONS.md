@@ -5,6 +5,32 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-07 — M12: JJM water; HMIS blocked from current egress
+
+### D-031: JJM rural tap coverage via the mission dashboard's own endpoint
+- **Source.** The JJM public dashboard's JSON WebMethod
+  (`JJMIndia.aspx/BindDistrictMap`) — the exact call the dashboard map
+  makes. Parameters use the page's own shipped encoding (char codes
+  +1); presentation obfuscation, not authentication. 37 districts
+  return; Chennai (fully urban) has no row by mission design and the
+  UI says so honestly.
+- **What ships.** Published coverage percent verbatim + both counts
+  (rural households, with tap connection), the as-on date, and the
+  Har Ghar Jal certification flag (shown only when village assemblies
+  certified; an uncertified "reported" figure earns no badge). Import
+  gate: published percent must equal their own counts within 0.1.
+- **Framing.** "Mission-reported data" badge — administrative counts
+  reported by implementing agencies, not a survey; methodology notes
+  it measures reported infrastructure coverage, not water quality or
+  supply hours.
+- **HMIS (the M12 health-cadence leg) is blocked from current egress:**
+  data.gov.in mirrors are state-level and end ~2019-20; the HMIS
+  portal itself times out from outside India. Re-check after the
+  owner relocates (~2026-07-13, with D-010/D-017); the district panel
+  design accepts a monthly sub-section when it lands.
+
+---
+
 ## 2026-07-07 — M12 first slice: NFHS-5 health indicators
 
 ### D-030: NFHS-5 district factsheets via data.gov.in; twelve clean indicators

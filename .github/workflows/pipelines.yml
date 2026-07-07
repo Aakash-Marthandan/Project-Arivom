@@ -6,7 +6,7 @@ on:
       importer:
         description: Which importer to run
         type: choice
-        options: [all, lgd, constituencies, udise, nfhs]
+        options: [all, lgd, constituencies, udise, nfhs, jjm]
         default: all
   schedule:
     # LGD hierarchy + constituency universe: monthly refresh (data changes
@@ -43,3 +43,7 @@ jobs:
         # Survey-round data; the monthly run only picks up mirror fixes.
         if: ${{ inputs.importer == 'nfhs' || inputs.importer == 'all' || github.event_name == 'schedule' }}
         run: uv run import-nfhs
+      - name: Import JJM water coverage
+        # Cumulative mission dashboard; monthly refresh keeps it honest.
+        if: ${{ inputs.importer == 'jjm' || inputs.importer == 'all' || github.event_name == 'schedule' }}
+        run: uv run import-jjm
