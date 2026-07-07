@@ -44,6 +44,15 @@ export default async function MethodologyPage({
         </div>
       </section>
 
+      <section aria-labelledby="separation-title" className="mt-10">
+        <h2 id="separation-title" className="font-heading text-2xl font-bold">
+          {t("separation.title")}
+        </h2>
+        <p className="mt-2 leading-relaxed text-muted-foreground">
+          {t("separation.body")}
+        </p>
+      </section>
+
       <section aria-labelledby="data-title" className="mt-10">
         <h2 id="data-title" className="font-heading text-2xl font-bold">
           {t("currentData.title")}
@@ -51,6 +60,19 @@ export default async function MethodologyPage({
         <p className="mt-2 leading-relaxed text-muted-foreground">
           {t("currentData.body")}
         </p>
+      </section>
+
+      <section aria-labelledby="spine-title" className="mt-10">
+        <h2 id="spine-title" className="font-heading text-2xl font-bold">
+          {t("spine.title")}
+        </h2>
+        <div className="mt-2 space-y-3">
+          {(["results", "affidavits", "vacancies"] as const).map((key) => (
+            <p key={key} className="leading-relaxed text-muted-foreground">
+              {t(`spine.${key}`)}
+            </p>
+          ))}
+        </div>
       </section>
 
       <section aria-labelledby="education-method-title" className="mt-10">

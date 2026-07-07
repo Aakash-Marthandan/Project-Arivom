@@ -5,6 +5,28 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-07 — M10: transparency pages
+
+### D-034: Freshness SLAs measure our checking; corrections come from a cited seed
+- **SLA semantics.** `sources.cadence` records how often the pipelines
+  CHECK a source (the cron reality: outlets half-hourly, vacancy watch
+  daily, the import battery monthly, everything else on demand) — not
+  how often the source publishes, which each panel's methodology covers.
+  /freshness compares last-check age against exact thresholds printed
+  in the legend; on-schedule / overdue / stopped, no colour for
+  on-demand sources. ensure_source upserts cadence with COALESCE so a
+  caller that does not pass one never clobbers it.
+- **Corrections log.** Append-only in practice: the curated seed
+  (pipelines/data/corrections.json) is the only write path until M9's
+  moderation queue; every entry is bilingual, cites its public record
+  (DECISIONS anchor), and keeps the original value (pillar 1). The
+  importer validates copy rules (no em dashes), rejects empty fields
+  and duplicate keys, and reports database entries missing from the
+  seed instead of deleting them. Launched with the three real
+  corrections already in the project record, not a synthetic test row.
+
+---
+
 ## 2026-07-07 — Audit round 2: department identity from the source's links
 
 ### D-033: Cards carry the department; allocation subjects sit under it

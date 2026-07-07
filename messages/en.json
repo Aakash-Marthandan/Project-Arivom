@@ -359,6 +359,16 @@
         "body": "It must run fast on an ordinary phone over 4G. Tamil typography must be excellent. It must be usable by everyone (WCAG AA). These are our quality targets."
       }
     },
+    "spine": {
+      "title": "Representatives and elections",
+      "results": "Winners and vote figures come from the Election Commission's results portal. Names are matched across languages by anchoring on the vote counts, never by transliterating names. Vote figures carry a provisional label until the Commission's final publication.",
+      "affidavits": "Asset, criminal case and education details come from candidates' own election affidavits, as analysed by the Association for Democratic Reforms (MyNeta). They are always labelled self-declared. Every import re-checks at least twenty candidates against the source pages and stops on any mismatch.",
+      "vacancies": "A seat's vacancy status changes only through a human-confirmed record with a citation. Automated monitors raise signals for review; they can never change a status on their own."
+    },
+    "separation": {
+      "title": "Data and opinions never mix",
+      "body": "Data indicators come from published datasets. Community sentiment, when it arrives, will be shown separately with its sample size, and only above a minimum number of ratings. The two are never combined into one number. No composite scores exist anywhere on this platform."
+    },
     "currentData": {
       "title": "Current data sources",
       "body": "Two datasets are connected today: the Tamil Nadu administrative hierarchy from the Government of India's Local Government Directory (LGD), and the Election Commission of India's constituency list. Tap the 'Source' chip on any page to see the details."

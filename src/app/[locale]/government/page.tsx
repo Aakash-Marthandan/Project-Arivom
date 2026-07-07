@@ -8,6 +8,7 @@ import {
 } from "@/components/provenance-chip";
 import {
   getAssemblyComposition,
+  getCompositionSources,
   getMinisters,
   getVacantSeats,
   type Minister,
@@ -56,14 +57,16 @@ export default async function GovernmentPage({
 }: PageProps<"/[locale]/government">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, tp, format, ministers, composition, vacantSeats] = await Promise.all([
-    getTranslations("government"),
-    getTranslations("provenance"),
-    getFormatter(),
-    getMinisters(),
-    getAssemblyComposition(),
-    getVacantSeats(),
-  ]);
+  const [t, tp, format, ministers, composition, compositionSources, vacantSeats] =
+    await Promise.all([
+      getTranslations("government"),
+      getTranslations("provenance"),
+      getFormatter(),
+      getMinisters(),
+      getAssemblyComposition(),
+      getCompositionSources(),
+      getVacantSeats(),
+    ]);
   const isTa = locale === "ta";
 
   const cm = ministers.find(
@@ -207,9 +210,33 @@ export default async function GovernmentPage({
       </section>
 
       <section aria-labelledby="composition-title" className="mt-12">
-        <h2 id="composition-title" className="font-heading text-xl font-bold">
-          {t("composition")}
-        </h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 id="composition-title" className="font-heading text-xl font-bold">
+            {t("composition")}
+          </h2>
+          <ProvenanceChip
+            label={tp("chipLabel")}
+            heading={tp("title")}
+            fieldLabels={{
+              publisher: tp("publisher"),
+              retrievedOn: tp("retrievedOn"),
+              method: tp("method"),
+              license: tp("license"),
+              viewSource: tp("viewSource"),
+            }}
+            entries={compositionSources.map((src) => ({
+              title: t("composition"),
+              sourceName: src.source_name,
+              url: src.source_url,
+              publisher: src.source_publisher,
+              license: src.source_license,
+              retrievedOn: format.dateTime(src.retrieved_at, {
+                dateStyle: "long",
+              }),
+              method: tp("methods.scrape"),
+            }))}
+          />
+        </div>
         <ul className="mt-3 max-w-md space-y-1">
           {composition.map((row) => (
             <li

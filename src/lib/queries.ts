@@ -323,6 +323,30 @@ export async function getAssemblyComposition(): Promise<PartySeats[]> {
   `;
 }
 
+export interface CompositionSource {
+  source_name: string;
+  source_url: string | null;
+  source_publisher: string;
+  source_license: string | null;
+  retrieved_at: Date;
+}
+
+/** Sources behind the active-tenure rows the composition is counted from
+ *  (M10 audit: aggregates carry provenance too). */
+export async function getCompositionSources(): Promise<CompositionSource[]> {
+  return sql<CompositionSource[]>`
+    SELECT s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license,
+           MAX(t.retrieved_at) AS retrieved_at
+    FROM tenures t
+    JOIN offices o ON o.id = t.office_id AND o.office_type = 'mla'
+    JOIN sources s ON s.id = t.source_id
+    WHERE t.end_date IS NULL AND t.status = 'active'
+    GROUP BY s.id, s.name, s.url, s.publisher, s.license
+    ORDER BY s.name
+  `;
+}
+
 export interface NewsClusterMember {
   id: number;
   outlet: string;

@@ -177,7 +177,7 @@ both locales; methodology documents the computation.
 - **Exit criteria:** a signed-in user can file a correction from a provenance chip;
   it lands in the moderation queue; every action is audit-logged.
 
-### M10 — Transparency pages & corrections log — `planned`
+### M10 — Transparency pages & corrections log — `done` (2026-07-07)
 - `/methodology`: full bilingual content — every indicator's computation, source,
   cadence, limitations; why data and sentiment are never blended; no composite
   scores.
@@ -186,6 +186,16 @@ both locales; methodology documents the computation.
   retained original value.
 - **Exit criteria:** all three pages render live data bilingually; a resolved test
   correction appears in the log.
+Shipped (D-034): /methodology now covers the full live surface (principles,
+data-and-opinion separation, civic spine, education, health, water, story
+selection, corrections — nine sections, both locales); /freshness gained a
+status column comparing each source's last check against its documented
+checking cadence (sources.cadence; on-schedule / overdue / stopped with
+exact thresholds in the legend — it flagged a stalled outlet feed on day
+one); /corrections renders the append-only log from the curated, cited
+seed, launched with the three real corrections this project has made
+(D-011, D-019, D-032/D-033) — original values retained. User-filed
+corrections join this log through M9's moderation queue.
 
 ### M11 — Launch hardening: performance, a11y, SEO — `planned`
 - Font subsetting + self-hosting; lazy-load non-critical panels; ISR/edge caching.

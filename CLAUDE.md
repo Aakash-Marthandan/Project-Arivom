@@ -72,13 +72,16 @@ no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
 
 ## Current status (handoff, as of 2026-07-07)
 
-M1–M6 and M8 `done`; M12 `in-progress` (NFHS-5 + JJM shipped, D-030/
-D-031; HMIS blocked until India egress ~2026-07-13); M7 fully built and
-**deliberately dark**; M7.5 app-experience rounds shipped (D-023…D-026);
-M11 SEO groundwork in (sitemap+hreflang, robots, JSON-LD, metadataBase —
-origin resolves from NEXT_PUBLIC_SITE_URL, set it when a custom domain
-lands). Every decision is in docs/DECISIONS.md (D-001…D-031); D-021 is
-the north star (informed electorate).
+M1–M6, M8 and M10 `done`; M12 `in-progress` (NFHS-5 + JJM shipped,
+D-030/D-031; HMIS blocked until India egress ~2026-07-13); M7 fully
+built and **deliberately dark**; M7.5 app-experience rounds shipped
+(D-023…D-026); M11 SEO groundwork in (sitemap+hreflang, robots,
+JSON-LD, metadataBase — origin resolves from NEXT_PUBLIC_SITE_URL, set
+it when a custom domain lands). M10 transparency pages live: nine-
+section /methodology, /freshness SLA colours over sources.cadence, and
+the /corrections log from the curated cited seed (D-034). Every
+decision is in docs/DECISIONS.md (D-001…D-034); D-021 is the north
+star (informed electorate).
 
 **The one gate: ANTHROPIC_API_KEY.** Owner will provide it when the app is
 near-complete so API testing happens once, efficiently — do not ask for it
@@ -98,9 +101,12 @@ buckets, cross-validated state sums; importer `import-udise`, monthly
 cron), the NFHS-5 health panel (D-030: twelve verified sample-survey
 indicators, importer `import-nfhs`) and the JJM drinking-water panel
 (D-031: rural tap coverage from the mission dashboard's own endpoint,
-importer `import-jjm`; **prod data imports pending — owner runs
-`import-udise`, `import-nfhs`, `import-jjm` and `import-ministers`
-(D-032/D-033 re-import) against $SUPABASE_DB_URL**); the app experience — PWA shell with bottom tabs,
+importer `import-jjm`; **prod pending — owner: (1) `supabase db push`
+(two new migrations: sources.cadence, corrections), (2) run
+`import-udise`, `import-nfhs`, `import-jjm`, `import-ministers`
+(D-032/D-033 re-import) and `import-corrections` against
+$SUPABASE_DB_URL, (3) once: `UPDATE sources SET cadence='manual'
+WHERE cadence IS NULL` on prod**); the app experience — PWA shell with bottom tabs,
 news-first home sectioned by device-remembered places (my-places +
 person follows, cookies, no accounts), content-first story cards with
 hotlinked outlet images (D-024: linked, never copied), /news +

@@ -61,34 +61,46 @@ export default async function MorePage({
             </Link>
           </div>
         ) : (
-          <ul className="mt-3 space-y-2">
-            {cards.map((card) => (
-              <li
-                key={`${card.level}:${card.eci_code}`}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3.5"
-              >
-                <Link
-                  href={`/constituencies/${card.level}/${card.eci_code}`}
-                  className="min-w-0 font-heading text-[15px] font-bold underline-offset-4 hover:underline"
+          <>
+            <ul className="mt-3 space-y-2">
+              {cards.map((card) => (
+                <li
+                  key={`${card.level}:${card.eci_code}`}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3.5"
                 >
-                  {isTa ? card.name_ta : card.name_en}
-                  <span className="ms-2 text-xs font-medium text-muted-foreground">
-                    {card.level.toUpperCase()} {card.eci_code}
-                  </span>
-                </Link>
-                <form action={removePlace}>
-                  <input type="hidden" name="level" value={card.level} />
-                  <input type="hidden" name="code" value={card.eci_code} />
-                  <button
-                    type="submit"
-                    className="press rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-destructive"
+                  <Link
+                    href={`/constituencies/${card.level}/${card.eci_code}`}
+                    className="min-w-0 font-heading text-[15px] font-bold underline-offset-4 hover:underline"
                   >
-                    {t("remove")}
-                  </button>
-                </form>
-              </li>
-            ))}
-          </ul>
+                    {isTa ? card.name_ta : card.name_en}
+                    <span className="ms-2 text-xs font-medium text-muted-foreground">
+                      {card.level.toUpperCase()} {card.eci_code}
+                    </span>
+                  </Link>
+                  <form action={removePlace}>
+                    <input type="hidden" name="level" value={card.level} />
+                    <input type="hidden" name="code" value={card.eci_code} />
+                    <button
+                      type="submit"
+                      className="press rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-destructive"
+                    >
+                      {t("remove")}
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+            {/* Discovery stays available after onboarding (audit): adding
+                another place shouldn't require clearing the list. */}
+            <p className="mt-3">
+              <Link
+                href="/locate"
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+              >
+                {t("locateCta")} →
+              </Link>
+            </p>
+          </>
         )}
       </section>
 

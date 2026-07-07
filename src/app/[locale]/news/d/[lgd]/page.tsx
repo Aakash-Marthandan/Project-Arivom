@@ -6,6 +6,14 @@ import {
   setRequestLocale,
 } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { buildNewsStrings, NewsFeed } from "@/components/news-feed";
 import {
   getDistrictByLgd,
@@ -37,9 +45,10 @@ export default async function DistrictNewsPage({
   if (!district) notFound();
 
   const lang = locale === "ta" ? ("ta" as const) : ("en" as const);
-  const [t, td, format, strings, clusters, items] = await Promise.all([
+  const [t, td, tc, format, strings, clusters, items] = await Promise.all([
     getTranslations("news"),
     getTranslations("district"),
+    getTranslations("common"),
     getFormatter(),
     buildNewsStrings(),
     getNewsClusters(district.id),
@@ -55,7 +64,27 @@ export default async function DistrictNewsPage({
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
-      <h1 className="font-heading text-3xl font-bold">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/">{tc("nav.home")}</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/news">{tc("nav.news")}</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{districtName}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      <h1 className="mt-6 font-heading text-3xl font-bold">
         {t("districtTitle", { district: districtName })}
       </h1>
       <p className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
