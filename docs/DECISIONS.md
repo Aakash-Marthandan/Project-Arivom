@@ -29,6 +29,13 @@ display unit. Resolved ambiguities:
   pupil-teacher ratios, and functional infrastructure counts. Rates join
   when their semantics are verified against the published state report
   card PDFs.
+- **Level buckets are computed, not copied.** The API's own level
+  rollups follow school-category logic, verified numerically: its "Sec"
+  spans classes 9–12 for TN and its "PrePry"/"Pry" split shifts tens of
+  thousands of students across the class-1–5 boundary. We bucket the
+  class-wise enrollment fields ourselves (pre-primary, 1–5, 6–8, 9–10,
+  11–12) and assert per district-year that the buckets sum exactly to
+  the published total. The computation is documented on /methodology.
 - **Built-in cross-validation.** Every run must reproduce UDISE's own
   independently published state totals from our district-wise sums
   (tolerance 1%, else the run fails). 2022-23 through 2024-25 match

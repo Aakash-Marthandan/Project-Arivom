@@ -52,6 +52,21 @@ export default async function MethodologyPage({
         </p>
       </section>
 
+      <section aria-labelledby="education-method-title" className="mt-10">
+        <h2 id="education-method-title" className="font-heading text-2xl font-bold">
+          {t("education.title")}
+        </h2>
+        <div className="mt-2 space-y-3">
+          {(["source", "computed", "withheld", "facilities"] as const).map(
+            (key) => (
+              <p key={key} className="leading-relaxed text-muted-foreground">
+                {t(`education.${key}`)}
+              </p>
+            ),
+          )}
+        </div>
+      </section>
+
       <section aria-labelledby="corrections-title" className="mt-10">
         <h2 id="corrections-title" className="font-heading text-2xl font-bold">
           {t("corrections.title")}

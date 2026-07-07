@@ -319,6 +319,13 @@
       "title": "Current data sources",
       "body": "Two datasets are connected today: the Tamil Nadu administrative hierarchy from the Government of India's Local Government Directory (LGD), and the Election Commission of India's constituency list. Tap the 'Source' chip on any page to see the details."
     },
+    "education": {
+      "title": "Education indicators (UDISE+)",
+      "source": "District education data comes from UDISE+, the school information system of the Union education ministry. Schools upload this data themselves once a year, with 30 September as the reference date. It is not independently verified. Every education panel carries a \"Reported by schools\" label and a source chip.",
+      "computed": "We compute school-level groups from class-wise enrollment: pre-primary, classes 1 to 5, classes 6 to 8, classes 9 and 10, and classes 11 and 12. State figures are the sum of district figures. Every import checks our district sums against the state totals UDISE+ publishes separately. The import stops if they do not match.",
+      "withheld": "UDISE+ also publishes enrollment ratios and dropout rates. We do not show them yet. We could not verify how their level groups are computed, and a ratio we cannot explain can mislead. They will appear once we can document their computation.",
+      "facilities": "Facility figures count schools that report the facility in working condition. Percentages are out of all schools in the district for that year. One education district, Chennai (extended GCC area), exists only in UDISE+ and is counted in state totals only."
+    },
     "corrections": {
       "title": "Corrections",
       "body": "A structured form for reporting incorrect information is coming soon. Every accepted correction will be published in a public corrections log alongside the original value."

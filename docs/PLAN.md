@@ -150,14 +150,22 @@ owner adds ANTHROPIC_API_KEY (M7 exit check runs then).
   routes hold the performance budget; both locales at parity; no
   engagement mechanics anywhere.
 
-### M8 — Data indicators: education (UDISE+) — `planned`
-- UDISE+ ingest (district aggregation, TN codes 33xx) → `facts` with methodology
-  metadata; label as voluntary self-reported data.
-- Locality page "Data Indicators" panel: education trends with one-tap source link,
-  retrieval date, and methodology notes. Structurally separate from any future
-  sentiment display (never blended).
-- **Exit criteria:** district education panel renders with full provenance in both
-  locales; methodology section documents the computation.
+### M8 — Data indicators: education (UDISE+) — `done` (2026-07-07)
+Shipped: import-udise over the public UDISE+ dashboard API (D-028) —
+enrollment (levels computed from class-wise fields, with gender),
+schools, teachers, PTR and functional infrastructure for all 38
+districts plus the state rollup, 2021-22 → 2024-25, on the monthly
+pipelines cron; new district pages (/d/[lgd]) carrying the education
+Data Indicators panel ("Reported by schools" label, provenance chip,
+year trends, facility shares) plus district news link and the
+district's ACs, cross-linked from constituency pages and district news
+feeds; /methodology section documenting the computation and the
+deliberately withheld GER/NER/dropout rates (level semantics
+unverified, D-028). Every import cross-validates district sums against
+UDISE's independently published state totals (exact match today) and
+reports the UDISE-only CHENNAI (EXT. GCC) education district. Exit
+criteria met: district education panel renders with full provenance in
+both locales; methodology documents the computation.
 
 ### M9 — Accounts & Rung 0/1 community — `planned`
 - Supabase phone-OTP auth; store `phone_hash` only; rung field on `users`.
