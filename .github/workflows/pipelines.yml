@@ -6,7 +6,7 @@ on:
       importer:
         description: Which importer to run
         type: choice
-        options: [all, lgd, constituencies, udise]
+        options: [all, lgd, constituencies, udise, nfhs]
         default: all
   schedule:
     # LGD hierarchy + constituency universe: monthly refresh (data changes
@@ -39,3 +39,7 @@ jobs:
         # revisions when UDISE+ publishes them.
         if: ${{ inputs.importer == 'udise' || inputs.importer == 'all' || github.event_name == 'schedule' }}
         run: uv run import-udise
+      - name: Import NFHS-5 health indicators
+        # Survey-round data; the monthly run only picks up mirror fixes.
+        if: ${{ inputs.importer == 'nfhs' || inputs.importer == 'all' || github.event_name == 'schedule' }}
+        run: uv run import-nfhs

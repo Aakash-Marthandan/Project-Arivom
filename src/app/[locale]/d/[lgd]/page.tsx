@@ -87,6 +87,31 @@ const PTR_LEVELS = [
   "higherSecondary",
 ] as const;
 
+// Mirrors pipelines/arivom/import_nfhs.py (D-030).
+interface HealthFact {
+  survey: string;
+  period: string;
+  indicators: Record<string, number>;
+}
+
+const HEALTH_GROUPS = {
+  households: [
+    "electricity",
+    "improvedDrinkingWater",
+    "improvedSanitation",
+    "cleanFuel",
+    "healthInsurance",
+  ],
+  births: ["institutionalBirth", "ancFourVisits"],
+  nutrition: [
+    "stunted",
+    "wasted",
+    "underweight",
+    "anaemicChildren",
+    "anaemicWomen",
+  ],
+} as const;
+
 const FACILITIES = [
   "functionalElectricity",
   "functionalDrinkingWater",
@@ -199,6 +224,22 @@ export default async function DistrictPage({
           license: educationSource.source_license,
           retrievedOn: formatDate(educationSource.retrieved_at),
           method: methodLabel(educationSource.extraction_method),
+        },
+      ]
+    : [];
+
+  const healthFact = facts.find((f) => f.key === "health.nfhs5");
+  const health = healthFact?.value as HealthFact | undefined;
+  const healthProvenance: ProvenanceEntry[] = healthFact
+    ? [
+        {
+          title: tp("entries.health"),
+          sourceName: healthFact.source_name,
+          url: healthFact.source_url,
+          publisher: healthFact.source_publisher,
+          license: healthFact.source_license,
+          retrievedOn: formatDate(healthFact.retrieved_at),
+          method: methodLabel(healthFact.extraction_method),
         },
       ]
     : [];
@@ -516,6 +557,81 @@ export default async function DistrictPage({
                 className="text-primary underline-offset-4 hover:underline"
               >
                 {t("education.methodologyLink")}
+              </Link>
+            </p>
+          </>
+        )}
+      </section>
+
+      <section aria-labelledby="health-title" className="mt-10">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 id="health-title" className="font-heading text-xl font-bold">
+            {t("health.title")}
+          </h2>
+          <Badge variant="outline">{t("health.badge")}</Badge>
+          {healthProvenance.length > 0 ? (
+            <ProvenanceChip
+              label={tp("chipLabel")}
+              heading={tp("title")}
+              fieldLabels={chipLabels}
+              entries={healthProvenance}
+            />
+          ) : null}
+        </div>
+
+        {!health ? (
+          <p className="mt-4 max-w-xl rounded-md border border-border bg-secondary/50 p-6 text-muted-foreground">
+            {t("health.unavailable")}
+          </p>
+        ) : (
+          <>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("health.surveyLine")}
+            </p>
+            {(Object.keys(HEALTH_GROUPS) as (keyof typeof HEALTH_GROUPS)[]).map(
+              (group) => (
+                <div key={group}>
+                  <h3 className="mt-6 font-heading text-base font-bold">
+                    {t(`health.groups.${group}`)}
+                  </h3>
+                  <ul className="mt-3 space-y-3">
+                    {HEALTH_GROUPS[group].map((key) => {
+                      const value = health.indicators[key];
+                      if (value == null) return null;
+                      return (
+                        <li key={key} className="max-w-2xl">
+                          <div className="flex items-baseline justify-between gap-4 text-sm">
+                            <span>{t(`health.indicators.${key}`)}</span>
+                            <span className="shrink-0 tabular-nums text-muted-foreground">
+                              {format.number(value / 100, {
+                                style: "percent",
+                                maximumFractionDigits: 1,
+                              })}
+                            </span>
+                          </div>
+                          <div
+                            className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary"
+                            role="presentation"
+                          >
+                            <div
+                              className="h-full rounded-full bg-primary/70"
+                              style={{ width: `${value}%` }}
+                            />
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ),
+            )}
+            <p className="mt-8 max-w-2xl rounded-md border border-border bg-secondary/50 p-4 text-sm leading-relaxed text-muted-foreground">
+              {t("health.sourceNote")}{" "}
+              <Link
+                href="/methodology"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                {t("health.methodologyLink")}
               </Link>
             </p>
           </>

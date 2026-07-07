@@ -270,6 +270,33 @@
       "sourceNote": "Schools upload this data themselves to UDISE+, the education ministry's national system. It is not independently verified. Counts are as of 30 September of each academic year.",
       "methodologyLink": "How we handle this data",
       "unavailable": "Education data for this district is not published yet. It will appear here when UDISE+ publishes it."
+    },
+    "health": {
+      "title": "Health",
+      "badge": "Sample survey",
+      "surveyLine": "NFHS-5 national family health survey, 2019-21",
+      "groups": {
+        "households": "Households",
+        "births": "Births and mothers",
+        "nutrition": "Children and nutrition"
+      },
+      "indicators": {
+        "electricity": "Households with electricity",
+        "improvedDrinkingWater": "Households with an improved drinking water source",
+        "improvedSanitation": "Households using improved sanitation",
+        "cleanFuel": "Households using clean cooking fuel",
+        "healthInsurance": "Households with health insurance or a health scheme",
+        "institutionalBirth": "Births in hospitals or health facilities",
+        "ancFourVisits": "Mothers with at least 4 antenatal check-ups",
+        "stunted": "Children under 5 who are stunted (low height for age)",
+        "wasted": "Children under 5 who are wasted (low weight for height)",
+        "underweight": "Children under 5 who are underweight",
+        "anaemicChildren": "Children aged 6 to 59 months with anaemia",
+        "anaemicWomen": "Women aged 15 to 49 with anaemia"
+      },
+      "sourceNote": "NFHS-5 is a sample survey of households run in 2019-21 by the Union health ministry with IIPS. District figures are estimates from a sample and carry uncertainty.",
+      "methodologyLink": "How we handle this data",
+      "unavailable": "NFHS-5 (2019-21) does not publish a separate factsheet for this district. The survey used the district list from before 2019."
     }
   },
   "provenance": {
@@ -285,7 +312,8 @@
       "record": "Constituency record",
       "nameTa": "Tamil name",
       "reservation": "Reservation status",
-      "education": "Education indicators"
+      "education": "Education indicators",
+      "health": "Health indicators"
     },
     "methods": {
       "api": "Official API",
@@ -325,6 +353,13 @@
       "computed": "We compute school-level groups from class-wise enrollment: pre-primary, classes 1 to 5, classes 6 to 8, classes 9 and 10, and classes 11 and 12. State figures are the sum of district figures. Every import checks our district sums against the state totals UDISE+ publishes separately. The import stops if they do not match.",
       "withheld": "UDISE+ also publishes enrollment ratios and dropout rates. We do not show them yet. We could not verify how their level groups are computed, and a ratio we cannot explain can mislead. They will appear once we can document their computation.",
       "facilities": "Facility figures count schools that report the facility in working condition. Percentages are out of all schools in the district for that year. One education district, Chennai (extended GCC area), exists only in UDISE+ and is counted in state totals only."
+    },
+    "health": {
+      "title": "Health indicators (NFHS-5)",
+      "source": "District health data comes from round 5 of the National Family Health Survey (NFHS-5), run in 2019-21 by the Union health ministry with IIPS. It is a sample survey of households. District figures are estimates and carry uncertainty. Every health panel says so and carries a source chip.",
+      "computed": "We display selected percentages from the published district factsheets as they are. Nothing is computed or combined by us.",
+      "withheld": "Two published indicators are not shown yet. Vaccination coverage arrives damaged in the data.gov.in mirror we read. Sex ratio at birth swings widely in district samples and is easy to misread. Both will appear once verified against the official factsheet documents.",
+      "districts": "The survey used the district list from before 2019, so 32 districts have factsheets. The six districts created later were surveyed as part of their parent districts and show an honest note instead of data."
     },
     "stories": {
       "title": "How stories are chosen",

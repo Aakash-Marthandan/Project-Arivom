@@ -5,6 +5,38 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-07 — M12 first slice: NFHS-5 health indicators
+
+### D-030: NFHS-5 district factsheets via data.gov.in; twelve clean indicators
+M12 pulled forward while M9/M10 are owner-gated. Resolved:
+- **Source.** The data.gov.in mirror of the NFHS-5 (2019-21) India
+  district factsheets (GODL license), fetched with the existing
+  paginated helper on the public sample key (10-record pages). NFHS is
+  a sample survey (MoHFW + IIPS); the UI frames every figure as a
+  survey estimate, never a count.
+- **Scope: twelve indicators, verbatim.** Household environment
+  (electricity, improved water, improved sanitation, clean fuel,
+  health insurance), births (institutional births, 4+ ANC visits) and
+  child nutrition / anaemia (stunted, wasted, underweight, anaemic
+  children 6-59m, anaemic women 15-49) — every value verified in-range
+  for all 32 TN rows. Nothing computed or combined.
+- **Withheld: vaccination and sex ratio at birth.** Vaccination fields
+  arrive negative-mangled in the mirror for most districts (likely the
+  factsheets' parenthesised low-sample convention through Excel), and
+  district SRB has high sampling variance and invites misreading.
+  Both join only after verification against the official factsheet
+  PDFs — same posture as D-028's withheld GER/NER.
+- **District universe.** NFHS-5 used the pre-2019 list: 32 districts
+  match; the six created later (Chengalpattu, Kallakurichi,
+  Mayiladuthurai, Ranipet, Tenkasi, Tirupathur) were surveyed inside
+  parents and show an honest note instead of data, reported every run.
+- **Fact shape.** One fact per district, `key='health.nfhs5'`,
+  value `{survey, period, indicators{…}}`; survey-round data, so the
+  monthly cron only picks up mirror corrections. HMIS (monthly) and
+  JJM remain for the rest of M12.
+
+---
+
 ## 2026-07-07 — Dark mode
 
 ### D-029: "Paper at night" follows the system preference
