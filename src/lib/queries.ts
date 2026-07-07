@@ -448,6 +448,54 @@ export async function getUnclusteredItems(
   `;
 }
 
+/**
+ * Distinct department tags the extraction has produced, both languages
+ * (D-019: matched loosely to /government card names at display time).
+ * Empty until cluster-news runs with the API key.
+ */
+export async function getDepartmentTags(): Promise<string[]> {
+  const rows = await sql<{ tag: string }[]>`
+    SELECT DISTINCT tag FROM (
+      SELECT entities->>'department' AS tag FROM news_items
+      UNION
+      SELECT entities->>'department_ta' AS tag FROM news_items
+    ) tags
+    WHERE tag IS NOT NULL
+  `;
+  return rows.map((r) => r.tag);
+}
+
+/** Stories tagged with any of the given department names (either language). */
+export async function getNewsItemsByDepartmentTags(
+  tags: string[],
+  lang: "ta" | "en",
+  limit = 30,
+  days = 30,
+): Promise<NewsSingleItem[]> {
+  if (tags.length === 0) return [];
+  return sql<NewsSingleItem[]>`
+    SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
+           i.published_at, i.retrieved_at, i.image_url,
+           i.title_clean_en, i.title_clean_ta, i.civic_priority,
+           d.name_en AS district_en, d.name_ta AS district_ta,
+           d.lgd_code AS district_lgd
+    FROM news_items i
+    LEFT JOIN localities d ON d.id = i.locality_id
+    WHERE (
+      i.entities->>'department' = ANY(${tags})
+      OR i.entities->>'department_ta' = ANY(${tags})
+    )
+    AND (i.civic_class IS NULL OR i.civic_class <> 'soft')
+    AND (
+      ${lang === "ta" ? sql`i.title_clean_ta IS NOT NULL` : sql`i.title_clean_en IS NOT NULL`}
+      OR i.lang = ${lang}
+    )
+    AND i.published_at > now() - make_interval(days => ${days})
+    ORDER BY i.published_at DESC
+    LIMIT ${limit}
+  `;
+}
+
 export interface PlaceCard {
   id: number;
   eci_code: string;

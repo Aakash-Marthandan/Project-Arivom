@@ -368,7 +368,14 @@
       "cm": "Chief Minister",
       "deputyCm": "Deputy Chief Minister",
       "minister": "Minister"
-    }
+    },
+    "deptNews": {
+      "title": "{department} — news",
+      "back": "All departments",
+      "empty": "No stories are tagged with this department yet. Story analysis has not started; this page fills in on its own once it does.",
+      "note": "Stories are matched to departments by name. The match is approximate until the official department directory becomes available."
+    },
+    "deptNewsLink": "Department news"
   },
   "news": {
     "title": "News",

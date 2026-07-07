@@ -185,6 +185,14 @@ export default async function GovernmentPage({
                     {isTa ? m.seat_ta : m.seat_en}
                   </Link>
                 </p>
+                <p className="mt-2 text-sm">
+                  <Link
+                    href={`/government/news/${encodeURIComponent(entry.department)}`}
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    {t("deptNewsLink")} →
+                  </Link>
+                </p>
               </div>
             );
           })}

@@ -140,6 +140,7 @@ EXTRACT_SCHEMA = obj_schema(
         "organizations": arr({"type": "string"}),
         "gist_en": {"type": "string"},
         "department": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+        "department_ta": {"anyOf": [{"type": "string"}, {"type": "null"}]},
         "civic_class": {"type": "string", "enum": ["civic", "adjacent", "soft"]},
         "civic_priority": {"type": "string", "enum": ["high", "normal"]},
         "title_clean_en": {"type": "string"},
@@ -157,6 +158,9 @@ and possibly an article excerpt, return:
 - department: the ONE Tamil Nadu government department the story chiefly concerns,
   named in English (for example "School Education", "Highways", "Health",
   "Municipal Administration"), or null when no department clearly applies.
+- department_ta: the same department in Tamil, using the TN government's own
+  usage (for example "பள்ளிக் கல்வித் துறை", "நெடுஞ்சாலைத் துறை",
+  "சுகாதாரத் துறை"); null exactly when department is null.
 - civic_class (D-025, judge the SUBJECT of the story, never who it favours):
   "civic" = governance, courts, elections, legislature, public services,
   public safety, policy, corruption or accountability matters.
@@ -230,6 +234,7 @@ def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, A
             # Loose-matched to /government department cards at display time
             # (D-019: source-verbatim names differ per locale).
             "department": result["department"],
+            "department_ta": result["department_ta"],
         }
         # Arivom-voice titles (D-025): accept only when the language is
         # genuinely right; a NULL falls back to the original headline in
