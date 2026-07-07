@@ -70,11 +70,12 @@ no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
 - News aggregation policy (hard): headlines + links + own-words neutral summaries
   only — never store or republish full article text.
 
-## Current status (handoff, as of 2026-07-06)
+## Current status (handoff, as of 2026-07-07)
 
-M1–M6 `done`; M7 fully built and **deliberately dark**; M7.5 app-experience
-rounds shipped (D-023…D-026). Every decision is in docs/DECISIONS.md
-(D-001…D-026); D-021 is the north star (informed electorate).
+M1–M6 and M8 `done`; M7 fully built and **deliberately dark**; M7.5
+app-experience rounds shipped (D-023…D-026). Every decision is in
+docs/DECISIONS.md (D-001…D-029); D-021 is the north star (informed
+electorate).
 
 **The one gate: ANTHROPIC_API_KEY.** Owner will provide it when the app is
 near-complete so API testing happens once, efficiently — do not ask for it
@@ -88,14 +89,24 @@ full depth, the daily brief, entity-matched person news.
 
 **Live today** (all CI-gated, prod schema current): the civic spine
 (constituencies, representatives, affidavits, /locate, /vacancies,
-/government); the app experience — PWA shell with bottom tabs, news-first
-home sectioned by device-remembered places (my-places + person follows,
-cookies, no accounts), content-first story cards with hotlinked outlet
-images (D-024: linked, never copied), /news + /news/d/[lgd] +
-/news/s/[id], search across constituencies/people/stories, /more, /about;
-ingest hygiene (D-025 section blocklist at the poller); Lighthouse CI
-floors (perf ≥0.80 median-of-3 on CI hardware, a11y ≥0.95; local measures
-0.89–0.93) and a Monday editorial-QA sample workflow.
+/government); M8 education indicators — district pages /d/[lgd] with the
+UDISE+ education panel (D-028: public dashboard API, class-derived level
+buckets, cross-validated state sums; importer `import-udise`, monthly
+cron; **prod data import pending — owner runs it against
+$SUPABASE_DB_URL**); the app experience — PWA shell with bottom tabs,
+news-first home sectioned by device-remembered places (my-places +
+person follows, cookies, no accounts), content-first story cards with
+hotlinked outlet images (D-024: linked, never copied), /news +
+/news/d/[lgd] + /news/s/[id], search across
+constituencies/people/stories, /more, /about; dark mode following the
+system preference (D-029, "paper at night"); department news feeds
+behind /government cards (/government/news/[dept], honest-empty until
+the key; extraction now emits department + department_ta); the "How
+stories are chosen" methodology section and live story-pool counts on
+/freshness (D-025); ingest hygiene (D-025 section blocklist at the
+poller); Lighthouse CI floors (perf ≥0.80 median-of-3 on CI hardware,
+a11y ≥0.95; local measures 0.89–0.93) and a Monday editorial-QA sample
+workflow.
 
 **Key-day runbook** (when the owner hands over the key):
 1. Add `ANTHROPIC_API_KEY=` to `.env.local` AND as a GitHub Actions secret.
@@ -108,9 +119,12 @@ floors (perf ≥0.80 median-of-3 on CI hardware, a11y ≥0.95; local measures
    brief + MLA-mentions, feeds now civic+adjacent-only with Arivom titles.
 4. Run against prod (`DATABASE_URL="$SUPABASE_DB_URL"`), confirm the
    hourly cron goes from skip to live.
-5. Close M7 exit criteria in docs/PLAN.md; write the promised
-   "How stories are chosen" methodology section (D-025/D-026 rubrics) and
-   surface an excluded-items count on /freshness.
+5. Close M7 exit criteria in docs/PLAN.md; remove the "analysis has not
+   started" interim line (`methodology.stories.interim`) from both
+   catalogs; check the /freshness story-pool counts move; verify the
+   department feeds (/government/news/[dept]) fill in and the D-019
+   loose match (src/lib/departments.ts) is precise enough in both
+   languages.
 6. Watch cost + spot-check quality via the qa-sample output; escalate the
    summary-draft model only if the spot-check failure rate is high (D-022).
 
@@ -120,11 +134,13 @@ peacock tile. Assets: `public/logo.svg`, `public/logo-dark.svg` (dark
 mode), PWA icons regenerated from it. Never hand-edit the PNGs; re-run the
 generator against the state geometry (see D-027).
 
-**Product backlog next** (beyond the roadmap milestones): department feeds
-UI behind /government cards (data arrives with the key); image-proxy
+**Product backlog next** (beyond the roadmap milestones): image-proxy
 decision to right-size thumbnails (the M11 perf lever; hotlink policy in
-D-024); dark mode ("paper at night"); PWA push for by-election alerts
-(pairs with M9 accounts). Then M8 (UDISE education indicators) per PLAN.
+D-024 — **owner decision**, proxying would cache outlet images); PWA
+push for by-election alerts (pairs with M9 accounts); a manual dark-mode
+override if owner review wants one (D-029). Then M9 (accounts,
+owner-gated on Supabase auth/SMS setup), M10, M11 per PLAN — M11 SEO
+groundwork (sitemap, hreflang, structured data) is unblocked anytime.
 
 Known pending (all reported by importer runs, never hidden): 26 MLA + 3 MP
 affidavits awaiting ADR analysis; representative contacts awaiting official
