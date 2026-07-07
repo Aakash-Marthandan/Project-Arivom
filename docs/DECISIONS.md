@@ -5,6 +5,26 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-06 — Brand identity
+
+### D-027: The Arivom mark — four layers, one emergence
+After four iteration rounds (session artifact), the owner chose the final
+mark: on the peacock tile, back to front — an **AdS/CFT tensor network**
+(MERA: 16 CFT boundary sites with disentangler bonds at the tile's edge,
+isometry layers 16-8-4-1 coarse-graining into the bulk; straight chord
+bonds, low contrast; a nod to the owner's physics work) → a **screen**
+with deck → an **open reader** as two page-panels of the screen's content
+→ **Tamil Nadu in white**, taller than the pages, cut from the
+platform's real served boundary (district union, ST_Simplify 0.04).
+Assets: `public/logo.svg` (peacock) and `public/logo-dark.svg` (ink field,
+for dark mode); PWA icons + favicon regenerated from the mark (qlmanage
+rasterization; maskable uses the square-field variant). The bulk of the
+network deliberately hides behind the screen: the interface is the
+boundary theory. Regenerate icons by re-running the generator against the
+state geometry; never hand-edit the PNGs.
+
+---
+
 ## 2026-07-06 — Story markers and depth features (owner directive)
 
 ### D-026: Data markers translated through the pillars; audit ideas executed
