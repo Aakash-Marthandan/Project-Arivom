@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({
   params,
@@ -126,7 +127,13 @@ export default async function MethodologyPage({
           {t("corrections.title")}
         </h2>
         <p className="mt-2 leading-relaxed text-muted-foreground">
-          {t("corrections.body")}
+          {t("corrections.body")}{" "}
+          <Link
+            href="/corrections"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            {t("corrections.logLink")}
+          </Link>
         </p>
       </section>
 

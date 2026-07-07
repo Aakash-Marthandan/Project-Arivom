@@ -38,6 +38,7 @@ export default async function MorePage({
   const trust = [
     { href: "/methodology" as const, label: tc("nav.methodology") },
     { href: "/freshness" as const, label: tc("nav.freshness") },
+    { href: "/corrections" as const, label: tc("nav.corrections") },
     { href: "/about" as const, label: t("aboutLink") },
   ];
 

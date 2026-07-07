@@ -1,0 +1,47 @@
+{
+  "_comment": "The public corrections log (M10, pillar 1). Append-only in practice: entries record accepted corrections to facts or framing that Arivom DISPLAYED, with the original value retained. Every entry cites its public record (reference). Dates are the day the fix went live.",
+  "corrections": [
+    {
+      "key": "2026-07-03-sirkazhi-district",
+      "corrected_on": "2026-07-03",
+      "subject_en": "Sirkazhi assembly constituency: its district",
+      "subject_ta": "சீர்காழி சட்டமன்றத் தொகுதி: அதன் மாவட்டம்",
+      "field": "district",
+      "old_value_en": "Nagapattinam",
+      "old_value_ta": "நாகப்பட்டினம்",
+      "new_value_en": "Mayiladuthurai",
+      "new_value_ta": "மயிலாடுதுறை",
+      "note_en": "The boundary source predates the 2020 creation of Mayiladuthurai district. The constituency sits inside the new district; the assignment was adjudicated against the current district map.",
+      "note_ta": "எல்லைத் தரவு மயிலாடுதுறை மாவட்டம் உருவான 2020க்கு முந்தையது. தொகுதி புதிய மாவட்டத்திற்குள் உள்ளது; தற்போதைய மாவட்ட வரைபடத்தின் அடிப்படையில் இது சரிசெய்யப்பட்டது.",
+      "reference": "docs/DECISIONS.md D-011"
+    },
+    {
+      "key": "2026-07-05-provisional-framing",
+      "corrected_on": "2026-07-05",
+      "subject_en": "Representative cards: the scope of the provisional label",
+      "subject_ta": "பிரதிநிதி அட்டைகள்: தற்காலிகக் குறியின் எல்லை",
+      "field": "provisional label",
+      "old_value_en": "the whole card was framed as provisional",
+      "old_value_ta": "அட்டை முழுவதும் தற்காலிகம் எனக் குறிக்கப்பட்டது",
+      "new_value_en": "only the vote figures carry the provisional label",
+      "new_value_ta": "வாக்கு எண்ணிக்கைகள் மட்டுமே தற்காலிகம் எனக் குறிக்கப்படுகின்றன",
+      "note_en": "Names and party are confirmed in the source. Only the vote counts awaited the final ECI publication, so the label now covers exactly that.",
+      "note_ta": "பெயர்களும் கட்சியும் மூலத்தில் உறுதியானவை. வாக்கு எண்ணிக்கைகள் மட்டுமே இறுதி ECI வெளியீட்டிற்காகக் காத்திருந்தன; குறி இப்போது அதை மட்டுமே குறிக்கிறது.",
+      "reference": "docs/DECISIONS.md D-019"
+    },
+    {
+      "key": "2026-07-07-department-cards",
+      "corrected_on": "2026-07-07",
+      "subject_en": "Government page: department cards",
+      "subject_ta": "அரசு பக்கம்: துறை அட்டைகள்",
+      "field": "department names",
+      "old_value_en": "fragments of allocation text shown as departments (for example 'Aged' and 'Governor')",
+      "old_value_ta": "ஒதுக்கீட்டு உரைத் துண்டுகள் துறைகளாகக் காட்டப்பட்டன (எடுத்துக்காட்டு: 'Aged', 'Governor')",
+      "new_value_en": "one card per department as the source lists it, with its allocation subjects under it",
+      "new_value_ta": "மூலம் பட்டியலிடும் ஒவ்வொரு துறைக்கும் ஒரு அட்டை; அதன் ஒதுக்கீட்டு விவரம் கீழே",
+      "note_en": "The extraction flattened the source's list structure and the page re-split it on commas, fabricating entries. The pipeline now keeps the source's own structure and an automatic check flags office words appearing as department names.",
+      "note_ta": "தரவெடுப்பு மூலத்தின் பட்டியல் அமைப்பை இழந்தது; பக்கம் காற்புள்ளிகளில் மீண்டும் பிரித்து தவறான பதிவுகளை உருவாக்கியது. இப்போது மூலத்தின் அமைப்பே பயன்படுகிறது; பதவிச் சொற்கள் துறைப் பெயர்களாக வந்தால் தானியங்கிச் சரிபார்ப்பு எச்சரிக்கிறது.",
+      "reference": "docs/DECISIONS.md D-032, D-033"
+    }
+  ]
+}

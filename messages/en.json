@@ -11,7 +11,8 @@
       "methodology": "Methodology",
       "freshness": "Data status",
       "search": "Search",
-      "more": "More"
+      "more": "More",
+      "corrections": "Corrections"
     },
     "localeSwitcher": {
       "label": "Change language",
@@ -396,7 +397,8 @@
     },
     "corrections": {
       "title": "Corrections",
-      "body": "A structured form for reporting incorrect information is coming soon. Every accepted correction will be published in a public corrections log alongside the original value."
+      "body": "A structured form for reporting incorrect information is coming soon. Every accepted correction will be published in a public corrections log alongside the original value.",
+      "logLink": "See every correction."
     },
     "wip": "This document grows with the platform. As each new dataset is connected, its computation method will be explained here in detail."
   },
@@ -430,6 +432,16 @@
       "daily": "checked daily",
       "monthly": "checked monthly"
     }
+  },
+  "corrections": {
+    "title": "Corrections",
+    "intro": "Every accepted correction to something Arivom displayed, with the original value kept. Mistakes are part of the record, not deleted from it.",
+    "empty": "No corrections have been needed yet.",
+    "before": "Before",
+    "after": "After",
+    "entryLabel": "Correction record",
+    "recordLink": "Public record",
+    "note": "Each entry keeps what was shown before, what it became, when, and why. When accounts arrive, corrections you report from any source chip will be reviewed and, if accepted, appear here."
   },
   "notFound": {
     "title": "Page not found",

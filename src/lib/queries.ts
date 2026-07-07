@@ -450,6 +450,40 @@ export async function getUnclusteredItems(
   `;
 }
 
+export interface CorrectionRow {
+  corrected_on: string; // DATE as text; parse at local midnight (house rule)
+  subject_en: string;
+  subject_ta: string;
+  field: string;
+  old_value_en: string;
+  old_value_ta: string;
+  new_value_en: string;
+  new_value_ta: string;
+  note_en: string;
+  note_ta: string;
+  reference: string | null;
+  source_name: string;
+  source_url: string | null;
+  source_publisher: string;
+  source_license: string | null;
+  retrieved_at: Date;
+}
+
+/** The public corrections log (M10), newest first. */
+export async function getCorrections(): Promise<CorrectionRow[]> {
+  return sql<CorrectionRow[]>`
+    SELECT c.corrected_on::text AS corrected_on, c.subject_en, c.subject_ta,
+           c.field,
+           c.old_value_en, c.old_value_ta, c.new_value_en, c.new_value_ta,
+           c.note_en, c.note_ta, c.reference, c.retrieved_at,
+           s.name AS source_name, s.url AS source_url,
+           s.publisher AS source_publisher, s.license AS source_license
+    FROM corrections c
+    JOIN sources s ON s.id = c.source_id
+    ORDER BY c.corrected_on DESC, c.id DESC
+  `;
+}
+
 /** The story pool in one line (D-025): stored, excluded, awaiting. */
 export async function getNewsPoolStats(): Promise<{
   total: number;
