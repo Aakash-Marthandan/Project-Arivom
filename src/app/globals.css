@@ -76,6 +76,44 @@
   --expired: oklch(0.93 0.04 27);
   --expired-foreground: oklch(0.42 0.15 27);
   --radius: 0.5rem;
+  color-scheme: light;
+}
+
+/*
+ * "Paper at night" — the same editorial identity on a warm ink field
+ * (the dark ground of the D-027 mark). Follows the system preference:
+ * no toggle JS, no flash. The peacock accent lightens to hold WCAG AA
+ * on the dark ground; freshness colors invert to deep fills with light
+ * text. Warmth (hue 65–84) is kept so it still reads as paper.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.21 0.012 65);
+    --foreground: oklch(0.93 0.008 84);
+    --card: oklch(0.245 0.012 65);
+    --card-foreground: oklch(0.93 0.008 84);
+    --popover: oklch(0.245 0.012 65);
+    --popover-foreground: oklch(0.93 0.008 84);
+    --primary: oklch(0.74 0.085 196);
+    --primary-foreground: oklch(0.17 0.02 196);
+    --secondary: oklch(0.275 0.012 65);
+    --secondary-foreground: oklch(0.86 0.02 196);
+    --muted: oklch(0.275 0.012 65);
+    --muted-foreground: oklch(0.72 0.012 65);
+    --accent: oklch(0.31 0.035 196);
+    --accent-foreground: oklch(0.88 0.04 196);
+    --destructive: oklch(0.64 0.16 27);
+    --border: oklch(0.31 0.012 65);
+    --input: oklch(0.31 0.012 65);
+    --ring: oklch(0.74 0.085 196);
+    --fresh: oklch(0.31 0.05 155);
+    --fresh-foreground: oklch(0.84 0.09 155);
+    --stale: oklch(0.33 0.05 85);
+    --stale-foreground: oklch(0.87 0.08 85);
+    --expired: oklch(0.31 0.05 27);
+    --expired-foreground: oklch(0.85 0.08 27);
+    color-scheme: dark;
+  }
 }
 
 /*

@@ -5,6 +5,22 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-07 — Dark mode
+
+### D-029: "Paper at night" follows the system preference
+The dark theme is the same editorial identity on a warm ink field (the
+D-027 dark ground): the warm paper hues stay, the peacock accent
+lightens to hold WCAG AA on dark, and the freshness status colors
+invert to deep fills with light text. It follows
+`prefers-color-scheme` with no toggle: zero client JS, no flash on
+load, and the OS is where people already state this preference. The
+PWA status-bar theme-color switches by media query; manifest colors
+stay light (install splash). A manual override can join after owner
+review — the tokens and the `.dark` class variant are already in
+place.
+
+---
+
 ## 2026-07-07 — M8: UDISE+ education indicators
 
 ### D-028: UDISE+ via the public dashboard API; counts only, rates deferred

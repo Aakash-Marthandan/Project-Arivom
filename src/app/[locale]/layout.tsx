@@ -43,7 +43,11 @@ export async function generateMetadata({
 }
 
 export const viewport = {
-  themeColor: "#16646e",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#16646e" },
+    // The dark background ("paper at night"), so the PWA status bar blends.
+    { media: "(prefers-color-scheme: dark)", color: "#1d1a15" },
+  ],
 };
 
 export default async function LocaleLayout({
