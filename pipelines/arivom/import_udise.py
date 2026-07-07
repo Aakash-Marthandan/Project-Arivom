@@ -69,15 +69,17 @@ INFRA_FIELDS = {
     "medicalCheckup": "totSchMedicalCheckup",
 }
 
-ENROLLMENT_FIELDS = {
-    "total": "totEnr",
-    "boys": "totEnrB",
-    "girls": "totEnrG",
-    "prePrimary": "totEnrPrePry",
-    "primary": "totEnrPry",
-    "upperPrimary": "totEnrUPry",
-    "secondary": "totEnrSec",
-    "higherSecondary": "totEnrHSec",
+# Level buckets are computed from the class-wise fields, NOT the API's
+# totEnrPry/totEnrSec rollups: those follow school-category logic (verified
+# numerically — "Sec" spans classes 9–12 and "PrePry"/"Pry" shift students
+# across the class-1–5 boundary), while class-wise counts are unambiguous
+# and sum exactly to totEnr. The computation is documented on /methodology.
+ENROLLMENT_LEVELS = {
+    "prePrimary": ["prePry1", "prePry2", "prePry3"],
+    "primary": ["class1", "class2", "class3", "class4", "class5"],
+    "upperPrimary": ["class6", "class7", "class8"],
+    "secondary": ["class9", "class10"],
+    "higherSecondary": ["class11", "class12"],
 }
 
 PTR_FIELDS = {
@@ -140,13 +142,38 @@ def district_rows(
 
 
 def to_int(value: Any) -> int:
-    return int(str(value).strip() or 0)
+    return int(str(value or 0).strip() or 0)
 
 
 def to_ratio(value: Any) -> float | None:
     """UDISE reports 0.0 where a level is absent; that is 'no data', not 0."""
     ratio = float(str(value).strip() or 0)
     return ratio if ratio > 0 else None
+
+
+def enrollment_point(row: dict[str, Any], year_desc: str) -> dict[str, Any]:
+    """Class-wise fields → level buckets (see ENROLLMENT_LEVELS note)."""
+    point: dict[str, Any] = {
+        "year": year_desc,
+        "total": to_int(row["totEnr"]),
+        "boys": to_int(row["totEnrB"]),
+        "girls": to_int(row["totEnrG"]),
+    }
+    check_sum = 0
+    for level, classes in ENROLLMENT_LEVELS.items():
+        boys = sum(to_int(row.get(f"{c}B")) for c in classes)
+        girls = sum(to_int(row.get(f"{c}G")) for c in classes)
+        trans = sum(to_int(row.get(f"{c}Trans")) for c in classes)
+        point[level] = boys + girls + trans
+        point[f"{level}Boys"] = boys
+        point[f"{level}Girls"] = girls
+        check_sum += boys + girls + trans
+    if check_sum != point["total"]:
+        fail(
+            f"{row.get('regionName')} {year_desc}: class-wise sum {check_sum} "
+            f"!= published total {point['total']} — bucket semantics changed?"
+        )
+    return point
 
 
 def main() -> None:
@@ -236,10 +263,7 @@ def main() -> None:
         # education districts partition the state, and one of them
         # (CHENNAI (EXT. GCC)) has no LGD counterpart by design.
         for row in enrollment:
-            point: dict[str, Any] = {"year": year_desc}
-            point.update(
-                {k: to_int(row[f]) for k, f in ENROLLMENT_FIELDS.items()}
-            )
+            point = enrollment_point(row, year_desc)
             accumulate("education.enrollment", point)
             loc_id = match_district(row["regionName"])
             if loc_id is None:
