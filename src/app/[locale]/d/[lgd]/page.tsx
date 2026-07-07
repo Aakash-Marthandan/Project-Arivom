@@ -205,11 +205,11 @@ export default async function DistrictPage({
     educationFacts.find((f) => f.key === "education.school_infrastructure"),
   );
 
-  const latestEnrollment = enrollment.at(-1);
+  // TS narrows `latest` through the JSX ternary below; no assertions.
+  const latest = enrollment.at(-1);
   const latestSchools = schools.at(-1);
   const latestTeachers = teachers.at(-1);
   const latestInfra = infra.at(-1);
-  const hasEducation = Boolean(latestEnrollment);
 
   const recordProvenance: ProvenanceEntry[] = [
     {
@@ -349,7 +349,7 @@ export default async function DistrictPage({
           ) : null}
         </div>
 
-        {!hasEducation ? (
+        {!latest ? (
           <p className="mt-4 max-w-xl rounded-md border border-border bg-secondary/50 p-6 text-muted-foreground">
             {t("education.unavailable")}
           </p>
@@ -357,7 +357,7 @@ export default async function DistrictPage({
           <>
             {/* Part 1 — the latest published year, all in one place. */}
             <h3 className="mt-5 font-heading text-lg font-bold">
-              {t("education.snapshotTitle", { year: latestEnrollment!.year })}
+              {t("education.snapshotTitle", { year: latest.year })}
             </h3>
 
             <dl className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -366,12 +366,12 @@ export default async function DistrictPage({
                   {t("education.students")}
                 </dt>
                 <dd className="mt-1 font-heading text-2xl font-bold tabular-nums">
-                  {num(latestEnrollment!.total)}
+                  {num(latest.total)}
                 </dd>
                 <dd className="mt-1 text-sm text-muted-foreground">
                   {t("education.girlsBoys", {
-                    girls: num(latestEnrollment!.girls),
-                    boys: num(latestEnrollment!.boys),
+                    girls: num(latest.girls),
+                    boys: num(latest.boys),
                   })}
                 </dd>
               </div>
@@ -430,13 +430,13 @@ export default async function DistrictPage({
                         {t(`education.levels.${level}`)}
                       </th>
                       <td className="px-4 py-2 text-right tabular-nums">
-                        {num(latestEnrollment![level])}
+                        {num(latest[level])}
                       </td>
                       <td className="px-4 py-2 text-right tabular-nums text-muted-foreground">
-                        {num(latestEnrollment![`${level}Girls`])}
+                        {num(latest[`${level}Girls`])}
                       </td>
                       <td className="px-4 py-2 text-right tabular-nums text-muted-foreground">
-                        {num(latestEnrollment![`${level}Boys`])}
+                        {num(latest[`${level}Boys`])}
                       </td>
                     </tr>
                   ))}

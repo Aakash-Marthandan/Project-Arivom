@@ -6,6 +6,17 @@
  * matches a card when either normalized form contains the other.
  */
 
+/** The ministers importer stores one entry per source-listed department
+ *  (D-032). Legacy rows are flat strings; comma-splitting them is
+ *  best-effort until the re-import lands everywhere. */
+export function departmentList(portfolios: string[] | string): string[] {
+  if (Array.isArray(portfolios)) return portfolios;
+  return portfolios
+    .split(",")
+    .map((d) => d.trim().replace(/\s+/g, " "))
+    .filter((d) => d.length > 1);
+}
+
 const STRIP_WORDS = /\b(department|dept|of|and|the)\b|துறை|மற்றும்/g;
 
 export function normalizeDepartment(name: string): string {

@@ -5,6 +5,33 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-07 — Audit round: department extraction fidelity
+
+### D-032: Departments keep the source's own list structure
+The owner's audit caught /government showing fragments ("Aged" and
+"and Differently Abled Persons Municipal Administration") as separate
+department cards. Root cause was structural, not cosmetic: the enwiki
+ministers table lists portfolios as <li> items whose names legitimately
+contain commas; the importer flattened cells to text and the UI
+re-split on commas, fabricating entries. Resolution:
+- `expand_table_grid(segments=True)` (common.py) preserves cell items
+  (<li>, then <br>, else whole text); the ministers importer stores
+  `portfolios_ta/en` as ARRAYS — one entry per source-listed
+  department. A cell the source left as plain comma text (the tawiki
+  convention) is still comma-split: each side stays faithful to its
+  own source's formatting.
+- The UI renders one card per array entry and never re-splits
+  (src/lib/departments.ts `departmentList`, with legacy string
+  tolerance until the prod re-import).
+- Result: en cards 92 mangled → 79 faithful; ta unchanged at 116
+  (plain cells). Known residual: a TAMIL department name containing a
+  comma inside would still fragment — undetectable mechanically until
+  the official tn.gov.in directory becomes the canonical list (D-019);
+  the import report now prints per-language entry counts so drift
+  shows up.
+
+---
+
 ## 2026-07-07 — M12: JJM water; HMIS blocked from current egress
 
 ### D-031: JJM rural tap coverage via the mission dashboard's own endpoint

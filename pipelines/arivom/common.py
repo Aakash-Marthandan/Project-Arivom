@@ -245,21 +245,47 @@ class Db:
         )
 
 
-def expand_table_grid(table: Any) -> list[list[str]]:
-    """Expand an HTML table into a dense grid, resolving row/colspans."""
-    grid: list[list[str]] = []
-    pending: dict[int, tuple[str, int]] = {}  # col index -> (text, remaining rows)
+def cell_segments(cell: Any) -> list[str]:
+    """A cell's content as its source-visible segments.
+
+    List markup (<li>) or line breaks (<br>) mark item boundaries the
+    flattened text loses — a Wikipedia portfolio cell's commas can sit
+    INSIDE one item's name, so joining and re-splitting on commas
+    fabricates entries (the /government 'Aged' card, D-032).
+    """
+    items = cell.find_all("li")
+    if items:
+        segs = [" ".join(li.get_text(" ", strip=True).split()) for li in items]
+        return [s for s in segs if s]
+    if cell.find("br"):
+        parts = cell.get_text("\n", strip=True).split("\n")
+        segs = [" ".join(p.split()) for p in parts]
+        return [s for s in segs if s]
+    text = " ".join(cell.get_text(" ", strip=True).split())
+    return [text] if text else []
+
+
+def expand_table_grid(
+    table: Any, *, segments: bool = False
+) -> list[list[Any]]:
+    """Expand an HTML table into a dense grid, resolving row/colspans.
+
+    Cells are flattened strings by default; with segments=True each cell
+    is a list of source-visible segments (see cell_segments)."""
+    grid: list[list[Any]] = []
+    pending: dict[int, tuple[Any, int]] = {}  # col index -> (content, remaining rows)
+    empty: Any = [] if segments else ""
     for tr in table.find_all("tr"):
-        row: list[str] = []
+        row: list[Any] = []
         col = 0
         cells = tr.find_all(["td", "th"])
         cell_iter = iter(cells)
         while True:
             if col in pending:
-                text, remaining = pending[col]
-                row.append(text)
+                content, remaining = pending[col]
+                row.append(content)
                 if remaining > 1:
-                    pending[col] = (text, remaining - 1)
+                    pending[col] = (content, remaining - 1)
                 else:
                     del pending[col]
                 col += 1
@@ -271,23 +297,26 @@ def expand_table_grid(table: Any) -> list[list[str]]:
                     max_col = max(c for c in pending if c >= col)
                     while col <= max_col:
                         if col in pending:
-                            text, remaining = pending[col]
-                            row.append(text)
+                            content, remaining = pending[col]
+                            row.append(content)
                             if remaining > 1:
-                                pending[col] = (text, remaining - 1)
+                                pending[col] = (content, remaining - 1)
                             else:
                                 del pending[col]
                         else:
-                            row.append("")
+                            row.append(empty)
                         col += 1
                 break
-            text = " ".join(cell.get_text(" ", strip=True).split())
+            if segments:
+                content: Any = cell_segments(cell)
+            else:
+                content = " ".join(cell.get_text(" ", strip=True).split())
             rowspan = int(cell.get("rowspan", 1) or 1)
             colspan = int(cell.get("colspan", 1) or 1)
             for _ in range(colspan):
-                row.append(text)
+                row.append(content)
                 if rowspan > 1:
-                    pending[col] = (text, rowspan - 1)
+                    pending[col] = (content, rowspan - 1)
                 col += 1
         grid.append(row)
     return grid

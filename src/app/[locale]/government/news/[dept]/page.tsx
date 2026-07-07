@@ -7,7 +7,7 @@ import {
 } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { buildNewsStrings, NewsFeed } from "@/components/news-feed";
-import { departmentMatches } from "@/lib/departments";
+import { departmentList, departmentMatches } from "@/lib/departments";
 import {
   getDepartmentTags,
   getMinisters,
@@ -18,16 +18,9 @@ export const revalidate = 600;
 
 interface MinisterValue {
   position_ta: string;
-  portfolios_ta: string;
-  portfolios_en: string;
+  portfolios_ta: string[] | string;
+  portfolios_en: string[] | string;
   is_chief_minister: boolean;
-}
-
-function splitDepartments(portfolios: string): string[] {
-  return portfolios
-    .split(",")
-    .map((d) => d.trim().replace(/\s+/g, " "))
-    .filter((d) => d.length > 1);
 }
 
 /** The department must be a real /government card name; anything else 404s. */
@@ -39,7 +32,7 @@ async function resolveDepartment(raw: string, isTa: boolean) {
     const portfolios = isTa
       ? v.portfolios_ta || v.portfolios_en
       : v.portfolios_en || v.portfolios_ta;
-    return splitDepartments(portfolios).includes(dept);
+    return departmentList(portfolios).includes(dept);
   });
   return holders.length > 0 ? { dept, holders } : null;
 }

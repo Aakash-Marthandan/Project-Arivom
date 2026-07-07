@@ -80,12 +80,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         getNewsClusters(districtId, 3),
         getUnclusteredItems(lang, districtId, PER_SECTOR, 7),
       ]);
-      const first = sectorPlaces[0]!; // districts only enter via a place
+      const first = sectorPlaces[0]; // districts only enter via a place
       return {
         districtId,
         districtName:
-          (isTa ? first.district_ta : first.district_en) ?? String(districtId),
-        districtLgd: first.district_lgd,
+          (isTa ? first?.district_ta : first?.district_en) ??
+          String(districtId),
+        districtLgd: first?.district_lgd ?? null,
         places: sectorPlaces,
         clusters,
         items: items.slice(0, Math.max(0, PER_SECTOR - clusters.length)),

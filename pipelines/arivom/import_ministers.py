@@ -38,15 +38,24 @@ EN_SEAT_ALIASES = {
 }
 
 
+def split_plain_departments(text: str) -> list[str]:
+    """Comma-split a PLAIN portfolio cell (no list markup in the source).
+
+    Only used when the source itself gave no item structure; a cell that
+    had <li>/<br> items keeps each item whole, commas and all (D-032)."""
+    parts = [" ".join(p.split()) for p in text.split(",")]
+    return [p for p in parts if len(p) > 1]
+
+
 def parse_ministers_table(
     html: str, name_col_marker: str, seat_col_marker: str, extra_cols: dict[str, str]
 ) -> list[dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     for table in soup.find_all("table", class_="wikitable"):
-        grid = expand_table_grid(table)
+        grid = expand_table_grid(table, segments=True)
         if not (10 < len(grid) < 80):
             continue
-        header = [h.lower() for h in grid[0]]
+        header = [" ".join(h).lower() for h in grid[0]]
         joined = " ".join(header)
         if name_col_marker.lower() not in joined or seat_col_marker.lower() not in joined:
             continue
@@ -66,13 +75,23 @@ def parse_ministers_table(
         for row in grid[1:]:
             if len(row) <= max(name_i, seat_i):
                 continue
-            name = row[name_i].strip()
-            seat = row[seat_i].strip()
+            name = " ".join(row[name_i]).strip()
+            seat = " ".join(row[seat_i]).strip()
             if not name or not seat or name.lower() == header[name_i]:
                 continue
             entry: dict[str, Any] = {"name": name, "seat": seat}
             for key, idx in extras.items():
-                entry[key] = row[idx].strip() if idx is not None and len(row) > idx else ""
+                segments = row[idx] if idx is not None and len(row) > idx else []
+                if key == "portfolio":
+                    # One department per source item; a lone plain segment
+                    # falls back to comma-splitting (the source's own
+                    # convention when it uses no list markup).
+                    if len(segments) == 1:
+                        entry[key] = split_plain_departments(segments[0])
+                    else:
+                        entry[key] = [s for s in segments if len(s) > 1]
+                else:
+                    entry[key] = " ".join(segments).strip()
             rows.append(entry)
         if len(rows) >= 10:
             return rows
@@ -145,7 +164,7 @@ def main() -> None:
         merged[pid] = {
             "ac": code,
             "position_ta": row.get("position", ""),
-            "portfolios_ta": row.get("portfolio", ""),
+            "portfolios_ta": row.get("portfolio", []),
             "is_cm": bool(CM_MARKERS.search(row.get("position", ""))),
         }
 
@@ -163,8 +182,8 @@ def main() -> None:
             continue
         pid, code = hit
         entry = merged.setdefault(pid, {"ac": code, "is_cm": False})
-        entry["portfolios_en"] = row.get("portfolio", "")
-        if CM_MARKERS.search(row.get("portfolio", "")):
+        entry["portfolios_en"] = row.get("portfolio", [])
+        if CM_MARKERS.search(" ".join(row.get("portfolio", []))):
             entry["is_cm"] = True
 
     only_ta = sum(1 for v in merged.values() if "portfolios_en" not in v)
@@ -185,8 +204,9 @@ def main() -> None:
             key="minister",
             value={
                 "position_ta": entry.get("position_ta", ""),
-                "portfolios_ta": entry.get("portfolios_ta", ""),
-                "portfolios_en": entry.get("portfolios_en", ""),
+                # One entry per department as the source lists them (D-032).
+                "portfolios_ta": entry.get("portfolios_ta", []),
+                "portfolios_en": entry.get("portfolios_en", []),
                 "is_chief_minister": entry["is_cm"],
                 "assembly": "17th Tamil Nadu Legislative Assembly",
             },
@@ -199,8 +219,11 @@ def main() -> None:
     db.conn.commit()
 
     cm = [pid for pid, v in merged.items() if v["is_cm"]]
+    dep_ta = sum(len(v.get("portfolios_ta", [])) for v in merged.values())
+    dep_en = sum(len(v.get("portfolios_en", [])) for v in merged.values())
     print("\n=== Ministers import report ===")
     print(f"ministers: {len(merged)} (chief minister rows: {len(cm)})")
+    print(f"department entries: ta {dep_ta}, en {dep_en}")
     print(f"bilingual: {len(merged) - only_ta - only_en}, ta-only: {only_ta}, en-only: {only_en}")
     print(f"stale minister facts removed: {removed}")
     for line in problems:

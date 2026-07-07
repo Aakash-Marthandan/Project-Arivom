@@ -12,13 +12,14 @@ import {
   getVacantSeats,
   type Minister,
 } from "@/lib/queries";
+import { departmentList } from "@/lib/departments";
 
 export const revalidate = 3600;
 
 interface MinisterValue {
   position_ta: string;
-  portfolios_ta: string;
-  portfolios_en: string;
+  portfolios_ta: string[] | string;
+  portfolios_en: string[] | string;
   is_chief_minister: boolean;
 }
 
@@ -30,14 +31,6 @@ interface DepartmentEntry {
   minister: Minister;
 }
 
-function splitDepartments(portfolios: string): string[] {
-  // Split combined portfolios on commas only: "மற்றும்"/"and" join words
-  // inside a single department's name and must not split it.
-  return portfolios
-    .split(",")
-    .map((d) => d.trim().replace(/\s+/g, " "))
-    .filter((d) => d.length > 1);
-}
 
 function positionKeyOf(v: MinisterValue): DepartmentEntry["positionKey"] {
   if (v.is_chief_minister) return "cm";
@@ -79,7 +72,7 @@ export default async function GovernmentPage({
     const portfolios = isTa
       ? v.portfolios_ta || v.portfolios_en
       : v.portfolios_en || v.portfolios_ta;
-    return splitDepartments(portfolios).map((department) => ({
+    return departmentList(portfolios).map((department) => ({
       department,
       positionKey: positionKeyOf(v),
       minister: m,
