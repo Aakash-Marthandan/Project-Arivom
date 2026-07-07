@@ -72,10 +72,12 @@ no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
 
 ## Current status (handoff, as of 2026-07-07)
 
-M1–M6 and M8 `done`; M7 fully built and **deliberately dark**; M7.5
-app-experience rounds shipped (D-023…D-026). Every decision is in
-docs/DECISIONS.md (D-001…D-029); D-021 is the north star (informed
-electorate).
+M1–M6 and M8 `done`; M12 `in-progress` (NFHS-5 slice shipped, D-030);
+M7 fully built and **deliberately dark**; M7.5 app-experience rounds
+shipped (D-023…D-026); M11 SEO groundwork in (sitemap+hreflang, robots,
+JSON-LD, metadataBase — origin resolves from NEXT_PUBLIC_SITE_URL, set
+it when a custom domain lands). Every decision is in docs/DECISIONS.md
+(D-001…D-030); D-021 is the north star (informed electorate).
 
 **The one gate: ANTHROPIC_API_KEY.** Owner will provide it when the app is
 near-complete so API testing happens once, efficiently — do not ask for it
@@ -92,8 +94,10 @@ full depth, the daily brief, entity-matched person news.
 /government); M8 education indicators — district pages /d/[lgd] with the
 UDISE+ education panel (D-028: public dashboard API, class-derived level
 buckets, cross-validated state sums; importer `import-udise`, monthly
-cron; **prod data import pending — owner runs it against
-$SUPABASE_DB_URL**); the app experience — PWA shell with bottom tabs,
+cron) and the NFHS-5 health panel (D-030: twelve verified sample-survey
+indicators, importer `import-nfhs`; **prod data imports pending — owner
+runs `import-udise` and `import-nfhs` against $SUPABASE_DB_URL**); the
+app experience — PWA shell with bottom tabs,
 news-first home sectioned by device-remembered places (my-places +
 person follows, cookies, no accounts), content-first story cards with
 hotlinked outlet images (D-024: linked, never copied), /news +
