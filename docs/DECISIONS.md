@@ -38,6 +38,14 @@ accumulation, streaks). Two systemic pieces plus a philosophical anchor:
   claiming an RTI right over our own backlog would be dishonest. Ward
   and contact states are government-side (SEC publishes results as
   unusable PDFs; no official contact directory exists) and qualify.
+- **Refinements (same day):** forgetting is as easy as remembering —
+  /more gains a one-tap "மறக்கச் செய்" erasing the device's footprints
+  (rendered only when there is something to forget; warm confirmation).
+  /right-to-know's filing section carries citizen-grade precision: the
+  ₹10 TN fee (waived below the poverty line), the in-person/postal
+  channel for state bodies, and rtionline.gov.in labelled
+  Union-bodies-only so nobody is sent to a portal that cannot take
+  their application.
 - Neutral throughout (pillar 2): the map lists journeys and questions,
   never opinions; /right-to-know states the law, never advocacy.
 
