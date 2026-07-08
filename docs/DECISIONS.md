@@ -5,6 +5,44 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-08 — Civic-context order for the feed
+
+### D-037: Consequential first, your places next, newest after
+Owner direction: rank news by importance to a rational Tamil citizen's
+context, deepened by their saved places — regions alone are not
+relevance. Resolved, with the neutrality lines drawn tight:
+- **Three ordering signals, all published** (methodology "stories"
+  section): (1) the checked civic classification when it exists —
+  civic_priority "high" outranks everything, from key day; (2) until
+  then, an interim SUBJECT rubric in code (`src/lib/civic-rank.ts`):
+  bilingual keyword classes for elections, courts,
+  legislature/government decisions, public-safety alerts, and
+  household prices. Subjects only; party and person names are never
+  ranking signals and never will be. (3) A story tagged to one of the
+  reader's saved districts gets a boost — my-places cookie only, on
+  surfaces already per-reader.
+- **Ranking orders, never hides.** Every story stays in the feed,
+  later in it. Tier 1 of the finite feed is now "the set we think a
+  reader needs" by these rules, not merely the newest.
+- **Pools guarantee presence:** /news merges a few recent stories per
+  saved district into the ranking pool (ranking cannot lift what was
+  never fetched). Home's statewide sector ranks by rubric alone (the
+  reader's districts already own sectors above); district and
+  constituency feeds rank rubric+recency and stay cache-safe.
+- **The feed renderer respects the caller:** NewsFeed gained
+  order="given" — its classic newest-first interleave silently erased
+  any upstream ordering (found by probing: the rubric matched at
+  runtime while the render ignored it).
+- **Pre-key card hygiene:** the per-item "only one outlet so far" line
+  is suppressed until the first cluster exists — with nothing to
+  contrast against it was noise on every card; it returns by itself
+  on key day (hasAnyClusters).
+- **Key-day handover is automatic:** the ranker prefers
+  civic_priority/civic_class the moment the pipeline writes them; the
+  interim rubric simply stops matching anything it should not.
+
+---
+
 ## 2026-07-08 — The finite feed and the world beyond Tamil Nadu
 
 ### D-036: Beyond-TN outlets; the feed ends on purpose

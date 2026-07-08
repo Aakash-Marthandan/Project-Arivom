@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LocateButton } from "@/components/locate-button";
 import { buildNewsStrings } from "@/components/news-feed";
 import { ClusterStoryCard, ItemStoryCard } from "@/components/story-card";
+import { rankNewsItems } from "@/lib/civic-rank";
 import { getMyFollows, getMyPlaces } from "@/lib/places";
 import {
   getDailyBrief,
@@ -95,10 +96,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     }),
   );
 
-  const [stateClusters, stateItems] = await Promise.all([
+  const [stateClusters, stateItemsPool] = await Promise.all([
     getNewsClusters(undefined, 3),
-    getUnclusteredItems(lang, undefined, PER_SECTOR),
+    getUnclusteredItems(lang, undefined, PER_SECTOR * 3),
   ]);
+  // Civic subjects first (D-037); the reader's districts already have
+  // their own sectors above, so no place boost here.
+  const stateItems = rankNewsItems(stateItemsPool).slice(0, PER_SECTOR);
 
   const timeLabel = (d: Date | string | null) =>
     d ? format.relativeTime(new Date(d)) : null;

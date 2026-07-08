@@ -6,6 +6,7 @@ import {
 } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { buildNewsStrings, NewsFeed } from "@/components/news-feed";
+import { rankNewsItems } from "@/lib/civic-rank";
 import { getMyPlaces } from "@/lib/places";
 import {
   getNewsClusters,
@@ -81,24 +82,55 @@ export default async function NewsPage({
   const sp = await searchParams;
   const depth = sp.d === "3" ? 3 : sp.d === "2" ? 2 : 1;
 
-  const [t, format, strings, clusters, tnItems] = await Promise.all([
-    getTranslations("news"),
-    getFormatter(),
-    buildNewsStrings(),
-    getNewsClusters(),
-    getUnclusteredItems(lang, undefined, TIER1_LIMIT + TIER2_LIMIT),
-  ]);
-  const tier1 = tnItems.slice(0, TIER1_LIMIT);
-  const tier2 = tnItems.slice(TIER1_LIMIT);
+  const places = await getMyPlaces();
+  const [t, format, strings, clusters, tnItems, placeCards] =
+    await Promise.all([
+      getTranslations("news"),
+      getFormatter(),
+      buildNewsStrings(),
+      getNewsClusters(),
+      getUnclusteredItems(lang, undefined, TIER1_LIMIT + TIER2_LIMIT),
+      places.length ? getPlaceCards(places) : Promise.resolve([]),
+    ]);
+
+  // Civic-context order (D-037): consequential subjects first, then the
+  // reader's own districts, then the newest. Tier 1 is the top of that
+  // order — the set we think a reader needs — not merely the latest.
+  const placeDistrictLgds = new Set(
+    placeCards.flatMap((c) => (c.district_lgd ? [c.district_lgd] : [])),
+  );
+  // Ranking can only lift what the pool contains: guarantee each saved
+  // district a few of its own recent stories before ordering.
+  const placeDistrictIds = [
+    ...new Set(
+      placeCards.flatMap((c) => (c.district_id ? [c.district_id] : [])),
+    ),
+  ].slice(0, 3);
+  const districtPools = await Promise.all(
+    placeDistrictIds.map((id) => getUnclusteredItems(lang, id, 5, 3, "any")),
+  );
+  const seenIds = new Set(tnItems.map((i) => i.id));
+  const pool = [...tnItems];
+  for (const extra of districtPools) {
+    for (const item of extra) {
+      if (!seenIds.has(item.id)) {
+        seenIds.add(item.id);
+        pool.push(item);
+      }
+    }
+  }
+  const ranked = rankNewsItems(pool, { placeDistrictLgds });
+  const tier1 = ranked.slice(0, TIER1_LIMIT);
+  const tier2 = ranked.slice(TIER1_LIMIT);
   const tier3 =
     depth >= 3
-      ? await getUnclusteredItems(lang, undefined, TIER3_LIMIT, 3, "beyond")
+      ? rankNewsItems(
+          await getUnclusteredItems(lang, undefined, TIER3_LIMIT, 3, "beyond"),
+        )
       : [];
 
   // The life-doors at the finite end: the reader's own district when we
   // know it, the locate flow when we do not.
-  const places = depth >= 3 ? await getMyPlaces() : [];
-  const placeCards = places.length ? await getPlaceCards(places) : [];
   const districtLgd = placeCards.find((c) => c.district_lgd)?.district_lgd;
 
   return (
@@ -106,6 +138,9 @@ export default async function NewsPage({
       <h1 className="font-heading text-3xl font-bold">{t("title")}</h1>
       <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted-foreground">
         {t("intro")}
+      </p>
+      <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+        {t("tiers.orderNote")}
       </p>
 
       {clusters.length === 0 && tier1.length === 0 ? (
@@ -119,6 +154,7 @@ export default async function NewsPage({
           locale={locale}
           format={format}
           strings={strings}
+          order="given"
         />
       )}
 
@@ -138,6 +174,7 @@ export default async function NewsPage({
             locale={locale}
             format={format}
             strings={strings}
+            order="given"
           />
         </section>
       ) : null}
@@ -159,6 +196,7 @@ export default async function NewsPage({
               locale={locale}
               format={format}
               strings={strings}
+              order="given"
             />
           ) : (
             <p className="mt-6 text-center text-sm text-muted-foreground">

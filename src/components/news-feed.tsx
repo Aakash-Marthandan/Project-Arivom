@@ -4,6 +4,7 @@ import {
   ItemStoryCard,
   type StoryStrings,
 } from "@/components/story-card";
+import { hasAnyClusters } from "@/lib/queries";
 import type { NewsCluster, NewsSingleItem } from "@/lib/queries";
 
 /**
@@ -57,12 +58,15 @@ export interface NewsStrings extends StoryStrings {
 
 /** All feed strings, resolved server-side in one place for every surface. */
 export async function buildNewsStrings(): Promise<NewsStrings> {
-  const [t, tp] = await Promise.all([
+  const [t, tp, clustersExist] = await Promise.all([
     getTranslations("news"),
     getTranslations("provenance"),
+    hasAnyClusters(),
   ]);
   return {
-    singleSource: t("singleSource"),
+    // Pre-key there is nothing to contrast a single source WITH; the
+    // line returns by itself once the first cluster lands (D-037).
+    singleSource: clustersExist ? t("singleSource") : null,
     aiNote: t("aiNote"),
     summaryPending: t("summaryPending"),
     sourcesCount: (count) => t("sourcesCount", { count }),
@@ -103,6 +107,7 @@ type FeedEntry =
 export function interleave(
   clusters: NewsCluster[],
   items: NewsSingleItem[],
+  order: "time" | "given" = "time",
 ): FeedEntry[] {
   const entries: FeedEntry[] = [
     ...clusters.map((cluster) => ({
@@ -116,7 +121,10 @@ export function interleave(
       item,
     })),
   ];
-  return entries.sort((a, b) => b.time - a.time);
+  // "given" keeps the caller's civic-context order (D-037): clusters
+  // (multi-source stories) first as given, then items as given. "time"
+  // is the classic newest-first interleave.
+  return order === "given" ? entries : entries.sort((a, b) => b.time - a.time);
 }
 
 export function NewsFeed({
@@ -125,14 +133,16 @@ export function NewsFeed({
   locale,
   format,
   strings,
+  order = "time",
 }: {
   clusters: NewsCluster[];
   items: NewsSingleItem[];
   locale: string;
   format: Formatter;
   strings: NewsStrings;
+  order?: "time" | "given";
 }) {
-  const entries = interleave(clusters, items);
+  const entries = interleave(clusters, items, order);
   return (
     <ul className="mt-8 space-y-3">
       {entries.map((entry, index) => (

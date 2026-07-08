@@ -112,7 +112,9 @@ person follows, cookies, no accounts), content-first story cards with
 hotlinked outlet images (D-024: linked, never copied), the finite
 staged /news feed with beyond-TN tiers (D-036: The Hindu National,
 Indian Express India, BBC Tamil, BBC World; locality surfaces stay
-TN-only; the feed ends on purpose with a feedback door) +
+TN-only; the feed ends on purpose with a feedback door; D-037: tiers order by
+published civic-subject rules + the reader's saved districts, with
+civic_priority taking over on key day) +
 /news/d/[lgd] + /news/s/[id], search across
 constituencies/people/stories, /more, /about; dark mode following the
 system preference (D-029, "paper at night"); department news feeds
@@ -134,6 +136,8 @@ workflow.
    batches (300 extract / 250 confirm / 40 summaries per run; rerun until
    backlog clears; all calls disk-cached under `.cache/llm/`).
 3. Verify in browser (both locales): clustered story cards with markers,
+   the feed order handover (D-037: civic_priority now outranks the
+   interim subject rubric; spot-check tier 1),
    /news/s/[id] summaries + coverage notes + timeline + in-numbers, home
    brief + MLA-mentions, feeds now civic+adjacent-only with Arivom titles.
 4. Run against prod (`DATABASE_URL="$SUPABASE_DB_URL"`), confirm the

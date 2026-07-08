@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { rankNewsItems } from "@/lib/civic-rank";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
@@ -94,7 +95,7 @@ export default async function ConstituencyPage({
       rep ? getPersonFacts(rep.person_id) : Promise.resolve([]),
       c.district_id ? getNewsClusters(c.district_id, 2) : Promise.resolve([]),
       c.district_id
-        ? getUnclusteredItems(newsLang, c.district_id, 4, 7, "any")
+        ? getUnclusteredItems(newsLang, c.district_id, 8, 7, "any").then((r) => rankNewsItems(r).slice(0, 4))
         : Promise.resolve([]),
       getPersonNewsItems(
         representatives.map((r) => r.person_id),

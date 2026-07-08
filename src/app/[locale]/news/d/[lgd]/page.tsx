@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { rankNewsItems } from "@/lib/civic-rank";
 import { notFound } from "next/navigation";
 import {
   getFormatter,
@@ -52,7 +53,7 @@ export default async function DistrictNewsPage({
     getFormatter(),
     buildNewsStrings(),
     getNewsClusters(district.id),
-    getUnclusteredItems(lang, district.id, 30, 3, "any"),
+    getUnclusteredItems(lang, district.id, 30, 3, "any").then(rankNewsItems),
   ]);
   const districtName = locale === "ta" ? district.name_ta : district.name_en;
   const isEmpty = clusters.length === 0 && items.length === 0;
@@ -122,6 +123,7 @@ export default async function DistrictNewsPage({
           locale={locale}
           format={format}
           strings={strings}
+          order="given"
         />
       )}
 

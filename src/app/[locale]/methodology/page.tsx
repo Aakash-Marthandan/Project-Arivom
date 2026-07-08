@@ -131,6 +131,7 @@ export default async function MethodologyPage({
               "pool",
               "classification",
               "priority",
+              "ordering",
               "differ",
               "titles",
               "actorBlind",

@@ -521,6 +521,15 @@ export async function getCorrections(): Promise<CorrectionRow[]> {
   `;
 }
 
+/** True once the first cluster exists (key day). Pre-key, per-item
+ *  "single source" lines are noise: there is nothing to contrast with. */
+export async function hasAnyClusters(): Promise<boolean> {
+  const rows = await sql<{ exists: boolean }[]>`
+    SELECT EXISTS (SELECT 1 FROM news_clusters) AS exists
+  `;
+  return rows[0]?.exists ?? false;
+}
+
 /** The story pool in one line (D-025): stored, excluded, awaiting. */
 export async function getNewsPoolStats(): Promise<{
   total: number;

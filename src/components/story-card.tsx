@@ -11,7 +11,9 @@ import type { NewsCluster, NewsSingleItem } from "@/lib/queries";
  */
 
 export interface StoryStrings {
-  singleSource: string;
+  /** Null until the first cluster exists (D-037): with nothing to
+   *  contrast against, "one outlet so far" is noise on every card. */
+  singleSource: string | null;
   sourcesCount: (count: number) => string;
   outletName: (slug: string) => string;
   markers: { priority: string; sourcesDiffer: string; locked: string };
@@ -172,7 +174,8 @@ export function ItemStoryCard({
             {title.text} <span aria-hidden="true">↗</span>
           </h3>
           <p className="mt-1.5 text-[11.5px] font-semibold text-muted-foreground">
-            {s.outletName(item.outlet)} · {s.singleSource}
+            {s.outletName(item.outlet)}
+            {s.singleSource ? <> · {s.singleSource}</> : null}
           </p>
         </div>
         {item.image_url ? (
