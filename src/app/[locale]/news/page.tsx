@@ -226,6 +226,15 @@ export default async function NewsPage({
                 {t("tiers.feedbackCta")} ↗
               </a>
             </p>
+            <p className="mx-auto mt-4 max-w-sm text-xs leading-relaxed text-muted-foreground">
+              {t("tiers.rtiLine")}{" "}
+              <Link
+                href="/right-to-know"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                {t("tiers.rtiLink")}
+              </Link>
+            </p>
             <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t("tiers.doorsTitle")}
             </p>

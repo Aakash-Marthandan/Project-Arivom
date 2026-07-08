@@ -61,7 +61,7 @@
       "onboardTitle": "Who represents you?",
       "onboardSub": "Add your places once. Your civic feed starts there. Saved on this device only, no account needed.",
       "browse": "Browse constituencies",
-      "statewide": "Across Tamil Nadu",
+      "statewide": "Worth knowing today",
       "districtSection": "{district} district",
       "myMla": "Your MLA",
       "myMp": "Your MP",
@@ -73,7 +73,10 @@
       "manageHint": "Manage your places in the More tab.",
       "quiet": "No recent stories for this district. Statewide news is below.",
       "followedSection": "People you follow",
-      "followHint": "Follow representatives to see their stories here."
+      "followHint": "Follow representatives to see their stories here.",
+      "fullFeed": "The full news feed",
+      "dataGap": "Looked for data that is not here? Some information is not yet published by the government. You hold the right to ask for it.",
+      "dataGapLink": "Your right to know"
     }
   },
   "locate": {
@@ -486,6 +489,7 @@
       "title": "How a citizen can ask",
       "how": "Any citizen can file an RTI application with the Public Information Officer of the department that holds the records. No reason is needed. For Tamil Nadu government bodies the fee is ₹10; it is waived for below-poverty-line card holders.",
       "channels": "For Tamil Nadu government bodies, apply in person or by post to that office's Public Information Officer. Online filing exists only for Union government bodies.",
+      "accessGap": "One truth belongs here. Union government bodies accept RTI applications online; Tamil Nadu government bodies do not offer that yet. Post or in person only. The absence of an easy route puts distance between people and their right. Talking about that is civic participation too.",
       "appeal": "If the reply does not come or is refused, the Act provides appeals: first within the authority, then to the Information Commission.",
       "portalLink": "Online portal for Union government bodies (rtionline.gov.in)"
     },
@@ -602,7 +606,9 @@
       "doorDistrict": "How your district is doing",
       "doorLocate": "Find your constituency",
       "doorMethod": "How these stories are chosen",
-      "orderNote": "Order: civic subjects first, then your saved places, then the newest. The rules are on the methodology page."
+      "orderNote": "Order: civic subjects first, then your saved places, then the newest. The rules are on the methodology page.",
+      "rtiLine": "If you cannot point us to a source we missed, that data may simply be unpublished. You can ask for it in real life through an RTI, and share what you receive.",
+      "rtiLink": "Learn how"
     }
   },
   "more": {

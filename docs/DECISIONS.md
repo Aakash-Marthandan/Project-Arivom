@@ -5,6 +5,37 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-08 — Money in spoken units; the gentle RTI thread
+
+### D-038: Lakhs and crores; data gaps point to the right, softly
+Owner direction: Indian money units everywhere possible; strengthen
+the RTI thread without ever making it feel pushed. Resolved:
+- **Money reads the way people say it.** Affidavit amounts display in
+  lakhs and crores (`src/lib/inr.ts`), with the exact rupee figure
+  kept beneath — the display never replaces the fact (pillar 1).
+- **Home's statewide section is renamed** "இன்று அறியத் தக்கவை /
+  Worth knowing today" — after D-037 it is a civic-ranked set, not a
+  geographic catch-all. Home's end gains two quiet doors: the full
+  news feed, and a one-line data-gap note pointing at
+  /right-to-know.
+- **The feed's finite end** adds the owner's line: if you cannot
+  point us to a source we missed, the data may be unpublished — you
+  can ask for it in real life through an RTI, and share what you
+  receive.
+- **The access-gap truth** joins /right-to-know: Union bodies accept
+  RTI online; Tamil Nadu bodies do not yet, post or in person only.
+  Stated as fact, with one sentence naming the effect (distance
+  between people and their right) and that talking about it is civic
+  participation. No campaign copy, no demands — the platform's
+  founding value speaking in its own voice.
+- **Direction noted, not built:** a community-contributed page of
+  RTI-obtained information (verified before publication, provenance
+  = the RTI reply itself) — a natural M9+ feature once accounts and
+  the moderation queue exist. Recorded in PLAN's backlog; no UI
+  promise anywhere until it is real.
+
+---
+
 ## 2026-07-08 — Civic-context order for the feed
 
 ### D-037: Consequential first, your places next, newest after

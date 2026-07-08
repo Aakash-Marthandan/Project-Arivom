@@ -95,7 +95,7 @@ export default async function RightToKnowPage({
           {t("ask.title")}
         </h2>
         <div className="mt-2 space-y-3">
-          {(["how", "channels", "appeal"] as const).map((key) => (
+          {(["how", "channels", "accessGap", "appeal"] as const).map((key) => (
             <p key={key} className="leading-relaxed text-muted-foreground">
               {t(`ask.${key}`)}
             </p>

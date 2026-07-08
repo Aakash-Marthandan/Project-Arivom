@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { rankNewsItems } from "@/lib/civic-rank";
+import { formatInrCompact, type InrDisplay } from "@/lib/inr";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
@@ -551,14 +552,12 @@ export default async function ConstituencyPage({
                   />
                 </div>
                 {(() => {
+                  // Lakh/crore units with the exact figure kept beneath
+                  // (owner directive; pillar 1).
                   const inr = (fact: typeof affidavitFacts.assets) => {
                     const v = fact?.value as { amount_inr?: number } | undefined;
                     return v?.amount_inr != null
-                      ? format.number(v.amount_inr, {
-                          style: "currency",
-                          currency: "INR",
-                          maximumFractionDigits: 0,
-                        })
+                      ? formatInrCompact(v.amount_inr, locale)
                       : null;
                   };
                   const casesValue = (() => {
@@ -590,6 +589,23 @@ export default async function ConstituencyPage({
                         <dd className="mt-0.5 text-sm font-medium tabular-nums">
                           {value}
                         </dd>
+                      </div>
+                    );
+
+                  const moneyField = (key: string, value: InrDisplay | null) =>
+                    value == null ? null : (
+                      <div key={key}>
+                        <dt className="text-xs text-muted-foreground">
+                          {t(`affidavit.${key}`)}
+                        </dt>
+                        <dd className="mt-0.5 text-sm font-medium tabular-nums">
+                          {value.primary}
+                        </dd>
+                        {value.exact ? (
+                          <dd className="text-xs tabular-nums text-muted-foreground">
+                            {value.exact}
+                          </dd>
+                        ) : null}
                       </div>
                     );
 
@@ -632,8 +648,11 @@ export default async function ConstituencyPage({
                           {t("affidavit.moreInfo")}
                         </summary>
                         <dl className="mt-3 grid grid-cols-2 gap-3">
-                          {field("assets", inr(affidavitFacts.assets))}
-                          {field("liabilities", inr(affidavitFacts.liabilities))}
+                          {moneyField("assets", inr(affidavitFacts.assets))}
+                          {moneyField(
+                            "liabilities",
+                            inr(affidavitFacts.liabilities),
+                          )}
                           {field("criminalCases", casesValue)}
                         </dl>
                       </details>

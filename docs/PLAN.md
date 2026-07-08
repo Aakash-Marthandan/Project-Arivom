@@ -221,6 +221,12 @@ tn.gov.in department directory becomes the canonical list.
 
 ---
 
+**Backlog (owner direction, D-038):** a community-contributed page of
+RTI-obtained information — citizens post documents they received under
+RTI, verified before publication, provenance = the RTI reply itself.
+Needs M9 (accounts) + the moderation queue; design it as the natural
+outlet of the /right-to-know journey.
+
 ## Phase v0.5
 
 ### M12 — Health & water indicators — `in-progress` (NFHS-5 + JJM done 2026-07-07)

@@ -347,6 +347,26 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         {cards.length > 0 ? (
           <p className="mt-3 text-xs text-muted-foreground">{t("manageHint")}</p>
         ) : null}
+        {/* Two quiet doors at the day's end: depth for the curious, and
+            the right that begins where published data stops (D-035/D-038 —
+            an invitation, never a push). */}
+        <p className="mt-4 text-sm">
+          <Link
+            href="/news"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {t("fullFeed")} →
+          </Link>
+        </p>
+        <p className="mx-auto mt-3 max-w-sm text-xs leading-relaxed text-muted-foreground">
+          {t("dataGap")}{" "}
+          <Link
+            href="/right-to-know"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {t("dataGapLink")}
+          </Link>
+        </p>
       </footer>
     </div>
   );
