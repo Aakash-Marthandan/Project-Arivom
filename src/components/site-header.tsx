@@ -17,6 +17,9 @@ export async function SiteHeader() {
     { href: "/vacancies", label: t("nav.vacancies") },
     { href: "/methodology", label: t("nav.methodology") },
     { href: "/freshness", label: t("nav.freshness") },
+    // Desktop parity with the tab bar (owner): my places, corrections,
+    // right-to-know and about all live behind More.
+    { href: "/more", label: t("nav.more") },
   ] as const;
 
   return (
@@ -38,13 +41,9 @@ export async function SiteHeader() {
               className="h-[30px] w-[30px]"
             />
           </picture>
-          <span className="flex items-baseline gap-2">
-            <span className="font-heading text-2xl font-bold tracking-tight text-primary">
-              {t("appName")}
-            </span>
-            <span className="hidden text-sm text-muted-foreground sm:inline">
-              {t("tagline")}
-            </span>
+          {/* Brand only; the tagline lives on the home hero (owner). */}
+          <span className="font-heading text-2xl font-bold tracking-tight text-primary">
+            {t("appName")}
           </span>
         </Link>
         {/* Suspense: useSearchParams requires it during static prerender. */}

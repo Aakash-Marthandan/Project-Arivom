@@ -159,7 +159,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       {cards.length === 0 ? (
         <section className="py-10 sm:py-16">
-          <h1 className="max-w-xl font-heading text-3xl font-extrabold leading-snug sm:text-4xl">
+          {/* The brand promise greets first contact (moved from the
+              header, owner): அறிவோம் = "let us know". */}
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary">
+            {tc("tagline")}
+          </p>
+          <h1 className="mt-3 max-w-xl font-heading text-3xl font-extrabold leading-snug sm:text-4xl">
             {t("onboardTitle")}
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">

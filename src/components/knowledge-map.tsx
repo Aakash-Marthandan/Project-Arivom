@@ -63,14 +63,18 @@ export function KnowledgeMap({
   return (
     <section aria-label={title} className="mt-10">
       <h2 className="font-heading text-xl font-bold">{title}</h2>
-      <ul className="mt-3 divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
+      {/* One joined list on a phone; airy two-column cards on desktop. */}
+      <ul className="mt-3 divide-y divide-border overflow-hidden rounded-lg border border-border bg-card md:grid md:grid-cols-2 md:gap-3 md:divide-y-0 md:overflow-visible md:rounded-none md:border-0 md:bg-transparent">
         {items.map((item) => {
           const visited = Boolean(seen?.[item.canonical]);
           return (
-            <li key={item.canonical}>
+            <li
+              key={item.canonical}
+              className="md:rounded-lg md:border md:border-border md:bg-card"
+            >
               <Link
                 href={item.href}
-                className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-secondary/50"
+                className="flex h-full items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-secondary/50 md:rounded-lg"
               >
                 <span className="min-w-0">
                   <span className="block font-medium">{item.label}</span>

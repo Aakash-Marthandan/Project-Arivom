@@ -26,6 +26,16 @@ export async function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/right-to-know" className="hover:text-primary hover:underline">
+                {t("nav.rightToKnow")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/corrections" className="hover:text-primary hover:underline">
+                {t("nav.corrections")}
+              </Link>
+            </li>
+            <li>
               <Link href="/methodology" className="hover:text-primary hover:underline">
                 {t("nav.methodology")}
               </Link>
