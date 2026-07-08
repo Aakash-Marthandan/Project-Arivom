@@ -53,6 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/methodology", "monthly", 0.5),
     entry("/freshness", "daily", 0.5),
     entry("/corrections", "weekly", 0.5),
+    entry("/right-to-know", "monthly", 0.5),
     entry("/about", "monthly", 0.4),
     entry("/more", "monthly", 0.3),
     ...constituencies.map((c) =>

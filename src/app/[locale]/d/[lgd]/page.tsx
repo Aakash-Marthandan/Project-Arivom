@@ -20,6 +20,7 @@ import {
   type ProvenanceEntry,
 } from "@/components/provenance-chip";
 import { getDistrict, getDistrictAcs, getLocalityFacts } from "@/lib/queries";
+import { KnowledgeMap, type KnowledgeItem } from "@/components/knowledge-map";
 
 export const revalidate = 3600;
 
@@ -160,11 +161,12 @@ export default async function DistrictPage({
   const district = await getDistrict(lgd);
   if (!district) notFound();
 
-  const [t, tp, tn, tc, format, facts, acs] = await Promise.all([
+  const [t, tp, tn, tc, tk, format, facts, acs] = await Promise.all([
     getTranslations("district"),
     getTranslations("provenance"),
     getTranslations("news"),
     getTranslations("common"),
+    getTranslations("knowledgeMap"),
     getFormatter(),
     getLocalityFacts(district.id),
     getDistrictAcs(district.id),
@@ -275,6 +277,46 @@ export default async function DistrictPage({
       style: "percent",
       maximumFractionDigits: 1,
     });
+
+  // The knowledge map (D-035): journeys from this district outward.
+  const knowledgeItems: KnowledgeItem[] = [
+    {
+      href: `/${locale}/government`,
+      canonical: "/government",
+      label: tk("items.government.label"),
+      answers: tk("items.government.answers"),
+    },
+    {
+      href: `/${locale}/vacancies`,
+      canonical: "/vacancies",
+      label: tk("items.vacancies.label"),
+      answers: tk("items.vacancies.answers"),
+    },
+    {
+      href: `/${locale}/freshness`,
+      canonical: "/freshness",
+      label: tk("items.freshness.label"),
+      answers: tk("items.freshness.answers"),
+    },
+    {
+      href: `/${locale}/corrections`,
+      canonical: "/corrections",
+      label: tk("items.corrections.label"),
+      answers: tk("items.corrections.answers"),
+    },
+    {
+      href: `/${locale}/methodology`,
+      canonical: "/methodology",
+      label: tk("items.methodology.label"),
+      answers: tk("items.methodology.answers"),
+    },
+    {
+      href: `/${locale}/right-to-know`,
+      canonical: "/right-to-know",
+      label: tk("items.rightToKnow.label"),
+      answers: tk("items.rightToKnow.answers"),
+    },
+  ];
 
   const chipLabels = {
     publisher: tp("publisher"),
@@ -776,7 +818,7 @@ export default async function DistrictPage({
       </section>
 
       {acs.length > 0 ? (
-        <section aria-labelledby="acs-title" className="mt-10">
+        <section aria-labelledby="acs-title" className="mt-10" id="acs">
           <h2 id="acs-title" className="font-heading text-xl font-bold">
             {t("acsTitle")}
           </h2>
@@ -799,6 +841,13 @@ export default async function DistrictPage({
           </ul>
         </section>
       ) : null}
+
+      <KnowledgeMap
+        title={tk("title")}
+        deviceNote={tk("deviceNote")}
+        seenLabel={tk("seenLabel")}
+        items={knowledgeItems}
+      />
     </div>
   );
 }

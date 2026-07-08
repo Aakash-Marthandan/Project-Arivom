@@ -5,6 +5,44 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-07 — Rewarding exploration without the attention economy
+
+### D-035: Reward orientation, not engagement; edges grant rights
+Owner directive: make being an informed voter feel rewarding, as a
+counter to attention-economy dopamine loops — but with no overt reward
+system. The line we drew: reward **orientation** (knowing where you are
+and what more there is to know), never **engagement** (variable reward,
+accumulation, streaks). Two systemic pieces plus a philosophical anchor:
+- **The knowledge map** ("இன்னும் அறிவோம்" / "More to know") ends every
+  place page: the full landscape of journeys a voter can take from here,
+  each row named by the QUESTION it answers ("How are the schools,
+  health and drinking water?"). A device-local footprint (localStorage
+  `arivom_seen`, locale-stripped paths, never sent anywhere — same
+  posture as my-places D-023) marks where you have been with a quiet
+  dot; unseen rows show an arrow invitation. The reward is watching your
+  own map fill in — a museum floor-plan, not a score.
+- **Hard nevers, enforced in the component doc** (`knowledge-map.tsx`):
+  no counts, no percentages, no completion state (nothing happens when
+  all dots fill), no praise, no streaks. If a future feature wants any
+  of these, it violates D-035.
+- **Edges grant rights.** Where the user reaches data the GOVERNMENT has
+  not published (ward councillors, official contact directories), the
+  empty state links `/right-to-know`: a factual page on the RTI Act,
+  its Section 4 proactive-disclosure duty, where the current edges are,
+  and how a citizen files an RTI. Curiosity at the edge becomes civic
+  agency — the mechanism by which, at scale, users push the government
+  to publish more (the owner's north star for this system).
+- **Critical distinction:** only GOVERNMENT-side gaps get the
+  right-to-know framing. Our own not-yet-built surfaces (news analysis
+  awaiting the API key, ward pilot) keep their honest interim copy —
+  claiming an RTI right over our own backlog would be dishonest. Ward
+  and contact states are government-side (SEC publishes results as
+  unusable PDFs; no official contact directory exists) and qualify.
+- Neutral throughout (pillar 2): the map lists journeys and questions,
+  never opinions; /right-to-know states the law, never advocacy.
+
+---
+
 ## 2026-07-07 — M10: transparency pages
 
 ### D-034: Freshness SLAs measure our checking; corrections come from a cited seed

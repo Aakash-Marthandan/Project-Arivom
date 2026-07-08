@@ -12,7 +12,8 @@
       "freshness": "Data status",
       "search": "Search",
       "more": "More",
-      "corrections": "Corrections"
+      "corrections": "Corrections",
+      "rightToKnow": "Right to know"
     },
     "localeSwitcher": {
       "label": "Change language",
@@ -454,6 +455,38 @@
     "recordLink": "Public record",
     "note": "Each entry keeps what was shown before, what it became, when, and why. When accounts arrive, corrections you report from any source chip will be reviewed and, if accepted, appear here."
   },
+  "rightToKnow": {
+    "title": "Your right to know",
+    "intro": "Everything on this platform is public information. Where the data stops, that edge is itself a fact worth knowing: who holds the information, and what the law says about your right to it.",
+    "law": {
+      "title": "What the law says",
+      "act": "The Right to Information Act, 2005 gives every citizen the right to request information from public authorities. The authority must reply, normally within 30 days.",
+      "proactive": "Section 4 of the Act goes further: public authorities must publish key information on their own, without anyone asking. That includes their functions, budgets, and the particulars of decisions that affect the public.",
+      "meaning": "Much of what you see here exists because of these duties. Where a panel on this platform says data is unavailable, the right usually still exists; the publication has not happened yet.",
+      "actLink": "Read the Act (India Code)"
+    },
+    "edges": {
+      "title": "Where the edges are today",
+      "intro": "These are places where this platform has reached the current limits of what government publishes in usable form.",
+      "wards": {
+        "title": "Ward councillors",
+        "body": "The State Election Commission publishes local body results as documents that are hard to reuse, not as data. Ward-level pages here will begin with a Madurai Corporation pilot built from those documents."
+      },
+      "contacts": {
+        "title": "Official contact details of representatives",
+        "body": "No official, regularly updated public directory of MLA and MP office contacts is available in reusable form. Contact sections stay empty rather than showing unverified numbers."
+      },
+      "tracking": "Every source this platform checks, and how fresh it is, is listed openly.",
+      "freshnessLink": "See the data status page."
+    },
+    "ask": {
+      "title": "How a citizen can ask",
+      "how": "Any citizen can file an RTI application with the public information officer of the department that holds the records. A small fee applies; no reason needs to be given.",
+      "appeal": "If the reply does not come or is refused, the Act provides appeals: first within the authority, then to the Information Commission."
+    },
+    "note": "This page states what the law provides, in plain words. It is information, not legal advice, and this platform is not affiliated with any party or campaign.",
+    "edgeLink": "This is information the government is meant to publish. Your right to know"
+  },
   "notFound": {
     "title": "Page not found",
     "body": "The page you are looking for does not exist or may have moved.",
@@ -557,6 +590,53 @@
     "sections": {
       "explore": "Explore",
       "trust": "Trust and method"
+    }
+  },
+  "knowledgeMap": {
+    "title": "More to know",
+    "deviceNote": "Which pages you have seen is remembered only on this device.",
+    "seenLabel": "You have seen this on this device",
+    "items": {
+      "districtData": {
+        "label": "District data: {district}",
+        "answers": "How are the schools, health and drinking water?"
+      },
+      "districtNews": {
+        "label": "District news: {district}",
+        "answers": "What is happening there right now?"
+      },
+      "pc": {
+        "label": "Parliamentary constituency: {name}",
+        "answers": "Who speaks for this area in Parliament?"
+      },
+      "acs": {
+        "label": "Assembly constituencies here",
+        "answers": "Who are the MLAs inside this seat?"
+      },
+      "government": {
+        "label": "The state government",
+        "answers": "Which minister runs which department?"
+      },
+      "vacancies": {
+        "label": "Vacant seats",
+        "answers": "Where could a by-election come?"
+      },
+      "freshness": {
+        "label": "Data status",
+        "answers": "How fresh is everything shown here?"
+      },
+      "corrections": {
+        "label": "Corrections",
+        "answers": "What did this platform get wrong, and fix?"
+      },
+      "methodology": {
+        "label": "Methodology",
+        "answers": "How is all of this verified?"
+      },
+      "rightToKnow": {
+        "label": "Your right to know",
+        "answers": "Where data stops, what are your rights?"
+      }
     }
   }
 }

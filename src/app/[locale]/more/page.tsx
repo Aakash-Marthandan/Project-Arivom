@@ -39,6 +39,7 @@ export default async function MorePage({
     { href: "/methodology" as const, label: tc("nav.methodology") },
     { href: "/freshness" as const, label: tc("nav.freshness") },
     { href: "/corrections" as const, label: tc("nav.corrections") },
+    { href: "/right-to-know" as const, label: tc("nav.rightToKnow") },
     { href: "/about" as const, label: t("aboutLink") },
   ];
 

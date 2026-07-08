@@ -116,7 +116,10 @@ system preference (D-029, "paper at night"); department news feeds
 behind /government cards (/government/news/[dept], honest-empty until
 the key; extraction now emits department + department_ta); the "How
 stories are chosen" methodology section and live story-pool counts on
-/freshness (D-025); ingest hygiene (D-025 section blocklist at the
+/freshness (D-025); the knowledge map on place pages plus the
+/right-to-know page (D-035: reward orientation not engagement;
+device-local seen-footprints, no gamification; government-side data
+edges link the citizen's RTI rights); ingest hygiene (D-025 section blocklist at the
 poller); Lighthouse CI floors (perf ≥0.80 median-of-3 on CI hardware,
 a11y ≥0.95; local measures 0.89–0.93) and a Monday editorial-QA sample
 workflow.

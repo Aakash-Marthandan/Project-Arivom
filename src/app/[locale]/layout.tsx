@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SwRegister } from "@/components/sw-register";
+import { SeenTracker } from "@/components/seen-tracker";
 import { TabBar } from "@/components/tab-bar";
 import { siteOrigin } from "@/lib/site";
 import "../globals.css";
@@ -113,6 +114,8 @@ export default async function LocaleLayout({
           <TabBar items={tabs} />
         </NextIntlClientProvider>
         <SwRegister />
+        {/* Device-local footprints for the knowledge map (D-035). */}
+        <SeenTracker />
       </body>
     </html>
   );

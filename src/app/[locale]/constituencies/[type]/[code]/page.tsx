@@ -21,6 +21,7 @@ import {
   ProvenanceChip,
   type ProvenanceEntry,
 } from "@/components/provenance-chip";
+import { KnowledgeMap, type KnowledgeItem } from "@/components/knowledge-map";
 import {
   getAssemblySegments,
   getConstituency,
@@ -72,11 +73,13 @@ export default async function ConstituencyPage({
   const c = await load(route.level, route.code);
   if (!c) notFound();
 
-  const [t, tp, tn, format, facts, segments, representatives] =
+  const [t, tp, tn, tk, tr, format, facts, segments, representatives] =
     await Promise.all([
       getTranslations("constituency"),
       getTranslations("provenance"),
       getTranslations("news"),
+      getTranslations("knowledgeMap"),
+      getTranslations("rightToKnow"),
       getFormatter(),
       getLocalityFacts(c.id),
       c.level === "pc" ? getAssemblySegments(c.id) : Promise.resolve([]),
@@ -182,6 +185,65 @@ export default async function ConstituencyPage({
         llm_bulk: tp("methods.llm_bulk"),
       } as Record<string, string>
     )[m] ?? m;
+
+  // The knowledge map (D-035): every journey a voter can take from this
+  // page, named by the question it answers. Order: nearest first.
+  const knowledgeItems: KnowledgeItem[] = [
+    ...(c.district_lgd
+      ? [
+          {
+            href: `/${locale}/d/${c.district_lgd}`,
+            canonical: `/d/${c.district_lgd}`,
+            label: tk("items.districtData.label", {
+              district: districtName ?? "",
+            }),
+            answers: tk("items.districtData.answers"),
+          },
+          {
+            href: `/${locale}/news/d/${c.district_lgd}`,
+            canonical: `/news/d/${c.district_lgd}`,
+            label: tk("items.districtNews.label", {
+              district: districtName ?? "",
+            }),
+            answers: tk("items.districtNews.answers"),
+          },
+        ]
+      : []),
+    ...(c.level === "ac" && parentName && c.parent_eci_code
+      ? [
+          {
+            href: `/${locale}/constituencies/pc/${c.parent_eci_code}`,
+            canonical: `/constituencies/pc/${c.parent_eci_code}`,
+            label: tk("items.pc.label", { name: parentName }),
+            answers: tk("items.pc.answers"),
+          },
+        ]
+      : []),
+    {
+      href: `/${locale}/government`,
+      canonical: "/government",
+      label: tk("items.government.label"),
+      answers: tk("items.government.answers"),
+    },
+    {
+      href: `/${locale}/vacancies`,
+      canonical: "/vacancies",
+      label: tk("items.vacancies.label"),
+      answers: tk("items.vacancies.answers"),
+    },
+    {
+      href: `/${locale}/methodology`,
+      canonical: "/methodology",
+      label: tk("items.methodology.label"),
+      answers: tk("items.methodology.answers"),
+    },
+    {
+      href: `/${locale}/right-to-know`,
+      canonical: "/right-to-know",
+      label: tk("items.rightToKnow.label"),
+      answers: tk("items.rightToKnow.answers"),
+    },
+  ];
 
   const provenance: ProvenanceEntry[] = [
     {
@@ -610,7 +672,13 @@ export default async function ConstituencyPage({
                 </dl>
               ) : (
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  {t("contact.pending")}
+                  {t("contact.pending")}{" "}
+            <Link
+              href="/right-to-know"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              {tr("edgeLink")} →
+            </Link>
                 </p>
               )}
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
@@ -697,7 +765,13 @@ export default async function ConstituencyPage({
         ) : null}
         {c.level === "ac" ? (
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            {t("representatives.wardEmpty")}
+            {t("representatives.wardEmpty")}{" "}
+            <Link
+              href="/right-to-know"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              {tr("edgeLink")} →
+            </Link>
           </p>
         ) : null}
       </section>
@@ -811,6 +885,13 @@ export default async function ConstituencyPage({
           </div>
         </section>
       ) : null}
+
+      <KnowledgeMap
+        title={tk("title")}
+        deviceNote={tk("deviceNote")}
+        seenLabel={tk("seenLabel")}
+        items={knowledgeItems}
+      />
 
       <section aria-labelledby="about-title" className="mt-10">
         <h2 id="about-title" className="font-heading text-base font-semibold">
