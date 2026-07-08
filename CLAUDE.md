@@ -109,7 +109,10 @@ $SUPABASE_DB_URL, (3) once: `UPDATE sources SET cadence='manual'
 WHERE cadence IS NULL` on prod**); the app experience — PWA shell with bottom tabs,
 news-first home sectioned by device-remembered places (my-places +
 person follows, cookies, no accounts), content-first story cards with
-hotlinked outlet images (D-024: linked, never copied), /news +
+hotlinked outlet images (D-024: linked, never copied), the finite
+staged /news feed with beyond-TN tiers (D-036: The Hindu National,
+Indian Express India, BBC Tamil, BBC World; locality surfaces stay
+TN-only; the feed ends on purpose with a feedback door) +
 /news/d/[lgd] + /news/s/[id], search across
 constituencies/people/stories, /more, /about; dark mode following the
 system preference (D-029, "paper at night"); department news feeds

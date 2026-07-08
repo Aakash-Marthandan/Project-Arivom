@@ -5,6 +5,42 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-07-08 — The finite feed and the world beyond Tamil Nadu
+
+### D-036: Beyond-TN outlets; the feed ends on purpose
+Owner direction: add national and international news chosen for a Tamil
+citizen's life, and make the feed's finitude a stated value — the
+anti-doomscroll as product doctrine. Resolved:
+- **Outlet selection principle** (each entry carries its
+  selection_note in the registry): national papers of record whose
+  Union-government coverage reaches TN households (The Hindu National,
+  The Indian Express India), and the only major world service written
+  in Tamil (BBC Tamil) plus its English world feed (BBC World).
+  Established, feed-stable, headline+link only. Selection is
+  subject-relevance, never slant; the registry note is the published
+  reason.
+- **Locality first, world last.** A new `coverage` field in the
+  registry marks these outlets; the web derives the list at build time
+  (single source of truth). Beyond-TN items never enter home sectors or
+  the statewide default feed; they live only in the news feed's final
+  tier. Exception by design: an item a beyond-TN outlet datelines to a
+  TN district is locally relevant and joins that district's feed.
+- **The staged finite feed** (/news): three bounded tiers (12 TN, 15
+  TN, 15 beyond-TN) behind honest "More news" links. Depth lives in
+  the URL (?d=2/3): server-rendered, works without JS, each step a
+  choice. Between tiers, escalating one-line honesty about news as a
+  supplement to life; after the last tier, a proud stop: "The feed
+  ends here, on purpose", a feedback door (prefilled public GitHub
+  issue: what were you looking for?), and two lasting doors (your
+  district's data, or /locate; how stories are chosen). No infinite
+  scroll, no auto-load, ever.
+- **Honesty boundary:** until the API key lands, tiers order by
+  recency and the copy claims only quantity, never a priority ranking
+  we cannot yet compute. Classification sharpens the ordering on key
+  day with no copy change needed.
+
+---
+
 ## 2026-07-07 — Rewarding exploration without the attention economy
 
 ### D-035: Reward orientation, not engagement; edges grant rights

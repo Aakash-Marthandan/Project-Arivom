@@ -556,7 +556,11 @@
       "puthiyathalaimurai": "Puthiya Thalaimurai",
       "polimer-news": "Polimer News",
       "news7-tamil": "News7 Tamil",
-      "oneindia-tamil": "Oneindia Tamil"
+      "oneindia-tamil": "Oneindia Tamil",
+      "the-hindu-national": "The Hindu (National)",
+      "indian-express-india": "The Indian Express",
+      "bbc-tamil": "BBC News Tamil",
+      "bbc-world": "BBC News (World)"
     },
     "summaryLabel": "Summary",
     "moreNews": "More news",
@@ -582,6 +586,21 @@
     "brief": {
       "title": "Today in Tamil Nadu",
       "pending": "The daily brief starts once story clustering is running."
+    },
+    "tiers": {
+      "tier1End": "The stories above are today's set, kept short on purpose. More exists if you want it.",
+      "moreNews": "More news",
+      "tier2Intro": "A small reminder from us. News should support your life, not fill it. Take what helps.",
+      "tier2End": "One section remains after this: national and world news chosen for Tamil Nadu.",
+      "tier3Intro": "From India and the world. Chosen for what touches life in Tamil Nadu.",
+      "finiteTitle": "The feed ends here, on purpose.",
+      "finiteBody": "We do not build endless scroll. Your time is worth more than one more headline. Stay informed, then go live your day. That is the whole idea of this platform.",
+      "feedbackPrompt": "Did you keep pressing because we missed something?",
+      "feedbackCta": "Tell us what you were looking for",
+      "doorsTitle": "Two lasting places for your curiosity",
+      "doorDistrict": "How your district is doing",
+      "doorLocate": "Find your constituency",
+      "doorMethod": "How these stories are chosen"
     }
   },
   "more": {

@@ -52,7 +52,7 @@ export default async function DistrictNewsPage({
     getFormatter(),
     buildNewsStrings(),
     getNewsClusters(district.id),
-    getUnclusteredItems(lang, district.id),
+    getUnclusteredItems(lang, district.id, 30, 3, "any"),
   ]);
   const districtName = locale === "ta" ? district.name_ta : district.name_en;
   const isEmpty = clusters.length === 0 && items.length === 0;

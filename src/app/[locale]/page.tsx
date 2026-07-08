@@ -79,7 +79,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       const sectorPlaces = byDistrict.get(districtId) ?? [];
       const [clusters, items] = await Promise.all([
         getNewsClusters(districtId, 3),
-        getUnclusteredItems(lang, districtId, PER_SECTOR, 7),
+        getUnclusteredItems(lang, districtId, PER_SECTOR, 7, "any"),
       ]);
       const first = sectorPlaces[0]; // districts only enter via a place
       return {

@@ -38,7 +38,9 @@
       "homepage": "https://www.newindianexpress.com/",
       "feed": "https://www.newindianexpress.com/stories.rss",
       "feed_scope": "site-wide (national); TN scoped via URL prefix below",
-      "include_url_prefixes": ["https://www.newindianexpress.com/states/tamil-nadu/"],
+      "include_url_prefixes": [
+        "https://www.newindianexpress.com/states/tamil-nadu/"
+      ],
       "tagging_practice": "URL path carries state section; city/district often in headline",
       "paywall": "free",
       "copyright_note": "Full text copyrighted by Express Publications; store headline + link only",
@@ -275,6 +277,70 @@
       "paywall": "free",
       "copyright_note": "Full text copyrighted by Pravda Media Foundation; store headline + link only",
       "verified_on": "2026-07-05"
+    },
+    {
+      "slug": "the-hindu-national",
+      "name": "The Hindu (National)",
+      "lang": "en",
+      "role": "news",
+      "status": "active",
+      "coverage": "national",
+      "homepage": "https://www.thehindu.com/news/national/",
+      "feed": "https://www.thehindu.com/news/national/feeder/default.rss",
+      "feed_scope": "National news section feed",
+      "tagging_practice": "National dateline; TN relevance judged at classification, not ingest",
+      "paywall": "metered",
+      "copyright_note": "Full text copyrighted by THG Publishing; store headline + link only",
+      "selection_note": "National paper of record headquartered in Chennai; Union government and Supreme Court decisions reach TN households through it",
+      "verified_on": "2026-07-08"
+    },
+    {
+      "slug": "indian-express-india",
+      "name": "The Indian Express (India)",
+      "lang": "en",
+      "role": "news",
+      "status": "active",
+      "coverage": "national",
+      "homepage": "https://indianexpress.com/section/india/",
+      "feed": "https://indianexpress.com/section/india/feed/",
+      "feed_scope": "India section feed",
+      "tagging_practice": "National dateline; TN relevance judged at classification, not ingest",
+      "paywall": "metered",
+      "copyright_note": "Full text copyrighted by Indian Express Group; store headline + link only",
+      "selection_note": "Reporting-led national daily; complements The Hindu for Union policy coverage",
+      "verified_on": "2026-07-08"
+    },
+    {
+      "slug": "bbc-tamil",
+      "name": "BBC News Tamil",
+      "lang": "ta",
+      "role": "news",
+      "status": "active",
+      "coverage": "international",
+      "homepage": "https://www.bbc.com/tamil",
+      "feed": "https://feeds.bbci.co.uk/tamil/rss.xml",
+      "feed_scope": "Full BBC Tamil feed (world + India + TN)",
+      "tagging_practice": "Mixed; Tamil-language world coverage, occasional TN datelines",
+      "paywall": "none",
+      "copyright_note": "Full text copyrighted by the BBC; store headline + link only",
+      "selection_note": "The only major world-news service written in Tamil; lets a Tamil reader meet the world in their own language",
+      "verified_on": "2026-07-08"
+    },
+    {
+      "slug": "bbc-world",
+      "name": "BBC News (World)",
+      "lang": "en",
+      "role": "news",
+      "status": "active",
+      "coverage": "international",
+      "homepage": "https://www.bbc.com/news/world",
+      "feed": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "feed_scope": "World news section feed",
+      "tagging_practice": "International datelines; no TN tagging expected",
+      "paywall": "none",
+      "copyright_note": "Full text copyrighted by the BBC; store headline + link only",
+      "selection_note": "Wire-grade world coverage in English for events that move prices, jobs and families in TN",
+      "verified_on": "2026-07-08"
     }
   ]
 }

@@ -94,7 +94,7 @@ export default async function ConstituencyPage({
       rep ? getPersonFacts(rep.person_id) : Promise.resolve([]),
       c.district_id ? getNewsClusters(c.district_id, 2) : Promise.resolve([]),
       c.district_id
-        ? getUnclusteredItems(newsLang, c.district_id, 4, 7)
+        ? getUnclusteredItems(newsLang, c.district_id, 4, 7, "any")
         : Promise.resolve([]),
       getPersonNewsItems(
         representatives.map((r) => r.person_id),

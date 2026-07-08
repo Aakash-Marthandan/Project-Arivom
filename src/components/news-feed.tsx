@@ -24,6 +24,11 @@ const KNOWN_OUTLETS = [
   "polimer-news",
   "news7-tamil",
   "oneindia-tamil",
+  // Beyond-TN outlets (D-036): the news feed's final tier only.
+  "the-hindu-national",
+  "indian-express-india",
+  "bbc-tamil",
+  "bbc-world",
 ] as const;
 
 const LOCK_CATEGORIES = ["communal", "sub_judice", "allegations"] as const;

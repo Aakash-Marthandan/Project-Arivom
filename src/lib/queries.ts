@@ -1,4 +1,5 @@
 import { sql } from "./db";
+import { BEYOND_TN_OUTLETS } from "./outlets";
 
 export type ConstituencyLevel = "ac" | "pc";
 
@@ -450,6 +451,11 @@ export async function getUnclusteredItems(
   districtId?: number,
   limit = 30,
   days = 3,
+  // D-036: locality-first surfaces show TN outlets ("tn", the default);
+  // the news feed's final tier shows the rest ("beyond"); district feeds
+  // pass "any" — a district-tagged story is locally relevant whoever
+  // wrote it.
+  coverage: "tn" | "beyond" | "any" = "tn",
 ): Promise<NewsSingleItem[]> {
   return sql<NewsSingleItem[]>`
     SELECT i.id, i.outlet, i.url, i.headline_orig AS headline, i.lang,
@@ -469,6 +475,13 @@ export async function getUnclusteredItems(
     )
     AND i.published_at > now() - make_interval(days => ${days})
     ${districtId ? sql`AND i.locality_id = ${districtId}` : sql``}
+    ${
+      coverage === "tn"
+        ? sql`AND NOT (i.outlet = ANY(${BEYOND_TN_OUTLETS}))`
+        : coverage === "beyond"
+          ? sql`AND i.outlet = ANY(${BEYOND_TN_OUTLETS})`
+          : sql``
+    }
     ORDER BY i.published_at DESC
     LIMIT ${limit}
   `;
