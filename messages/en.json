@@ -483,8 +483,10 @@
     },
     "ask": {
       "title": "How a citizen can ask",
-      "how": "Any citizen can file an RTI application with the public information officer of the department that holds the records. A small fee applies; no reason needs to be given.",
-      "appeal": "If the reply does not come or is refused, the Act provides appeals: first within the authority, then to the Information Commission."
+      "how": "Any citizen can file an RTI application with the Public Information Officer of the department that holds the records. No reason is needed. For Tamil Nadu government bodies the fee is ₹10; it is waived for below-poverty-line card holders.",
+      "channels": "For Tamil Nadu government bodies, apply in person or by post to that office's Public Information Officer. Online filing exists only for Union government bodies.",
+      "appeal": "If the reply does not come or is refused, the Act provides appeals: first within the authority, then to the Information Commission.",
+      "portalLink": "Online portal for Union government bodies (rtionline.gov.in)"
     },
     "note": "This page states what the law provides, in plain words. It is information, not legal advice, and this platform is not affiliated with any party or campaign.",
     "edgeLink": "This is information the government is meant to publish. Your right to know"
@@ -592,6 +594,11 @@
     "sections": {
       "explore": "Explore",
       "trust": "Trust and method"
+    },
+    "footprints": {
+      "note": "The memory of pages you have seen lives only on this device.",
+      "forget": "Make it forget",
+      "done": "The memory is erased. Your knowledge map starts fresh again."
     }
   },
   "knowledgeMap": {

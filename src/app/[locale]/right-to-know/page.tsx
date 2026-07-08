@@ -95,12 +95,22 @@ export default async function RightToKnowPage({
           {t("ask.title")}
         </h2>
         <div className="mt-2 space-y-3">
-          {(["how", "appeal"] as const).map((key) => (
+          {(["how", "channels", "appeal"] as const).map((key) => (
             <p key={key} className="leading-relaxed text-muted-foreground">
               {t(`ask.${key}`)}
             </p>
           ))}
         </div>
+        <p className="mt-3 text-sm">
+          <a
+            href="https://rtionline.gov.in/"
+            rel="noopener noreferrer"
+            target="_blank"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {t("ask.portalLink")} ↗
+          </a>
+        </p>
       </section>
 
       <p className="mt-10 max-w-2xl rounded-md border border-border bg-secondary/50 p-4 text-sm leading-relaxed text-muted-foreground">

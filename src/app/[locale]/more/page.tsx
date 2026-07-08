@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { ForgetFootprints } from "@/components/forget-footprints";
 import { removePlace } from "@/lib/places-actions";
 import { getMyPlaces } from "@/lib/places";
 import { getPlaceCards } from "@/lib/queries";
@@ -103,6 +104,14 @@ export default async function MorePage({
             </p>
           </>
         )}
+        {/* The knowledge map's device memory is erasable where the rest
+            of the device's data lives (D-035: forgetting must be as easy
+            as remembering). */}
+        <ForgetFootprints
+          note={t("footprints.note")}
+          action={t("footprints.forget")}
+          done={t("footprints.done")}
+        />
       </section>
 
       {[
