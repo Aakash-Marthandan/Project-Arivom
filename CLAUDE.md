@@ -70,18 +70,21 @@ no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
 - News aggregation policy (hard): headlines + links + own-words neutral summaries
   only — never store or republish full article text.
 
-## Current status (handoff, as of 2026-07-07)
+## Current status (handoff, as of 2026-07-08)
 
 M1–M6, M8 and M10 `done`; M12 `in-progress` (NFHS-5 + JJM shipped,
 D-030/D-031; HMIS blocked until India egress ~2026-07-13); M7 fully
 built and **deliberately dark**; M7.5 app-experience rounds shipped
 (D-023…D-026); M11 SEO groundwork in (sitemap+hreflang, robots,
 JSON-LD, metadataBase — origin resolves from NEXT_PUBLIC_SITE_URL, set
-it when a custom domain lands). M10 transparency pages live: nine-
+it when a custom domain lands). M10 transparency pages live: ten-
 section /methodology, /freshness SLA colours over sources.cadence, and
-the /corrections log from the curated cited seed (D-034). Every
-decision is in docs/DECISIONS.md (D-001…D-034); D-021 is the north
-star (informed electorate).
+the /corrections log from the curated cited seed (D-034). The
+refinement phase (owner-directed) shipped D-035…D-038: the knowledge
+map + /right-to-know, the finite staged feed with beyond-TN outlets,
+civic-context ranking, spoken money units and the gentle RTI thread.
+Every decision is in docs/DECISIONS.md (D-001…D-038); D-021 is the
+north star (informed electorate).
 
 **The one gate: ANTHROPIC_API_KEY.** Owner will provide it when the app is
 near-complete so API testing happens once, efficiently — do not ask for it
@@ -157,13 +160,30 @@ peacock tile. Assets: `public/logo.svg`, `public/logo-dark.svg` (dark
 mode), PWA icons regenerated from it. Never hand-edit the PNGs; re-run the
 generator against the state geometry (see D-027).
 
-**Product backlog next** (beyond the roadmap milestones): image-proxy
-decision to right-size thumbnails (the M11 perf lever; hotlink policy in
-D-024 — **owner decision**, proxying would cache outlet images); PWA
-push for by-election alerts (pairs with M9 accounts); a manual dark-mode
-override if owner review wants one (D-029). Then M9 (accounts,
-owner-gated on Supabase auth/SMS setup), M10, M11 per PLAN — M11 SEO
-groundwork (sitemap, hreflang, structured data) is unblocked anytime.
+**Next steps, in gate order (session close 2026-07-08):**
+1. **Owner, anytime:** the prod runbook above (db push + five importers
+   + the one-time cadence UPDATE). Until then prod shows honest empty
+   states for the new panels and the old department cards.
+2. **India egress (~2026-07-13):** HMIS monthly health (finishes M12);
+   tn.gov.in department directory (canonical department list — closes
+   D-019/D-033 ta/en asymmetry); the 5 feedless outlets; owner's
+   data.gov.in key; TN gov site access.
+3. **Key day (owner hands ANTHROPIC_API_KEY):** the runbook below —
+   lights up clustering, summaries, story pages, markers, brief,
+   department feeds, and the D-037 ranking handover.
+4. **M9 accounts (owner sets up Supabase phone-OTP + SMS):** the last
+   big unbuilt milestone. Unlocks corrections-from-chips, and the
+   D-038 community-RTI page (PLAN backlog) as its natural companion.
+5. **M11 launch hardening (pre-domain):** image-proxy decision
+   (**owner**, D-024 hotlink policy); font-subsetting audit; raise the
+   Lighthouse floor to 0.90; throttled low-end-Android profile pass;
+   set NEXT_PUBLIC_SITE_URL when the domain lands. Then v0 ships.
+6. **Refinement continuations (unblocked, any session):** next-check
+   clock on feeds ("new stories arrive around HH:MM"); the finite
+   end-block on district feeds; story pages ending with "back to your
+   day"; owner walkthrough of the knowledge-map implementation
+   (requested); PWA push for by-election alerts (pairs with M9); a
+   manual dark-mode override if wanted (D-029).
 
 Known pending (all reported by importer runs, never hidden): 26 MLA + 3 MP
 affidavits awaiting ADR analysis; representative contacts awaiting official
