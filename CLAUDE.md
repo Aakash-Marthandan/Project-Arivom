@@ -104,12 +104,10 @@ buckets, cross-validated state sums; importer `import-udise`, monthly
 cron), the NFHS-5 health panel (D-030: twelve verified sample-survey
 indicators, importer `import-nfhs`) and the JJM drinking-water panel
 (D-031: rural tap coverage from the mission dashboard's own endpoint,
-importer `import-jjm`; **prod pending — owner: (1) `supabase db push`
-(two new migrations: sources.cadence, corrections), (2) run
-`import-udise`, `import-nfhs`, `import-jjm`, `import-ministers`
-(D-032/D-033 re-import) and `import-corrections` against
-$SUPABASE_DB_URL, (3) once: `UPDATE sources SET cadence='manual'
-WHERE cadence IS NULL` on prod**); the app experience — PWA shell with bottom tabs,
+importer `import-jjm`; prod schema and data brought fully in step
+2026-07-08 — runbook completed with owner authorization: migrations
+applied with CLI bookkeeping, all five importers green, cadence
+backfilled, values spot-verified); the app experience — PWA shell with bottom tabs,
 news-first home sectioned by device-remembered places (my-places +
 person follows, cookies, no accounts), content-first story cards with
 hotlinked outlet images (D-024: linked, never copied), the finite
@@ -161,9 +159,8 @@ mode), PWA icons regenerated from it. Never hand-edit the PNGs; re-run the
 generator against the state geometry (see D-027).
 
 **Next steps, in gate order (session close 2026-07-08):**
-1. **Owner, anytime:** the prod runbook above (db push + five importers
-   + the one-time cadence UPDATE). Until then prod shows honest empty
-   states for the new panels and the old department cards.
+1. ~~Prod runbook~~ — **done 2026-07-08** (migrations + five importers
+   + cadence backfill, all verified against prod).
 2. **India egress (~2026-07-13):** HMIS monthly health (finishes M12);
    tn.gov.in department directory (canonical department list — closes
    D-019/D-033 ta/en asymmetry); the 5 feedless outlets; owner's
