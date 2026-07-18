@@ -210,6 +210,20 @@ the link target is the identity. Resolution:
   departments. Wikipedia's "Artificial Inteligence" typo is displayed
   verbatim (source-faithful) — fix upstream on the wiki or wait for
   the tn.gov.in directory to become canonical.
+- **Addendum (2026-07-18, owner question "same titles on two
+  cards?"):** the duplicate titles were REAL data. TN departments
+  split their subjects across ministers (Environment and Forests:
+  Environment under one minister, Forests under another; Animal
+  Husbandry, Dairying and Fisheries across three). The presentation
+  was the bug: /government now renders ONE card per department with
+  every holding minister and their subjects inside it (en 55 entries
+  → 43 department cards), matching D-019's card-equals-department
+  intent. Two extraction fixes rode along: per-cell dedupe (a ta
+  cell linking the same department from two comma segments produced
+  twin entries) and the disambiguation suffix "(தமிழ்நாடு)" now
+  stripped from visible text as well as link titles, with or without
+  a leading space. Local and prod re-imported and verified: zero
+  duplicate titles, zero suffix leaks, both languages.
 - Label unification (owner, audit round 1): /constituencies is
   "Search / தேடல்" everywhere — tab bar, header, /more, footer; the
   unused nav.constituencies key is removed from both catalogs.
