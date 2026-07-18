@@ -29,17 +29,21 @@ interface MinisterValue {
 }
 
 /** One department card: the department (its identity from the source's
- *  link target, D-033), the allocation subjects under it when they
- *  differ, and the minister who holds it. */
-interface DepartmentCard {
-  department: string;
+ *  link target, D-033), and every minister holding part of it — TN
+ *  departments genuinely split their subjects across ministers, so one
+ *  card can carry several holders (owner audit). */
+interface DepartmentHolder {
   subjects: string | null;
   positionKey: "cm" | "deputyCm" | "minister";
   minister: Minister;
 }
+interface DepartmentCard {
+  department: string;
+  holders: DepartmentHolder[];
+}
 
 
-function positionKeyOf(v: MinisterValue): DepartmentCard["positionKey"] {
+function positionKeyOf(v: MinisterValue): DepartmentHolder["positionKey"] {
   if (v.is_chief_minister) return "cm";
   if (/துணை\s*முதல்?வமைச்சர்|துணை\s*முதலமைச்சர்/.test(v.position_ta)) return "deputyCm";
   return "minister";
@@ -74,23 +78,37 @@ export default async function GovernmentPage({
     (m) => (m.minister as MinisterValue).is_chief_minister,
   );
 
-  // Department-first: one card per source-listed department entry,
-  // sorted by department name in the reader's language.
-  const entries: DepartmentCard[] = ministers.flatMap((m) => {
+  // Department-first (D-019/D-033): ONE card per department. Several
+  // ministers can hold subjects of the same department; they group
+  // inside its card instead of repeating the title (owner audit).
+  const byDepartment = new Map<string, DepartmentCard>();
+  for (const m of ministers) {
     const v = m.minister as MinisterValue;
     const portfolios = isTa
       ? v.portfolios_ta || v.portfolios_en
       : v.portfolios_en || v.portfolios_ta;
-    return departmentEntries(portfolios).map((entry) => ({
-      department: entry.name,
-      subjects: entry.subjects,
-      positionKey: positionKeyOf(v),
-      minister: m,
-    }));
-  });
-  entries.sort((a, b) =>
+    for (const entry of departmentEntries(portfolios)) {
+      const card =
+        byDepartment.get(entry.name) ??
+        ({ department: entry.name, holders: [] } satisfies DepartmentCard);
+      card.holders.push({
+        subjects: entry.subjects,
+        positionKey: positionKeyOf(v),
+        minister: m,
+      });
+      byDepartment.set(entry.name, card);
+    }
+  }
+  const entries = [...byDepartment.values()].sort((a, b) =>
     a.department.localeCompare(b.department, isTa ? "ta" : "en"),
   );
+  // The head of government reads first within a shared card.
+  const positionRank = { cm: 0, deputyCm: 1, minister: 2 } as const;
+  for (const card of entries) {
+    card.holders.sort(
+      (a, b) => positionRank[a.positionKey] - positionRank[b.positionKey],
+    );
+  }
 
   const provenanceFor = (m: Minister): ProvenanceEntry[] => [
     {
@@ -140,13 +158,27 @@ export default async function GovernmentPage({
           emptyLabel={t("filterEmpty")}
         >
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {entries.map((entry, i) => {
-            const m = entry.minister;
+          {entries.map((entry) => {
+            const filterText = [
+              entry.department,
+              ...entry.holders.flatMap((h) => [
+                h.subjects ?? "",
+                h.minister.name_en ?? "",
+                h.minister.name_ta ?? "",
+              ]),
+            ]
+              .join(" ")
+              .toLowerCase();
+            const chipMinisters = [
+              ...new Map(
+                entry.holders.map((h) => [h.minister.person_id, h.minister]),
+              ).values(),
+            ];
             return (
               <div
-                key={`${entry.department}-${m.person_id}-${i}`}
+                key={entry.department}
                 id={entry.department.replace(/\s+/g, "-")}
-                data-filter={`${entry.department} ${entry.subjects ?? ""} ${m.name_en ?? ""} ${m.name_ta ?? ""}`.toLowerCase()}
+                data-filter={filterText}
                 className="rounded-lg border border-border bg-card p-4"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -163,42 +195,54 @@ export default async function GovernmentPage({
                       license: tp("license"),
                       viewSource: tp("viewSource"),
                     }}
-                    entries={provenanceFor(m)}
+                    entries={chipMinisters.flatMap(provenanceFor)}
                   />
                 </div>
-                {entry.subjects ? (
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    {entry.subjects}
-                  </p>
-                ) : null}
-                <p className="mt-2 text-sm">
-                  <span
-                    className={
-                      entry.positionKey === "cm"
-                        ? "font-medium text-primary"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {t(`positions.${entry.positionKey}`)}
-                  </span>
-                  <span className="mx-1.5 text-muted-foreground">·</span>
-                  <span className="font-medium">
-                    {isTa ? (m.name_ta ?? m.name_en) : m.name_en}
-                  </span>
-                </p>
-                <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
-                  {(isTa ? m.party_ta : m.party_en) ? (
-                    <Badge variant="secondary">
-                      {isTa ? (m.party_ta ?? m.party_en) : m.party_en}
-                    </Badge>
-                  ) : null}
-                  <Link
-                    href={`/constituencies/ac/${m.seat_code}`}
-                    className="text-primary underline-offset-4 hover:underline"
-                  >
-                    {isTa ? m.seat_ta : m.seat_en}
-                  </Link>
-                </p>
+                {entry.holders.map((h, hi) => {
+                  const m = h.minister;
+                  return (
+                    <div
+                      key={`${m.person_id}-${hi}`}
+                      className={
+                        hi > 0 ? "mt-3 border-t border-border pt-3" : undefined
+                      }
+                    >
+                      {h.subjects ? (
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {h.subjects}
+                        </p>
+                      ) : null}
+                      <p className="mt-2 text-sm">
+                        <span
+                          className={
+                            h.positionKey === "cm"
+                              ? "font-medium text-primary"
+                              : "text-muted-foreground"
+                          }
+                        >
+                          {t(`positions.${h.positionKey}`)}
+                        </span>
+                        <span className="mx-1.5 text-muted-foreground">·</span>
+                        <span className="font-medium">
+                          {isTa ? (m.name_ta ?? m.name_en) : m.name_en}
+                        </span>
+                      </p>
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+                        {(isTa ? m.party_ta : m.party_en) ? (
+                          <Badge variant="secondary">
+                            {isTa ? (m.party_ta ?? m.party_en) : m.party_en}
+                          </Badge>
+                        ) : null}
+                        <Link
+                          href={`/constituencies/ac/${m.seat_code}`}
+                          className="text-primary underline-offset-4 hover:underline"
+                        >
+                          {isTa ? m.seat_ta : m.seat_en}
+                        </Link>
+                      </p>
+                    </div>
+                  );
+                })}
                 <p className="mt-2 text-sm">
                   <Link
                     href={`/government/news/${encodeURIComponent(entry.department)}`}

@@ -51,8 +51,9 @@ OFFICE_WORDS = re.compile(
 def clean_dept_title(title: str, lang: str) -> str:
     """A wiki article title as a displayable department name."""
     title = " ".join(title.split())
-    for suffix in (" (Tamil Nadu)", " (தமிழ்நாடு)"):
-        title = title.removesuffix(suffix)
+    # Disambiguation suffix, with or without a space before the paren
+    # (the ta wiki writes both forms).
+    title = re.sub(r"\s*\((?:Tamil Nadu|தமிழ்நாடு)\)$", "", title)
     if lang == "en" and title.startswith("Department of "):
         title = title.removeprefix("Department of ")
     return title.strip()
@@ -68,6 +69,24 @@ def _phrase_key(text: str) -> str:
     text = re.sub(r"அமைச்சர்|மற்றும்|\bதுறை\b", " ", text)
     text = re.sub(r"[,.;·]+", " ", text)
     return " ".join(text.split())
+
+
+def _dedupe_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """One entry per department within a cell: a source cell sometimes
+    links the same department from two comma segments (owner audit);
+    their subjects merge, order stays."""
+    merged: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        prior = merged.get(entry["name"])
+        if prior is None:
+            merged[entry["name"]] = entry
+            continue
+        subjects = [
+            s for s in (prior.get("subjects"), entry.get("subjects"))
+            if s
+        ]
+        prior["subjects"] = "; ".join(dict.fromkeys(subjects)) or None
+    return list(merged.values())
 
 
 def portfolio_entries(
@@ -93,6 +112,9 @@ def portfolio_entries(
 
     def entry_from(text: str, link: Any) -> dict[str, Any]:
         text = text.strip(" .;")  # trailing punctuation is formatting, not name
+        # The wiki's own disambiguation suffix appears in visible text
+        # too, not only in link titles.
+        text = re.sub(r"\s*\((?:Tamil Nadu|தமிழ்நாடு)\)$", "", text).strip()
         dept = clean_dept_title(link["title"], lang) if link and link.get("title") else None
         name = dept or text
         subjects = text if dept and text.lower() != name.lower() else None
@@ -105,7 +127,7 @@ def portfolio_entries(
             if len(text) <= 1:
                 continue
             entries.append(entry_from(text, li.find("a")))
-        return entries
+        return _dedupe_entries(entries)
 
     cell_text = node_text(cell)
 
@@ -127,7 +149,7 @@ def portfolio_entries(
             continue
         link = next((a for a_text, a in links if a_text and a_text in text), None)
         entries.append(entry_from(text, link))
-    return entries
+    return _dedupe_entries(entries)
 
 
 def parse_ministers_table(
