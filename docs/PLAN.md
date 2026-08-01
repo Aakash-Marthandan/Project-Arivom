@@ -221,6 +221,32 @@ tn.gov.in department directory becomes the canonical list.
 
 ---
 
+### Refinement phase (owner-directed) — `ongoing` (2026-07-07 → 2026-07-18)
+Not a milestone: a standing mode entered once the v0 surfaces existed, to
+raise craft and align every mechanism with the pillars. Shipped so far:
+- **D-035 — reward orientation, not engagement.** The knowledge map ends
+  every place page (journeys named by the question they answer; a quiet
+  device-local "seen" dot; hard nevers: no counts, percentages,
+  completion, praise, streaks). Government-side data gaps link
+  `/right-to-know` (RTI Act, Section 4 duty, today's edges, how to
+  file, the state online-access gap). One-tap forgetting on /more.
+- **D-036 — the finite feed.** Four beyond-TN outlets with published
+  selection reasons; `coverage` keeps them off locality surfaces; /news
+  is three bounded tiers behind honest "More news" links (?d=2/3,
+  server-rendered), escalating gentle copy, then a deliberate end with
+  a feedback door and two lasting doors. No infinite scroll, ever.
+- **D-037 — civic-context order.** Published ranking signals: checked
+  classification when it exists, else a bilingual SUBJECT rubric
+  (`src/lib/civic-rank.ts` — elections, courts, legislature, safety,
+  prices; actors never), plus a boost for the reader's saved districts.
+  Ranking orders, never hides. Key-day handover is automatic.
+- **D-038 — money in spoken units; the gentle RTI thread.** Lakhs and
+  crores with the exact figure beneath; home's "Worth knowing today"
+  and its two end doors; the feed-end line about unpublished data.
+- **D-033 addendum** — one card per department on /government, holders
+  grouped inside, over a find-as-you-type filter.
+Continuations are listed in CLAUDE.md's next-steps item 5.
+
 **Backlog (owner direction, D-038):** a community-contributed page of
 RTI-obtained information — citizens post documents they received under
 RTI, verified before publication, provenance = the RTI reply itself.
@@ -244,8 +270,9 @@ Har Ghar Jal certification when village-assembly certified) on 37
 districts; Chennai (fully urban) renders an honest note; district-page
 Drinking water panel + methodology section; monthly cron.
 Remaining: HMIS monthly (blocked from current egress — data.gov.in
-mirrors end ~2019-20 and the portal is India-only; re-check ~2026-07-13
-per D-010/D-017), NFHS state factsheet row.
+mirrors end ~2019-20 and the portal is India-only; re-probe once the
+owner confirms the India move, planned ~2026-07-13 but unconfirmed as
+of 2026-07-18, per D-010/D-017), NFHS state factsheet row.
 
 ### M13 — Community sentiment display — `planned`
 Ratings display per sector above N=25 floor with sample size; temporal smoothing,

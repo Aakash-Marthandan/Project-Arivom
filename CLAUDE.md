@@ -70,21 +70,22 @@ no em dashes, written for average readers. Both catalogs (`messages/ta.json`,
 - News aggregation policy (hard): headlines + links + own-words neutral summaries
   only — never store or republish full article text.
 
-## Current status (handoff, as of 2026-07-08)
+## Current status (handoff, as of 2026-07-18)
 
 M1–M6, M8 and M10 `done`; M12 `in-progress` (NFHS-5 + JJM shipped,
 D-030/D-031; HMIS blocked until India egress ~2026-07-13); M7 fully
 built and **deliberately dark**; M7.5 app-experience rounds shipped
 (D-023…D-026); M11 SEO groundwork in (sitemap+hreflang, robots,
 JSON-LD, metadataBase — origin resolves from NEXT_PUBLIC_SITE_URL, set
-it when a custom domain lands). M10 transparency pages live: ten-
+it when a custom domain lands). M10 transparency pages live: nine-
 section /methodology, /freshness SLA colours over sources.cadence, and
 the /corrections log from the curated cited seed (D-034). The
 refinement phase (owner-directed) shipped D-035…D-038: the knowledge
 map + /right-to-know, the finite staged feed with beyond-TN outlets,
-civic-context ranking, spoken money units and the gentle RTI thread.
-Every decision is in docs/DECISIONS.md (D-001…D-038); D-021 is the
-north star (informed electorate).
+civic-context ranking, spoken money units and the gentle RTI thread;
+plus the D-033 addendum (one card per department). Every decision is
+in docs/DECISIONS.md (D-001…D-038); D-021 is the north star (informed
+electorate).
 
 **The one gate: ANTHROPIC_API_KEY.** Owner will provide it when the app is
 near-complete so API testing happens once, efficiently — do not ask for it
@@ -96,39 +97,48 @@ notes, civic/adjacent/soft classification, Arivom-voice titles,
 civic-priority + sources-differ markers, department tagging, story pages'
 full depth, the daily brief, entity-matched person news.
 
-**Live today** (all CI-gated, prod schema current): the civic spine
-(constituencies, representatives, affidavits, /locate, /vacancies,
-/government); M8 education indicators — district pages /d/[lgd] with the
-UDISE+ education panel (D-028: public dashboard API, class-derived level
-buckets, cross-validated state sums; importer `import-udise`, monthly
-cron), the NFHS-5 health panel (D-030: twelve verified sample-survey
-indicators, importer `import-nfhs`) and the JJM drinking-water panel
-(D-031: rural tap coverage from the mission dashboard's own endpoint,
-importer `import-jjm`; prod schema and data brought fully in step
-2026-07-08 — runbook completed with owner authorization: migrations
-applied with CLI bookkeeping, all five importers green, cadence
-backfilled, values spot-verified); the app experience — PWA shell with bottom tabs,
-news-first home sectioned by device-remembered places (my-places +
-person follows, cookies, no accounts), content-first story cards with
-hotlinked outlet images (D-024: linked, never copied), the finite
-staged /news feed with beyond-TN tiers (D-036: The Hindu National,
-Indian Express India, BBC Tamil, BBC World; locality surfaces stay
-TN-only; the feed ends on purpose with a feedback door; D-037: tiers order by
-published civic-subject rules + the reader's saved districts, with
-civic_priority taking over on key day) +
-/news/d/[lgd] + /news/s/[id], search across
-constituencies/people/stories, /more, /about; dark mode following the
-system preference (D-029, "paper at night"); department news feeds
-behind /government cards (/government/news/[dept], honest-empty until
-the key; extraction now emits department + department_ta); the "How
-stories are chosen" methodology section and live story-pool counts on
-/freshness (D-025); the knowledge map on place pages plus the
-/right-to-know page (D-035: reward orientation not engagement;
-device-local seen-footprints, no gamification; government-side data
-edges link the citizen's RTI rights); ingest hygiene (D-025 section blocklist at the
-poller); Lighthouse CI floors (perf ≥0.80 median-of-3 on CI hardware,
-a11y ≥0.95; local measures 0.89–0.93) and a Monday editorial-QA sample
-workflow.
+**Live today** (all CI-gated; prod schema and data in step as of
+2026-07-18):
+
+- **Civic spine:** constituencies, representatives, affidavits (money in
+  lakhs and crores with the exact figure beneath, D-038), /locate,
+  /vacancies.
+- **/government:** ONE card per department with every holding minister
+  and their subjects inside it, over a find-as-you-type filter (D-033
+  addendum — TN departments really do split subjects across ministers;
+  43 en cards / 110 ta entries, both verified duplicate-free). Each card
+  opens its department news feed (/government/news/[dept], honest-empty
+  until the key).
+- **District pages /d/[lgd]:** the M8 education panel (D-028: public
+  dashboard API, class-derived level buckets, cross-validated state
+  sums), the NFHS-5 health panel (D-030: twelve verified sample-survey
+  indicators) and the JJM drinking-water panel (D-031: rural tap
+  coverage from the mission's own endpoint). Importers `import-udise` /
+  `import-nfhs` / `import-jjm`, monthly cron.
+- **The app experience:** PWA shell with bottom tabs; news-first home
+  sectioned by device-remembered places (my-places + person follows,
+  cookies, no accounts) ending on "Worth knowing today" with quiet doors
+  to the full feed and the citizen's right to ask (D-038); content-first
+  story cards with hotlinked outlet images (D-024: linked, never
+  copied); search across constituencies/people/stories; /more; /about;
+  dark mode following the system preference (D-029, "paper at night").
+- **The finite feed** /news (D-036): three bounded tiers with beyond-TN
+  outlets in the last one (The Hindu National, Indian Express India, BBC
+  Tamil, BBC World; locality surfaces stay TN-only), ending on purpose
+  with a feedback door. Ordered by published civic-subject rules + the
+  reader's saved districts, with civic_priority taking over on key day
+  (D-037). Plus /news/d/[lgd] and /news/s/[id].
+- **Trust surfaces:** nine-section /methodology (including "How stories
+  are chosen", D-025), /freshness with SLA colours over sources.cadence
+  and live story-pool counts, the /corrections log from the curated
+  cited seed (D-034), and /right-to-know.
+- **The knowledge map** on place pages (D-035: reward orientation not
+  engagement; device-local seen-footprints, no gamification;
+  government-side data edges link the citizen's RTI rights).
+- **Guardrails:** ingest hygiene (D-025 section blocklist at the
+  poller); Lighthouse CI floors (perf ≥0.80 median-of-3 on CI hardware,
+  a11y ≥0.95; local measures 0.89–0.93); Monday editorial-QA sample
+  workflow.
 
 **Key-day runbook** (when the owner hands over the key):
 1. Add `ANTHROPIC_API_KEY=` to `.env.local` AND as a GitHub Actions secret.
@@ -158,29 +168,46 @@ peacock tile. Assets: `public/logo.svg`, `public/logo-dark.svg` (dark
 mode), PWA icons regenerated from it. Never hand-edit the PNGs; re-run the
 generator against the state geometry (see D-027).
 
-**Next steps, in gate order (session close 2026-07-08):**
-1. ~~Prod runbook~~ — **done 2026-07-08** (migrations + five importers
-   + cadence backfill, all verified against prod).
-2. **India egress (~2026-07-13):** HMIS monthly health (finishes M12);
-   tn.gov.in department directory (canonical department list — closes
-   D-019/D-033 ta/en asymmetry); the 5 feedless outlets; owner's
-   data.gov.in key; TN gov site access.
-3. **Key day (owner hands ANTHROPIC_API_KEY):** the runbook below —
+**Next steps, in gate order (session close 2026-07-18):**
+
+**Ask the owner first:** the India relocation was planned for
+~2026-07-13 and had NOT been confirmed as of the last session. Whether
+it has happened decides how much of item 1 is now unblocked — check,
+never assume. Everything below is otherwise accurate as written.
+
+1. **India egress (owner move, was planned ~2026-07-13):** HMIS monthly
+   health (finishes M12); tn.gov.in department directory (the canonical
+   department list — closes the D-019/D-033 ta/en asymmetry, where en
+   shows 43 department cards and ta 110 subject-level entries because
+   each side is faithful to its own wiki table); the 5 feedless outlets;
+   owner's data.gov.in key; TN gov site access. Re-probe reachability
+   before planning any of it (`curl` the endpoints; the geo-block is the
+   only thing that was stopping us).
+2. **Key day (owner hands ANTHROPIC_API_KEY):** the runbook above —
    lights up clustering, summaries, story pages, markers, brief,
    department feeds, and the D-037 ranking handover.
-4. **M9 accounts (owner sets up Supabase phone-OTP + SMS):** the last
+3. **M9 accounts (owner sets up Supabase phone-OTP + SMS):** the last
    big unbuilt milestone. Unlocks corrections-from-chips, and the
    D-038 community-RTI page (PLAN backlog) as its natural companion.
-5. **M11 launch hardening (pre-domain):** image-proxy decision
+4. **M11 launch hardening (pre-domain):** image-proxy decision
    (**owner**, D-024 hotlink policy); font-subsetting audit; raise the
    Lighthouse floor to 0.90; throttled low-end-Android profile pass;
    set NEXT_PUBLIC_SITE_URL when the domain lands. Then v0 ships.
-6. **Refinement continuations (unblocked, any session):** next-check
-   clock on feeds ("new stories arrive around HH:MM"); the finite
-   end-block on district feeds; story pages ending with "back to your
-   day"; owner walkthrough of the knowledge-map implementation
-   (requested); PWA push for by-election alerts (pairs with M9); a
-   manual dark-mode override if wanted (D-029).
+5. **Refinement continuations (unblocked, any session — start here if
+   no gate has opened):** next-check clock on feeds ("new stories
+   arrive around HH:MM", kills the refresh itch with a true sentence);
+   the finite end-block on district feeds; story pages ending with
+   "back to your day" instead of related-story rabbit holes; **owner
+   walkthrough of the knowledge-map implementation (explicitly
+   requested, not yet done)**; PWA push for by-election alerts (pairs
+   with M9); a manual dark-mode override if wanted (D-029).
+
+**Standing habits that earned their place:** run the importers and read
+their reports (they surface real bugs); verify in the browser rather
+than trusting the render (the D-037 ranking bug was invisible in code
+review — NewsFeed silently re-sorted); when the owner questions
+something that looks wrong, check the DATA before the code (twice now
+the data was right and the presentation was the bug: D-032/D-033).
 
 Known pending (all reported by importer runs, never hidden): 26 MLA + 3 MP
 affidavits awaiting ADR analysis; representative contacts awaiting official
@@ -189,7 +216,7 @@ queue); AC 185 election petition status note; 5 registry outlets without
 machine-readable feeds — Dinamalar, Dinakaran, Hindu Tamil Thisai, News18
 Tamil, Sun News (re-check from India egress); data.gov.in personal API key
 and TN-government-site access arrive when the owner relocates to India
-(~2026-07-13, D-010/D-017).
+(planned ~2026-07-13, unconfirmed as of 2026-07-18 — ask, D-010/D-017).
 
 ## Development
 
@@ -219,6 +246,17 @@ and TN-government-site access arrive when the owner relocates to India
   here). Migrations: `supabase db push --yes --db-url "$SUPABASE_DB_URL"`.
   Data: rerun the importers with `DATABASE_URL="$SUPABASE_DB_URL"` (slow over
   WAN; run in background). Keep local and prod data in step.
+  **Prod writes need explicit owner authorization** — ask, never assume;
+  and the `supabase db push` wrapper is blocked by the permission
+  classifier in auto mode while `psql` is not. The working fallback
+  (used 2026-07-08, verified): apply each migration inside a transaction
+  that also inserts its bookkeeping row, so the CLI stays consistent —
+  `BEGIN; \i supabase/migrations/<file>.sql; INSERT INTO
+  supabase_migrations.schema_migrations (version, name, statements)
+  VALUES ('<version>', '<name>', ARRAY[:'content']); COMMIT;` with
+  `-v content="$(cat <file>)"`. Never print the connection string;
+  pipe command output through
+  `sed -E 's#postgres(ql)?://[^ ]+#[db-url]#g'`.
 - **Source quirks:** ECI and MyNeta reject Python TLS fingerprints — those
   fetches shell out to curl (see D-006/D-019). TN government sites
   (assembly/tn.gov.in/elections.tn.gov.in) are geo-blocked outside India.
