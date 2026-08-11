@@ -60,7 +60,42 @@ rebuilt at read time — the underlying facts change, and a citation must keep
 resolving to what it actually cited. The story page renders [A n] against
 that frozen record.
 
-**Still open — outlet coverage labels.** Owner wants entertainment-style
+**Outlet coverage labels: tested, and NOT built (2026-08-11).**
+Owner asked for an empirical, evidence-based methodology to penalise
+entertainment-style coverage of civic matters. Conditioning on "this outlet
+covered this civic event" does dissolve the scope confound that made a naive
+composition metric absurd (BBC World scores 100% soft because it does not
+cover TN civic affairs, not because it lacks standards). So the design was
+tested on 29 clustered civic events, 95 (outlet, event) observations, using
+deterministic headline signals — a substance marker, the published D-025
+sensational vocabulary, and a teaser marker. It failed, twice over:
+
+- **The metric had a language bias.** Penalising a trailing exclamation mark
+  put both Tamil outlets at the bottom and every English outlet above them.
+  A trailing "!" is ordinary Tamil print house style, not sensationalism:
+  "Special resolution against NEET in the TN Assembly today!" is a
+  substantive civic headline. Removing that one rule moved dinamani from 6th
+  to 2nd and news7-tamil from last to mid-table, and collapsed the
+  Tamil-below-English ordering entirely. A metric that ranks Tamil outlets
+  last for orthography, on a Tamil-first civic platform, is indefensible —
+  and it looked rigorous right up until the confound was isolated.
+- **Outlet-level consistency was not established.** Split-half reliability
+  across event subsets came out negative (r = -0.94, and only four outlets
+  had enough observations in both halves to test). Underpowered rather than
+  conclusive, but nothing here supports publishing an outlet-level number.
+
+Resolved: **no outlet ratings, labels or scores.** The coverage table (who
+covered an event and who did not) is already factual, already built, and
+needs no validation — it stays our accountability surface. Story-level
+treatment variation is real but weaker than it first appeared (48% of events
+after the confound was removed), so per-item ranking by treatment remains
+plausible and unbuilt. Revisit only with a month or more of clustered events
+and a model-judged signal ("did this coverage contain the thing that
+changed") rather than headline regex, and re-run the language-bias check
+first. The pillar-2 objection stands on its own; this note records that the
+empirical case failed independently.
+
+**Still open — the shape of any future treatment signal.** Owner wants entertainment-style
 coverage OF CIVIC MATTERS to carry consequences, disclosed in the
 methodology and evidence-based. That reframing dissolves the objection to
 outlet ratings in general: conditioning on "this outlet covered this civic
