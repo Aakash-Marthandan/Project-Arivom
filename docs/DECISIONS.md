@@ -40,6 +40,45 @@ it. Resolved:
   scheme was dropped [2]; the published allocation is X [A1]" instead of
   attribution alone. Anchors are context, never a verdict.
 
+**Second owner pass: write the STORY, not a collection of facts.** The first
+implementation ordered information by consequence but still produced four
+true sentences sitting side by side — a flattened list, with nothing
+explaining why one followed another. Owner: "summarize the news STORY
+properly, not just a collection of what happened today. Editorialize in
+STRUCTURE that presents information in a flow a rational citizen would care
+about." Resolved:
+
+- **The prompt now describes a story, not a checklist.** Open with what
+  happened AND what it would change; then why it matters concretely; then
+  how it came about — the previous attempt, the blockage, the incident that
+  prompted it, the number that frames it; then what is contested,
+  attributed; then where the matter now stands. Each sentence must advance
+  the reader's understanding of the one before it. The prompt carries a
+  worked negative example, because "write connected prose" alone did not
+  land.
+- **The boundary is named explicitly, and it is the whole point.** Editorial
+  judgment about STRUCTURE — what leads, what context a reader needs, what
+  is not worth their time — is the writer's job and should be done with
+  conviction. Judgment about SUBSTANCE is banned: no characterising motive,
+  no assigning blame or credit, no adjective carrying a verdict, no
+  implying which side is right. "Ordering information by consequence is not
+  bias. Telling the reader what to conclude is."
+- **Three new checks** enforce it: `reads_as_story` (fails a summary whose
+  middle sentences could be freely reordered — that is a bulletin),
+  `context_supplied` (fails a summary that reports only today when the
+  material offered background), and `no_substance_judgment`, which is the
+  guard on the latitude the structure grants and binds writer and checker
+  equally.
+
+Measured live on 8 clusters: the routine bus-terminus notice gained the fact
+that residents had waited nearly 30 years; the forest-fire story gained what
+has to happen before pilgrims return; the NEET resolution gained the 2021
+bill that passed unanimously and still lacks presidential assent. 4 Opus
+adjudications, 2 redrafts, 1 correct `allegations` lock, 0 script failures
+across 16 Tamil fields. Honest limit: the gain is real but not uniform —
+some drafts still read as ordered lists rather than narrative, most often
+when every sentence shares one subject.
+
 **Three guards that came out of testing the anchors, all of them load-bearing:**
 - **A person is anchored only when two or more member items matched them.**
   The lexicon deliberately matches short names, which is right for tagging
