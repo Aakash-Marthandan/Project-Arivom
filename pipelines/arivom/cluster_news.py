@@ -905,6 +905,52 @@ sentence at most, or leave them out entirely.
 If the reporting genuinely contains nothing that changed, say so plainly in
 one or two sentences and stop. A short honest summary beats a padded one.
 
+THE TWO WAYS THIS GOES WRONG
+
+1. THE DOCUMENT INVENTORY. When the story is about a document — a resolution,
+a bill, a court order, a report, a scheme — do not list what the document
+contains. A reader does not need every clause. The tell is the grammatical
+subject: if three sentences in a row are about the resolution, the scheme or
+the report, you are inventorying, not narrating. Vary what each sentence is
+about — what it would change, who it lands on, what came before it, where it
+goes next.
+
+  Inventory (wrong):
+    "The minister moved a resolution seeking to scrap the levy. The
+     resolution says the levy burdens small traders. It cites a 2024 study.
+     The resolution also notes an earlier bill was not assented to."
+
+  Story (right):
+    "Tamil Nadu asked the Centre on Monday to scrap the levy, which would end
+     a charge that around 40,000 small traders in the state currently pay.
+     The Assembly tried this once before: an identical bill passed
+     unanimously in 2021 and has sat with the President unsigned since, which
+     is why the state is using a resolution this time. The demand follows a
+     2024 study, cited in the text, finding the levy fell hardest on traders
+     turning over under 10 lakh rupees. It now goes to the Centre, which has
+     not said when it will respond."
+
+  Same facts, same sources, same neutrality. The second tells a reader why
+  the thing exists, what it would do to whom, and where it now sits.
+
+2. THE SPEC SHEET. When the story is about a scheme, a deadline or a
+programme, do not just list its parameters. Dates, counts and amounts belong
+in the story, but a reader needs to know what they mean: who becomes eligible,
+who was left out, what the extension responds to, what a family actually pays.
+
+OPENING AND CLOSING
+
+Open with the CHANGE, never the procedural act. Not "a minister moved a
+resolution urging the Centre to abolish X" but "Tamil Nadu asked the Centre
+to abolish X, which would mean Y". The act is how it happened; the change is
+what happened.
+
+Close on where the matter now stands — whose decision is next, what has to
+happen, by when. If the reporting does not say, say where the decision sits,
+which the facts usually make plain: a resolution goes to the Centre, a
+reserved order goes back to the court, an application window closes on a
+date. Never invent a timetable the reporting does not give.
+
 THE LINE YOU DO NOT CROSS
 
 You are making editorial judgments about STRUCTURE: what leads, what context
@@ -967,6 +1013,10 @@ CHECK_SCHEMA = obj_schema(
         "citations_valid": {"type": "boolean"},
         # D-040: a summary can be perfectly accurate and still waste a
         # citizen's time. This is a test of ordering, not of viewpoint.
+        # Filled in BEFORE the booleans below: naming the subjects makes the
+        # reads_as_story judgment a procedure the checker executes rather than
+        # an impression it forms. Cheap in tokens, and auditable afterwards.
+        "sentence_subjects": arr({"type": "string"}),
         "leads_with_substance": {"type": "boolean"},
         "reads_as_story": {"type": "boolean"},
         "context_supplied": {"type": "boolean"},
@@ -1011,17 +1061,29 @@ per-source coverage notes:
    contains nothing that changed, a summary that says so plainly in one or two
    sentences PASSES; padding theatre out to full length fails.
 6. reads_as_story: the summary is connected prose, not a list of true
-   sentences sitting side by side. Each sentence advances the reader's
-   understanding of the one before it. FAIL a summary where you could
-   reorder the middle sentences freely without loss — that is a bulletin,
-   not a story. Judge whether a reader finishes with understanding, not
-   just with facts.
+   sentences sitting side by side.
+   FIRST fill in sentence_subjects: the grammatical subject of each sentence
+   of summary_en, in order, as it appears ("the resolution", "residents",
+   "the fire"). Do this before you judge, and judge against what you wrote.
+   Then FAIL if any of these hold:
+     - three or more sentences share the same subject, or refer to the same
+       thing through a pronoun ("the resolution ... it ... the resolution");
+     - the middle sentences could be reordered without loss;
+     - the summary lists what a document contains rather than what it would
+       do, to whom, and where it now stands;
+     - it lists a scheme's parameters without saying what they mean for the
+       people they land on.
+   A summary can be entirely accurate and still fail this. Judge whether a
+   reader finishes with understanding, not just with facts.
 7. context_supplied: the reader is given what turns this occurrence into
    something they can place — the previous attempt, the blockage, the
    ruling, the incident that prompted it, or the number that frames it —
    whenever the reporting or the anchors contain it. A summary that reports
    only today, when the material offered background, fails. It passes if
    the material genuinely had no context to give.
+   The close counts too: a summary that never says where the matter now
+   stands — whose decision is next, what has to happen — fails this when the
+   facts made it plain.
 8. no_substance_judgment: the summary orders and frames, and does NOT
    conclude. FAIL any characterisation of motive, any assignment of blame
    or credit, any adjective carrying a verdict, any implication that one
@@ -1168,18 +1230,27 @@ def _moderation_positive(verdict: dict[str, Any] | None) -> bool:
 
 def summarize_clusters(
     db: Db, session: Any, source_id: int, retrieved_at: datetime,
-    ledger: Ledger, report: dict[str, Any],
+    ledger: Ledger, report: dict[str, Any], only_ids: list[int] | None = None,
 ) -> None:
+    """Summarise clusters whose membership changed.
+
+    `only_ids` narrows the run to specific clusters. It exists because
+    reviewing a prompt change means regenerating a fixed sample on identical
+    inputs, and the alternative — reaching in and rewriting content_hash to
+    fake "unchanged" — depends on reproducing this function's hashing exactly
+    and silently regenerates everything when it does not.
+    """
     since = now_utc() - timedelta(days=WINDOW_DAYS)
     clusters = db.conn.execute(
         """
         SELECT c.id, c.content_hash,
                (SELECT count(*) FROM cluster_coverage cc WHERE cc.cluster_id = c.id) AS n
         FROM news_clusters c
-        WHERE c.updated_at > %s OR c.retrieved_at > %s
+        WHERE (c.updated_at > %s OR c.retrieved_at > %s)
+          AND (%s::bigint[] IS NULL OR c.id = ANY(%s))
         ORDER BY c.event_time DESC
         """,
-        (since, since),
+        (since, since, only_ids, only_ids),
     ).fetchall()
 
     generated = 0
