@@ -5,6 +5,74 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-08-11 — Summaries that inform, not summaries that referee
+
+### D-040: Rank information by consequence; anchor claims to our own record
+Owner review of the first real summaries: "we're factual but the summary is
+just he-said-she-said content. There is such a thing as not all information
+being equal. Being neutral should not mean we treat every information the
+same." Measured on our own output — the Assembly budget summary ran eight
+sentences, **one** of which was a fact about the world; the other seven were
+attributed remarks, and the closing sentence gave two politicians' quarrel
+about pocket photographs the same weight as an undelivered crop loan waiver.
+
+**The distinction this rests on.** Neutrality constrains how we treat
+ACTORS, not how we treat FACTS. Refusing to rank information is not
+neutrality, it is the false balance D-021 exists to reject. D-016 already
+required ranking by civic usefulness; the summariser simply was not obeying
+it. Resolved:
+
+- **A published consequence order** in the summary prompt: what changed,
+  with the number or scope -> who it affects -> what is genuinely contested,
+  attributed -> what happens next. Procedure and personal exchanges come
+  last in one sentence, or not at all, and never lead. Where the reporting
+  contains nothing that changed, say so in one sentence rather than padding
+  theatre to fill the shape. Subject-based, exactly like D-037's ranking
+  rubric, which is why it survives pillar 2.
+- **The check stage enforces it**, or the prompt is only a suggestion. Three
+  new tests — `leads_with_substance`, `theatre_contained`,
+  `anchors_used_correctly` — with an explicit instruction that they are
+  about order and proportion only, never a licence to prefer a side or to
+  soften an awkward fact.
+- **Anchors: our own sourced records in the evidence pack** (`anchors.py`).
+  Election results and margins, district indicators from UDISE/NFHS/JJM,
+  cited as [A1], [A2]. This is the move only we can make — "he said the
+  scheme was dropped [2]; the published allocation is X [A1]" instead of
+  attribution alone. Anchors are context, never a verdict.
+
+**Three guards that came out of testing the anchors, all of them load-bearing:**
+- **A person is anchored only when two or more member items matched them.**
+  The lexicon deliberately matches short names, which is right for tagging
+  and wrong here: a resident called "P Raj Kumar" matched a sitting MP, and
+  a single loose match would have put that MP's declared assets beside a bus
+  terminus story.
+- **Self-declared affidavit facts are gated on the story's subject** (D-016
+  de-emphasis). Injecting assets and criminal cases into every evidence pack
+  would push the summariser to reach for wealth in stories that are not
+  about it — emphasis by the back door. The gate tests the subject matter,
+  never who the person is or what they declared.
+- **Indicators are domain-gated too.** A bus terminus story is not improved
+  by a pupil-teacher ratio. Precision over volume: an irrelevant anchor is
+  an invitation to misuse one. Zero anchors is a normal, correct result.
+
+**Anchors are stored with the summary** (`news_clusters.anchors`), not
+rebuilt at read time — the underlying facts change, and a citation must keep
+resolving to what it actually cited. The story page renders [A n] against
+that frozen record.
+
+**Still open — outlet coverage labels.** Owner wants entertainment-style
+coverage OF CIVIC MATTERS to carry consequences, disclosed in the
+methodology and evidence-based. That reframing dissolves the objection to
+outlet ratings in general: conditioning on "this outlet covered this civic
+event" removes the scope confound that made a naive composition metric
+absurd (BBC World scores 100% soft because it does not cover TN civic
+affairs, not because it lacks standards). The design under discussion
+measures treatment WITHIN an event — a cluster is a natural experiment,
+same event, several outlets — and penalises the ITEM by its own treatment
+rather than the outlet as an entity, so no actor is ever ranked. To be
+validated on existing clusters before anything is built, and to be recorded
+as its own decision.
+
 ## 2026-08-11 — Key day: cost architecture for the news pipeline
 
 ### D-039: Cheap by default, frontier as adjudicator, hard ceiling

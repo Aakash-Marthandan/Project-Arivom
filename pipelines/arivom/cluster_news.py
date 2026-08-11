@@ -47,6 +47,7 @@ from difflib import SequenceMatcher
 from typing import Any
 
 from . import civic_guard, offline
+from .anchors import anchor_block, cluster_anchors
 from .articles import fetch_excerpt
 from .common import (
     Db,
@@ -862,11 +863,43 @@ SUMMARY_SCHEMA = obj_schema(
 
 SUMMARY_SYSTEM = """You write neutral news summaries for Arivom, a Tamil Nadu civic
 information platform whose mission is an informed electorate. You get several
-outlets' reporting of ONE event, numbered [1], [2], ...
+outlets' reporting of ONE event, numbered [1], [2], ... and sometimes a block of
+Arivom's own sourced records numbered [A1], [A2], ...
+
+WHAT A SUMMARY IS FOR (read this before the format rules).
+
+Your reader is a citizen deciding how their state is run. Write what changed in
+their world, not what was performed in a room. Being neutral means never
+favouring a person or a party. It does NOT mean treating every piece of
+information as equally worth their time — that is false balance, and it is a
+failure, not a virtue. Not all information is equal. Rank it.
+
+Order every summary by consequence:
+1. What actually changed or was decided, with the number, amount, date or scope.
+2. Who it affects and how, in concrete terms.
+3. What is genuinely contested, attributed to whoever contests it, with the
+   verifiable position beside it wherever the records allow.
+4. What happens next, if the reporting says.
+Procedure, personal exchanges and rhetorical jabs come last, in one short
+sentence, or not at all. Never open with who spoke. Never let a quarrel about
+photographs, insults or seating occupy the space a figure should hold.
+
+If the reporting is ENTIRELY exchange and contains nothing that changed, say so
+plainly in one sentence and keep it short. Do not pad theatre into a full
+summary to fill the shape.
+
+USING ARIVOM'S OWN RECORDS [A1], [A2], ...
+When a claim in the reporting touches a fact we already publish, put our record
+beside it: "he said the seat was won narrowly [2]; the recorded margin was 1,455
+votes [A1]". This is the single most useful thing you can do for a reader.
+Rules: cite the anchor with its [A] marker; never contradict an anchor with a
+claim presented as fact; where an anchor is labelled self-declared, say
+"self-declared" in the sentence; and if no anchor bears on the story, use none.
+Anchors are context, never a verdict — do not use them to declare who is right.
 
 Produce:
 - title_en and title_ta: short neutral titles naming the event (under 80 characters each).
-- summary_en: 2 to 4 short plain sentences describing what happened (feed preview).
+- summary_en: 2 to 4 short plain sentences, opening with what changed (feed preview).
 - summary_ta: the same summary in Tamil. Warm formal register. Simple words average readers know.
 - summary_long_en and summary_long_ta: a fuller account, 5 to 8 short sentences,
   same citation and neutrality rules, covering the facts across ALL sources
@@ -889,7 +922,8 @@ Hard rules:
   it, in both languages.
 - If sources disagree, say so plainly and cite each side, and set
   sources_disagree to true (else false).
-- Rank information by what a citizen needs to know, not by drama."""
+- Rank information by what a citizen needs to know, not by drama.
+- Titles obey the same order: name what changed, not who traded remarks."""
 
 CHECK_SCHEMA = obj_schema(
     {
@@ -897,6 +931,11 @@ CHECK_SCHEMA = obj_schema(
         "neutral": {"type": "boolean"},
         "tamil_faithful": {"type": "boolean"},
         "citations_valid": {"type": "boolean"},
+        # D-040: a summary can be perfectly accurate and still waste a
+        # citizen's time. This is a test of ordering, not of viewpoint.
+        "leads_with_substance": {"type": "boolean"},
+        "theatre_contained": {"type": "boolean"},
+        "anchors_used_correctly": {"type": "boolean"},
         "issues": arr({"type": "string"}),
         "moderation": obj_schema(
             {
@@ -926,8 +965,23 @@ per-source coverage notes:
 3. tamil_faithful: every Tamil text conveys the same content as its English
    counterpart, in genuine Tamil script, warm formal register, simple
    vocabulary, no em dashes.
-4. citations_valid: every marker refers to a provided source; every summary
-   sentence carries at least one marker.
+4. citations_valid: every marker refers to a provided source or anchor; every
+   summary sentence carries at least one marker.
+5. leads_with_substance: the summary OPENS with what changed or was decided —
+   the decision, number, amount, scope or effect — and not with who spoke or
+   who criticised whom. A summary that opens "X said" or "X criticised Y"
+   fails this, even if every word of it is true. If the reporting genuinely
+   contains nothing that changed, a summary that says so plainly in one or two
+   sentences PASSES; padding theatre out to full length fails.
+6. theatre_contained: personal exchanges, insults, walkouts, seating and
+   similar spectacle do not occupy space a figure, amount or effect should
+   hold, and never lead. At most one short closing sentence. Judge the SPACE
+   GIVEN, never whether the subject is flattering to anyone.
+7. anchors_used_correctly: where Arivom records [A1], [A2] were supplied and
+   genuinely bear on a claim, they are used to give the verifiable position;
+   anchors are never contradicted by a claim stated as fact; anything labelled
+   self-declared is described as self-declared. Using no anchor when none
+   applies passes. Anchors must not be used to declare a winner.
 
 Separately, classify the EVENT for the escalation protocol (regardless of summary quality):
 - communal: the story touches communal or religious tension.
@@ -935,8 +989,13 @@ Separately, classify the EVENT for the escalation protocol (regardless of summar
 - allegations_named_person: the story centres on unverified corruption or
   criminal allegations against a named individual.
 
-verdict "pass" only if checks 1-4 all hold; otherwise "revise" with concrete,
-actionable feedback."""
+verdict "pass" only if checks 1-7 all hold; otherwise "revise" with concrete,
+actionable feedback naming the sentence at fault.
+
+Checks 5 to 7 are about what a citizen gets for their time, and they are NOT a
+licence to prefer one side. Never fail a summary for reporting a fact that is
+awkward for anyone, and never ask for a claim to be softened. Order and
+proportion only."""
 
 
 def members_for_summary(db: Db, session: Any, cluster_id: int) -> list[dict[str, Any]]:
@@ -989,12 +1048,20 @@ def evidence_block(members: list[dict[str, Any]]) -> str:
     return "\n\n".join(lines)
 
 
-def markers_valid(text: str, n_sources: int) -> bool:
+ANCHOR_MARKER = re.compile(r"\[A(\d+)\]")
+
+
+def markers_valid(text: str, n_sources: int, n_anchors: int = 0) -> bool:
+    """Every sentence must be traceable. Source markers [n] resolve to member
+    items; anchor markers [An] resolve to Arivom's own sourced records."""
     found = [int(m) for m in MARKER.findall(text)]
-    return bool(found) and all(1 <= m <= n_sources for m in found)
+    anchors = [int(m) for m in ANCHOR_MARKER.findall(text)]
+    if any(a < 1 or a > n_anchors for a in anchors):
+        return False
+    return bool(found or anchors) and all(1 <= m <= n_sources for m in found)
 
 
-def _shape_ok(draft: dict[str, Any], n: int) -> bool:
+def _shape_ok(draft: dict[str, Any], n: int, n_anchors: int = 0) -> bool:
     """Deterministic gate before any model reads the draft — malformed output
     is caught for free rather than spending a check call to discover it."""
     notes_ok = (
@@ -1007,10 +1074,10 @@ def _shape_ok(draft: dict[str, Any], n: int) -> bool:
     )
     return bool(
         notes_ok
-        and markers_valid(draft["summary_en"], n)
-        and markers_valid(draft["summary_ta"], n)
-        and markers_valid(draft["summary_long_en"], n)
-        and markers_valid(draft["summary_long_ta"], n)
+        and markers_valid(draft["summary_en"], n, n_anchors)
+        and markers_valid(draft["summary_ta"], n, n_anchors)
+        and markers_valid(draft["summary_long_en"], n, n_anchors)
+        and markers_valid(draft["summary_long_ta"], n, n_anchors)
         and has_tamil(draft["summary_ta"])
         and has_tamil(draft["summary_long_ta"])
         and has_tamil(draft["title_ta"])
@@ -1081,8 +1148,15 @@ def summarize_clusters(
         generated += 1
 
         members = members_for_summary(db, session, cluster_id)
-        evidence = evidence_block(members)
+        # Our own sourced records bearing on this story, so the summary can
+        # put the verifiable position beside a contested claim (D-040).
+        anchors = cluster_anchors(db, cluster_id)
+        block = anchor_block(anchors)
+        evidence = evidence_block(members) + (f"\n\n{block}" if block else "")
         n = len(members)
+        n_anchors = len(anchors)
+        if anchors:
+            report["anchored"] += 1
 
         draft = structured(
             model=SONNET, system=SUMMARY_SYSTEM, user=f"Sources:\n\n{evidence}",
@@ -1094,7 +1168,7 @@ def summarize_clusters(
         for attempt in range(2):
             if draft is None:
                 break
-            if not _shape_ok(draft, n):
+            if not _shape_ok(draft, n, n_anchors):
                 verdict = {
                     "verdict": "revise",
                     "feedback": (
@@ -1140,7 +1214,7 @@ def summarize_clusters(
             and not adjudicated
             and verdict is not None
             and verdict["verdict"] != "pass"
-            and _shape_ok(draft, n)
+            and _shape_ok(draft, n, n_anchors)
         ):
             adjudicated = True
             verdict = _check(
@@ -1180,7 +1254,7 @@ def summarize_clusters(
                     summary_long_en = %s, summary_long_ta = %s,
                     sources_disagree = %s,
                     coverage_notes = %s,
-                    citations = %s, content_hash = %s, review_status = %s,
+                    citations = %s, anchors = %s, content_hash = %s, review_status = %s,
                     source_id = %s, retrieved_at = %s, updated_at = now(),
                     discussion_locked = discussion_locked OR %s,
                     lock_category = COALESCE(lock_category, %s)
@@ -1193,6 +1267,17 @@ def summarize_clusters(
                     bool(draft["sources_disagree"]),
                     json.dumps(coverage_notes, ensure_ascii=False),
                     json.dumps([m["id"] for m in members]),
+                    # Frozen with the summary so an [A n] marker always
+                    # resolves to what it actually cited (D-040).
+                    json.dumps(
+                        [
+                            {k: v for k, v in a.items() if k != "retrieved_at"}
+                            for a in anchors
+                        ],
+                        ensure_ascii=False,
+                    )
+                    if anchors
+                    else None,
                     content_hash,
                     # Offline answers did not go through the draft-then-check
                     # chain, so the row must not say they did (pillar 1).
@@ -1268,6 +1353,7 @@ def main() -> None:
         "classified_soft": 0, "class_vetoed": 0,
         "joined_cluster": 0, "new_clusters": 0, "confirm_calls": 0,
         "summarized": 0, "summary_failed": 0, "adjudicated": 0, "locked": 0,
+        "anchored": 0,
         "notes": [],
     }
 

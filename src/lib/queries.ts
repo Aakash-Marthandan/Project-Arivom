@@ -382,6 +382,10 @@ export interface NewsCluster {
    *  the D-022 draft-then-check chain did not run, and the provenance chip
    *  must not claim it did (pillar 1). */
   review_status: string;
+  /** Arivom records cited as [A1], [A2] — frozen at write time (D-040). */
+  anchors:
+    | { label: string; value: string; source_name: string; self_declared: boolean }[]
+    | null;
   retrieved_at: Date;
   source_name: string;
   source_url: string | null;
@@ -416,7 +420,7 @@ export async function getNewsClusters(
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
            c.citations, c.summary_long_en, c.summary_long_ta,
            c.coverage_notes, c.event_time, c.discussion_locked,
-           c.lock_category, c.sources_disagree, c.review_status, c.retrieved_at,
+           c.lock_category, c.sources_disagree, c.review_status, c.anchors, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,
@@ -691,7 +695,7 @@ export async function getNewsClusterById(
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
            c.citations, c.summary_long_en, c.summary_long_ta,
            c.coverage_notes, c.event_time, c.discussion_locked,
-           c.lock_category, c.sources_disagree, c.review_status, c.retrieved_at,
+           c.lock_category, c.sources_disagree, c.review_status, c.anchors, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,
@@ -851,7 +855,7 @@ export async function getDailyBrief(limit = 5): Promise<NewsCluster[]> {
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
            c.citations, c.summary_long_en, c.summary_long_ta,
            c.coverage_notes, c.event_time, c.discussion_locked,
-           c.lock_category, c.sources_disagree, c.review_status, c.retrieved_at,
+           c.lock_category, c.sources_disagree, c.review_status, c.anchors, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,

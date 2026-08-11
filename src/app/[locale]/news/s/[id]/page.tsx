@@ -68,10 +68,22 @@ function CitedText({
   className: string;
 }) {
   const byId = new Map(cluster.members.map((m) => [m.id, m]));
-  const parts = text.split(/(\[\d+\])/g);
+  const parts = text.split(/(\[A?\d+\])/g);
   return (
     <p className={className}>
       {parts.map((part, i) => {
+        // [An] cites one of Arivom's own sourced records, carried on the
+        // cluster so the marker always resolves to what it cited (D-040).
+        const anchorMark = /^\[A(\d+)\]$/.exec(part);
+        if (anchorMark) {
+          const anchor = cluster.anchors?.[Number(anchorMark[1]) - 1];
+          if (!anchor) return <sup key={i}>{part}</sup>;
+          return (
+            <sup key={i} title={`${anchor.label}: ${anchor.value} — ${anchor.source_name}`}>
+              [A{anchorMark[1]}]
+            </sup>
+          );
+        }
         const marker = /^\[(\d+)\]$/.exec(part);
         if (!marker) return <span key={i}>{part}</span>;
         const n = Number(marker[1]);
