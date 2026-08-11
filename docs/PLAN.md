@@ -116,9 +116,26 @@ on failure); escalation classifier that only ever locks
 (discussion_locked + lock_category, locked-state UI); /news statewide and
 /news/d/[lgd] district feeds with coverage-transparency tables (covered /
 not covered per tracked outlet, no bias labels) and statewide fallback;
-hourly key-gated cron. **Blocked on:** owner's ANTHROPIC_API_KEY (local +
-GH secret). Exit criteria (live clustered events with checked bilingual
-summaries) verified once the key lands and the first runs complete.
+hourly key-gated cron.
+**Key day 2026-08-11 (D-039).** The key landed and the pipeline was
+restructured for cost before volume ran through it — measured production
+volume (~1,080 items/day) put the as-built design at $350-530/month.
+Added: a headline triage stage that sets aside plainly non-civic material
+before anything is fetched or read; batched requests plus the Message
+Batches API (52% measured saving); a Haiku -> Sonnet -> Opus-5-as-
+adjudicator ladder; and a hard cumulative budget ceiling enforced from a
+database ledger. Two quality guards came out of testing: our own civic
+rubric and representative lexicon now veto a cheap model's "set aside"
+(it had discarded a Tamil Nadu Assembly exchange between two named
+legislators), and a script-purity check rejects Tamil copy contaminated
+with CJK or Devanagari.
+Verified end to end on a 3-day production slice (3,110 items): triage,
+extraction, clustering and checked bilingual summaries all run, and the
+feed renders clustered cards with markers and coverage dots in both
+locales for ~$2.5.
+**Exit criteria remain open until this runs against production** — the
+cost-controls migration is applied locally only, and prod writes need
+owner authorization.
 
 ### M7.5 — The app experience (owner-directed) — `built, in owner review` (2026-07-06)
 Polish round (D-024): Ground-style story cards (outlet image hotlinks with

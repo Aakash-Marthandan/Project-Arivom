@@ -28,6 +28,7 @@ import-corrections = "arivom.import_corrections:main"
 poll-news = "arivom.poll_news:main"
 cluster-news = "arivom.cluster_news:main"
 qa-sample = "arivom.qa_sample:main"
+llm-offline = "arivom.offline:main"
 
 [dependency-groups]
 dev = ["ruff>=0.8"]

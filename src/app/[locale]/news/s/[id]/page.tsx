@@ -142,7 +142,13 @@ export default async function StoryPage({
       publisher: cluster.source_publisher,
       license: cluster.source_license,
       retrievedOn: format.dateTime(cluster.retrieved_at, { dateStyle: "long" }),
-      method: strings.provenance.method,
+      // Say what actually produced this summary. A cluster that did not go
+      // through the draft-then-check chain must not be presented as if it
+      // had (pillar 1) — see D-039's offline-mode addendum.
+      method:
+        cluster.review_status === "llm_checked"
+          ? strings.provenance.method
+          : strings.provenance.methodFixture,
     },
   ];
 
@@ -222,7 +228,9 @@ export default async function StoryPage({
             className="text-[15.5px] leading-relaxed [&_sup]:font-bold"
           />
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-            {strings.aiNote}
+            {cluster.review_status === "llm_checked"
+              ? strings.aiNote
+              : strings.aiNoteFixture}
           </p>
         </section>
       ) : (

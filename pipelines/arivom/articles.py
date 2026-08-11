@@ -21,6 +21,7 @@ CACHE_DIR = Path(__file__).resolve().parent.parent / ".cache" / "articles"
 CACHE_TTL = 24 * 3600
 EXCERPT_CHARS = 2500
 MAX_BYTES = 1_500_000
+FETCH_TIMEOUT = 12
 
 
 def _extract_excerpt(html: str) -> tuple[str, str | None]:
@@ -63,7 +64,7 @@ def fetch_excerpt(session: Any, url: str) -> tuple[str | None, str, str | None]:
 
     excerpt, status, image = None, "failed", None
     try:
-        resp = session.get(url, timeout=25, stream=True)
+        resp = session.get(url, timeout=FETCH_TIMEOUT, stream=True)
         resp.raise_for_status()
         content = resp.raw.read(MAX_BYTES, decode_content=True)
         excerpt, image = _extract_excerpt(

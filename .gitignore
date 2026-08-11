@@ -32,6 +32,9 @@ __pycache__/
 
 # pipeline scratch (raw downloads cached locally, not committed)
 pipelines/.cache/
+# offline-mode working files (dev fixtures, D-039)
+pipelines/offline_requests.json
+pipelines/offline_responses.json
 
 # supabase local
 supabase/.branches

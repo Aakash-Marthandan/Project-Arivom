@@ -378,6 +378,10 @@ export interface NewsCluster {
   lock_category: string | null;
   sources_disagree: boolean;
   priority_high: boolean;
+  /** How the summary was produced. Anything other than 'llm_checked' means
+   *  the D-022 draft-then-check chain did not run, and the provenance chip
+   *  must not claim it did (pillar 1). */
+  review_status: string;
   retrieved_at: Date;
   source_name: string;
   source_url: string | null;
@@ -412,7 +416,7 @@ export async function getNewsClusters(
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
            c.citations, c.summary_long_en, c.summary_long_ta,
            c.coverage_notes, c.event_time, c.discussion_locked,
-           c.lock_category, c.sources_disagree, c.retrieved_at,
+           c.lock_category, c.sources_disagree, c.review_status, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,
@@ -687,7 +691,7 @@ export async function getNewsClusterById(
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
            c.citations, c.summary_long_en, c.summary_long_ta,
            c.coverage_notes, c.event_time, c.discussion_locked,
-           c.lock_category, c.sources_disagree, c.retrieved_at,
+           c.lock_category, c.sources_disagree, c.review_status, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,
@@ -847,7 +851,7 @@ export async function getDailyBrief(limit = 5): Promise<NewsCluster[]> {
     SELECT c.id, c.title_en, c.title_ta, c.summary_en, c.summary_ta,
            c.citations, c.summary_long_en, c.summary_long_ta,
            c.coverage_notes, c.event_time, c.discussion_locked,
-           c.lock_category, c.sources_disagree, c.retrieved_at,
+           c.lock_category, c.sources_disagree, c.review_status, c.retrieved_at,
            d.name_en AS district_en, d.name_ta AS district_ta,
            d.lgd_code AS district_lgd,
            s.name AS source_name, s.url AS source_url,

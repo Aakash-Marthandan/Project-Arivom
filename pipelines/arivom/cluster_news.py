@@ -1,26 +1,37 @@
 """News clustering, neutral bilingual summaries, coverage (M7, DESIGN §7).
 
-Three stages, all offline, all idempotent, all disk-cached:
+Four stages, all offline, all idempotent, all disk-cached and metered:
 
-1. ENTITY EXTRACTION — per new item: deterministic match against our own
-   bilingual lexicon (persons, districts, parties from the database), plus
-   a cheap-model pass over the headline and a transiently fetched article
-   excerpt (D-022: read, never stored). Result lands in news_items.entities.
+0. TRIAGE — a headline-only pass over new items that removes confidently
+   non-civic material (cricket, cinema, astrology, viral) before anything
+   expensive happens to it. Triage may only ELIMINATE: a "keep" verdict
+   claims nothing about the item, it just buys the item a full read. The
+   displayed classification is always set by stage 1 with the article in
+   hand, so a cheap model never decides what a citizen gets to see.
+   40 headlines per call (D-039).
+
+1. ENTITY EXTRACTION — per surviving item: deterministic match against our
+   own bilingual lexicon (persons, districts, parties from the database),
+   plus a cheap-model pass over the headline and a transiently fetched
+   article excerpt (D-022: read, never stored). Result lands in
+   news_items.entities. 8 items per call.
 
 2. CLUSTERING — incremental: an unclustered item joins an existing cluster
    (or pairs with another unclustered item) only when they share strong
    entities within a 72h window AND a cheap-model judgment confirms they
-   describe the same specific event. Clusters materialize at >= 2 items;
-   single-source stories stay plain items (D-022).
+   describe the same specific event. All of one item's candidates are
+   judged in a single call, so the sequential semantics are unchanged but
+   the call count is not. Clusters materialize at >= 2 items (D-022).
 
 3. SUMMARIES — for clusters whose membership changed: a mid-tier model
    drafts a neutral bilingual title + summary with inline [n] citations
-   from the members' reporting; a frontier model spot-checks claim
-   support, neutrality, Tamil register and citations, and classifies the
-   event for the escalation protocol (communal / sub judice / allegations
-   -> discussion_locked + lock_category; the pipeline only ever locks,
-   never unlocks). One revise cycle; a failing summary is withheld and
-   reported, never published unchecked.
+   from the members' reporting, and the same tier spot-checks claim
+   support, neutrality, Tamil register and citations. The frontier model
+   adjudicates only what the routine check cannot settle — any moderation
+   positive (communal / sub judice / allegations), and any draft still
+   failing after one revise cycle, so nothing is withheld or locked on a
+   cheap model's word alone (D-039). One revise cycle; a failing summary is
+   withheld and reported, never published unchecked.
 
 The informed-electorate test (D-021) governs ordering and copy: civic
 usefulness, never sensation. No bias labels anywhere (pillar 2).
@@ -35,16 +46,44 @@ from datetime import datetime, timedelta
 from difflib import SequenceMatcher
 from typing import Any
 
+from . import civic_guard, offline
 from .articles import fetch_excerpt
-from .common import Db, has_tamil, http_session, norm_name, now_utc
-from .llm import HAIKU, OPUS, SONNET, arr, llm_available, obj_schema, require_llm, structured
+from .common import (
+    Db,
+    article_session,
+    has_tamil,
+    norm_name,
+    now_utc,
+    script_clean,
+)
+from .llm import (
+    HAIKU,
+    OPUS,
+    SONNET,
+    arr,
+    batch_params,
+    cache_lookup,
+    cache_store,
+    collect_batch,
+    llm_available,
+    obj_schema,
+    pending_batches,
+    require_llm,
+    structured,
+    submit_batch,
+)
 from .poll_news import EN_DISTRICT_ALIASES, TA_DISTRICT_ALIASES
+from .spend import BudgetExhausted, Ledger
 
 WINDOW_DAYS = 7          # working set: items/clusters from the last week
 PAIR_WINDOW_H = 72       # max time gap for two items to be the same event
+TRIAGE_CAP = 2000        # headlines triaged per run (cheap; clears backlog fast)
 EXTRACT_CAP = 300        # entity extractions per run (backlog is reported)
 CONFIRM_CAP = 250        # merge confirmations per run
 SUMMARY_CAP = 40         # summary generations per run
+
+TRIAGE_PER_CALL = 40     # headlines per triage request
+EXTRACT_PER_CALL = 8     # items (with excerpts) per extraction request
 
 # Signals too generic to link two stories on their own.
 GENERIC_STRINGS = {"tamil nadu", "தமிழ்நாடு", "tamilnadu", "india", "இந்தியா", "tn"}
@@ -130,27 +169,139 @@ class Lexicon:
 
 
 # ---------------------------------------------------------------------------
+# Stage 0 — headline triage (D-039)
+# ---------------------------------------------------------------------------
+
+# Returns only the positions to drop. Echoing an id and a verdict per item put
+# 58% of this stage's cost in output tokens (measured 2026-08-11); a bare list
+# of the few soft positions costs about half a token per item instead.
+TRIAGE_SCHEMA = obj_schema({"soft": arr({"type": "integer"})})
+
+TRIAGE_SYSTEM = """You screen Tamil Nadu news headlines for Arivom, a civic information
+platform whose mission is an informed electorate. You are a FIRST PASS whose only
+job is to set aside material that plainly has no civic relevance, so the platform
+does not spend a full reading on it.
+
+You get numbered headlines. Return the numbers of the ones that are clearly and
+entirely NON-CIVIC, and nothing else. Return an empty list if none are.
+
+Non-civic means the headline is clearly and entirely one of: film, television or
+celebrity news; sports and cricket; astrology, numerology, horoscopes or
+devotional events and festivals; viral, voyeuristic or curiosity items; human
+interest with no policy bearing; lifestyle, recipes, beauty, relationships,
+travel tips; gaming; shopping offers and consumer product launches; press-release
+surveys and brand announcements.
+
+Everything else stays, including anything you are unsure about. Do NOT set aside:
+government, courts, elections, legislature, police and public safety, policy,
+corruption, defence, foreign affairs; the ECONOMY in every form (company results,
+IPOs, market moves, industry and sector data, employment, trade, tax); jobs,
+education, health, environment, weather, agriculture, infrastructure, prices,
+transport, welfare schemes, civic protest, local administration. Keep anything
+whose subject you cannot tell from the headline alone. Keep anything where a
+celebrity or sportsperson appears in a governmental, legal, electoral or civic
+context (a film star's political party, a cricketer's tax case, a court order
+about a stadium).
+
+The cost of wrongly setting aside a story is that a citizen never sees civic
+news. The cost of wrongly keeping one is a fraction of a cent. When the two are
+in tension, keep it."""
+
+
+def triage_items(db: Db, lexicon: Lexicon, ledger: Ledger, report: dict[str, Any]) -> None:
+    """Mark confidently non-civic items so they are never fetched or read.
+
+    Sets civic_class='soft' and nothing else: the item stays in the database
+    for registry and coverage analysis (D-025) and is already excluded from
+    every feed by the existing `civic_class <> 'soft'` filter, so no UI
+    change is needed and nothing is deleted.
+    """
+    rows = db.conn.execute(
+        """
+        SELECT id, headline_orig FROM news_items
+        WHERE triaged_at IS NULL AND entities IS NULL
+          AND created_at > now() - make_interval(days => %s)
+        ORDER BY published_at DESC
+        LIMIT %s
+        """,
+        (WINDOW_DAYS, TRIAGE_CAP + 1),
+    ).fetchall()
+    backlog = len(rows) > TRIAGE_CAP
+    rows = rows[:TRIAGE_CAP]
+    if not rows:
+        return
+
+    for start in range(0, len(rows), TRIAGE_PER_CALL):
+        chunk = rows[start : start + TRIAGE_PER_CALL]
+        user = "Headlines:\n" + "\n".join(
+            f"{n}. {headline}" for n, (_id, headline) in enumerate(chunk, start=1)
+        )
+        result = structured(
+            model=HAIKU, system=TRIAGE_SYSTEM, user=user, schema=TRIAGE_SCHEMA,
+            max_tokens=512, ledger=ledger, stage="triage", items=len(chunk),
+        )
+        if result is None:
+            report["triage_failed"] += len(chunk)
+            continue
+
+        # Positions, not ids: a number outside the range we sent is ignored, so
+        # a miscounted reply can never mark the wrong story soft.
+        proposed = [
+            chunk[position - 1]
+            for position in dict.fromkeys(result["soft"])
+            if 1 <= position <= len(chunk)
+        ]
+        # Our own civic data overrules the cheap model (D-039). Measured on a
+        # real sample, triage alone set aside a Tamil Nadu Assembly exchange
+        # between two named legislators; the guard catches exactly that.
+        soft = []
+        for item_id, headline in proposed:
+            if civic_guard.protected(headline, lexicon):
+                report["triage_vetoed"] += 1
+                continue
+            soft.append(item_id)
+        if soft:
+            db.conn.execute(
+                "UPDATE news_items SET civic_class = 'soft' WHERE id = ANY(%s)", (soft,)
+            )
+        # Mark the whole chunk screened, kept items included, so a verdict is
+        # never paid for twice.
+        db.conn.execute(
+            "UPDATE news_items SET triaged_at = now() WHERE id = ANY(%s)",
+            ([item_id for item_id, _h in chunk],),
+        )
+        db.conn.commit()
+        report["triaged"] += len(chunk)
+        report["triaged_soft"] += len(soft)
+    db.conn.commit()
+    if backlog:
+        report["notes"].append(f"triage backlog beyond the {TRIAGE_CAP}-item cap")
+
+
+# ---------------------------------------------------------------------------
 # Stage 1 — entity extraction
 # ---------------------------------------------------------------------------
 
-EXTRACT_SCHEMA = obj_schema(
-    {
-        "persons": arr({"type": "string"}),
-        "places": arr({"type": "string"}),
-        "organizations": arr({"type": "string"}),
-        "gist_en": {"type": "string"},
-        "department": {"anyOf": [{"type": "string"}, {"type": "null"}]},
-        "department_ta": {"anyOf": [{"type": "string"}, {"type": "null"}]},
-        "civic_class": {"type": "string", "enum": ["civic", "adjacent", "soft"]},
-        "civic_priority": {"type": "string", "enum": ["high", "normal"]},
-        "title_clean_en": {"type": "string"},
-        "title_clean_ta": {"type": "string"},
-    }
-)
+ITEM_FIELDS = {
+    "id": {"type": "integer"},
+    "persons": arr({"type": "string"}),
+    "places": arr({"type": "string"}),
+    "organizations": arr({"type": "string"}),
+    "gist_en": {"type": "string"},
+    "department": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+    "department_ta": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+    "civic_class": {"type": "string", "enum": ["civic", "adjacent", "soft"]},
+    "civic_priority": {"type": "string", "enum": ["high", "normal"]},
+    "title_clean_en": {"type": "string"},
+    "title_clean_ta": {"type": "string"},
+}
+
+EXTRACT_SCHEMA = obj_schema({"items": arr(obj_schema(ITEM_FIELDS))})
 
 EXTRACT_SYSTEM = """You process Tamil Nadu news items for Arivom, a civic information platform
-whose mission is an informed electorate. Given a headline (Tamil or English)
-and possibly an article excerpt, return:
+whose mission is an informed electorate. You are given several numbered items, each
+with a headline (Tamil or English) and possibly an article excerpt. Return one entry
+per item, echoing its id exactly. For each item return:
 - persons: full names of people mentioned (as written, do not translate or transliterate).
 - places: cities, towns, districts, localities mentioned (as written).
 - organizations: parties, government bodies, companies, institutions (as written).
@@ -178,15 +329,108 @@ and possibly an article excerpt, return:
   sensational words (no அதிர்ச்சி/பகீர்/shocking/slams), no unresolved
   pronouns, no ALL CAPS, under 90 characters. Tamil: warm formal register,
   simple words. Do not add facts that are not in the material.
+
+Script rules, absolute: title_clean_ta is written in Tamil script only, apart
+from Latin letters and digits where a name or abbreviation genuinely needs
+them. title_clean_en is written in Latin script only. Never emit Devanagari,
+CJK, Kana, Hangul, Cyrillic, Arabic or any other script in either field — if
+you cannot render a word in the right script, paraphrase it.
+
+Return exactly one entry per item given, echoing each id, and no others.
+Judge each item only on its own material; items in one request are unrelated.
 Be precise; the gist and titles must be neutral and factual."""
 
 
-def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, Any]) -> None:
+def _extract_user(chunk: list[tuple[int, str, str | None]]) -> str:
+    parts = []
+    for item_id, headline, excerpt in chunk:
+        block = f"## Item {item_id}\nHeadline: {headline}"
+        if excerpt:
+            block += f"\n\nArticle excerpt:\n{excerpt}"
+        parts.append(block)
+    return "\n\n".join(parts)
+
+
+def _apply_extraction(
+    db: Db, lexicon: Lexicon, entry: dict[str, Any], fetch_meta: dict[int, tuple[str, str | None]]
+) -> str | None:
+    """Write one extracted item; returns the civic_class actually stored."""
+    item_id = entry["id"]
+    fetch_status, og_image = fetch_meta.get(item_id, ("failed", None))
+    headline_row = db.conn.execute(
+        "SELECT headline_orig FROM news_items WHERE id = %s", (item_id,)
+    ).fetchone()
+    headline = headline_row[0] if headline_row else ""
+
+    person_hits = lexicon.persons_in(headline)
+    for name in entry["persons"]:
+        pid = lexicon.match_person(name)
+        if pid is not None:
+            person_hits.setdefault(pid, name)
+    district_ids = {
+        did
+        for place in entry["places"]
+        if (did := lexicon.match_district(place)) is not None
+    }
+    entities = {
+        "persons": [{"name": name, "person_id": pid} for pid, name in person_hits.items()]
+        + [{"name": n} for n in entry["persons"] if lexicon.match_person(n) is None],
+        "places": entry["places"],
+        "orgs": entry["organizations"],
+        "district_ids": sorted(district_ids),
+        "gist": entry["gist_en"][:200],
+        # Loose-matched to /government department cards at display time
+        # (D-019: source-verbatim names differ per locale).
+        "department": entry["department"],
+        "department_ta": entry["department_ta"],
+    }
+    # Arivom-voice titles (D-025): accept only when the language is genuinely
+    # right AND the script is clean; a NULL falls back to the original
+    # headline in the UI rather than showing a bad rewrite.
+    title_en = entry["title_clean_en"].strip()
+    title_ta = entry["title_clean_ta"].strip()
+    if not title_en or has_tamil(title_en) or not script_clean(title_en):
+        title_en = None
+    if not has_tamil(title_ta) or not script_clean(title_ta):
+        title_ta = None
+
+    # Our published civic rubric overrules a "soft" call the same way it
+    # overrules triage (D-039) — but here we do not substitute a class of our
+    # own. Disagreement leaves civic_class NULL, which the product already
+    # treats as unclassified-and-visible (D-025), so the story stays in the
+    # feed and we claim nothing we cannot defend.
+    civic_class = entry["civic_class"]
+    if civic_class == "soft" and civic_guard.protected(headline, lexicon):
+        civic_class = None
+
+    db.conn.execute(
+        """
+        UPDATE news_items
+        SET entities = %s, fetch_status = %s,
+            image_url = COALESCE(image_url, %s),
+            civic_class = %s, civic_priority = %s,
+            title_clean_en = %s, title_clean_ta = %s
+        WHERE id = %s
+        """,
+        (
+            json.dumps(entities, ensure_ascii=False), fetch_status, og_image,
+            civic_class, entry["civic_priority"],
+            title_en, title_ta, item_id,
+        ),
+    )
+    return civic_class
+
+
+def extract_entities(
+    db: Db, session: Any, lexicon: Lexicon, ledger: Ledger, report: dict[str, Any],
+    use_batch_api: bool,
+) -> None:
     rows = db.conn.execute(
         """
-        SELECT id, headline_orig, url, outlet, lang
-        FROM news_items
-        WHERE entities IS NULL AND created_at > now() - make_interval(days => %s)
+        SELECT id, headline_orig, url FROM news_items
+        WHERE entities IS NULL
+          AND civic_class IS DISTINCT FROM 'soft'
+          AND created_at > now() - make_interval(days => %s)
         ORDER BY published_at DESC
         LIMIT %s
         """,
@@ -194,81 +438,154 @@ def extract_entities(db: Db, session: Any, lexicon: Lexicon, report: dict[str, A
     ).fetchall()
     backlog = len(rows) > EXTRACT_CAP
     rows = rows[:EXTRACT_CAP]
+    if not rows:
+        return
 
-    for item_id, headline, url, _outlet, _lang in rows:
+    # Fetch excerpts first (disk-cached 24h; never stored in the database).
+    prepared: list[tuple[int, str, str | None]] = []
+    fetch_meta: dict[int, tuple[str, str | None]] = {}
+    for item_id, headline, url in rows:
         excerpt, fetch_status, og_image = fetch_excerpt(session, url)
-        user = f"Headline: {headline}"
-        if excerpt:
-            user += f"\n\nArticle excerpt:\n{excerpt}"
-        result = structured(
-            model=HAIKU, system=EXTRACT_SYSTEM, user=user,
-            schema=EXTRACT_SCHEMA, max_tokens=1024,
-        )
-        if result is None:
-            report["extract_failed"] += 1
-            continue
-
-        person_hits = lexicon.persons_in(headline)
-        for name in result["persons"]:
-            pid = lexicon.match_person(name)
-            if pid is not None:
-                person_hits.setdefault(pid, name)
-        district_ids = {
-            did
-            for place in result["places"]
-            if (did := lexicon.match_district(place)) is not None
-        }
-        entities = {
-            "persons": [
-                {"name": name, "person_id": pid} for pid, name in person_hits.items()
-            ]
-            + [
-                {"name": n}
-                for n in result["persons"]
-                if lexicon.match_person(n) is None
-            ],
-            "places": result["places"],
-            "orgs": result["organizations"],
-            "district_ids": sorted(district_ids),
-            "gist": result["gist_en"][:200],
-            # Loose-matched to /government department cards at display time
-            # (D-019: source-verbatim names differ per locale).
-            "department": result["department"],
-            "department_ta": result["department_ta"],
-        }
-        # Arivom-voice titles (D-025): accept only when the language is
-        # genuinely right; a NULL falls back to the original headline in
-        # the UI rather than showing a bad rewrite.
-        title_en = result["title_clean_en"].strip()
-        title_ta = result["title_clean_ta"].strip()
-        if not title_en or has_tamil(title_en):
-            title_en = None
-        if not has_tamil(title_ta):
-            title_ta = None
-        db.conn.execute(
-            """
-            UPDATE news_items
-            SET entities = %s, fetch_status = %s,
-                image_url = COALESCE(image_url, %s),
-                civic_class = %s, civic_priority = %s,
-                title_clean_en = %s, title_clean_ta = %s
-            WHERE id = %s
-            """,
-            (
-                json.dumps(entities, ensure_ascii=False), fetch_status, og_image,
-                result["civic_class"], result["civic_priority"],
-                title_en, title_ta, item_id,
-            ),
-        )
-        report["extracted"] += 1
-        if result["civic_class"] == "soft":
-            report["classified_soft"] = report.get("classified_soft", 0) + 1
+        fetch_meta[item_id] = (fetch_status, og_image)
+        prepared.append((item_id, headline, excerpt))
         if fetch_status != "fetched":
             report["fetch_failed"] += 1
+
+    chunks = [
+        prepared[i : i + EXTRACT_PER_CALL]
+        for i in range(0, len(prepared), EXTRACT_PER_CALL)
+    ]
+
+    # Anything already paid for in a previous run applies for free.
+    live_chunks: list[list[tuple[int, str, str | None]]] = []
+    for chunk in chunks:
+        user = _extract_user(chunk)
+        cached = cache_lookup(
+            model=HAIKU, system=EXTRACT_SYSTEM, user=user, schema=EXTRACT_SCHEMA
+        )
+        if cached is not None:
+            _apply_chunk(db, lexicon, chunk, cached, fetch_meta, report)
+        else:
+            live_chunks.append(chunk)
+
+    if use_batch_api and live_chunks:
+        _extract_via_batch_api(db, lexicon, live_chunks, fetch_meta, ledger, report)
+    else:
+        for chunk in live_chunks:
+            user = _extract_user(chunk)
+            result = structured(
+                model=HAIKU, system=EXTRACT_SYSTEM, user=user, schema=EXTRACT_SCHEMA,
+                max_tokens=6000, ledger=ledger, stage="extract", items=len(chunk),
+            )
+            if result is None:
+                report["extract_failed"] += len(chunk)
+                continue
+            _apply_chunk(db, lexicon, chunk, result, fetch_meta, report)
 
     db.conn.commit()
     if backlog:
         report["notes"].append(f"extraction backlog beyond the {EXTRACT_CAP}-item cap")
+
+
+def _apply_chunk(
+    db: Db,
+    lexicon: Lexicon,
+    chunk: list[tuple[int, str, str | None]],
+    result: dict[str, Any],
+    fetch_meta: dict[int, tuple[str, str | None]],
+    report: dict[str, Any],
+) -> None:
+    sent = {item_id for item_id, _h, _e in chunk}
+    seen: set[int] = set()
+    for entry in result.get("items", []):
+        if entry["id"] not in sent or entry["id"] in seen:
+            continue  # invented or duplicated id — the item retries next run
+        seen.add(entry["id"])
+        stored = _apply_extraction(db, lexicon, entry, fetch_meta)
+        report["extracted"] += 1
+        if stored == "soft":
+            report["classified_soft"] += 1
+        elif entry["civic_class"] == "soft":
+            report["class_vetoed"] += 1
+    report["extract_failed"] += len(sent - seen)
+
+
+def _extract_via_batch_api(
+    db: Db,
+    lexicon: Lexicon,
+    chunks: list[list[tuple[int, str, str | None]]],
+    fetch_meta: dict[int, tuple[str, str | None]],
+    ledger: Ledger,
+    report: dict[str, Any],
+) -> None:
+    """Submit extraction chunks to the Message Batches API (50% off) and apply
+    whatever comes back. A job that has not ended by the polling deadline is
+    left in llm_batches for a later run — no work and no money is lost."""
+    requests, context = [], {"model": HAIKU, "chunks": {}}
+    for n, chunk in enumerate(chunks):
+        custom_id = f"extract-{n}"
+        requests.append(
+            (
+                custom_id,
+                batch_params(
+                    model=HAIKU, system=EXTRACT_SYSTEM, user=_extract_user(chunk),
+                    schema=EXTRACT_SCHEMA, max_tokens=6000,
+                ),
+            )
+        )
+        context["chunks"][custom_id] = [item_id for item_id, _h, _e in chunk]
+
+    batch_id = submit_batch(requests=requests, stage="extract", db=db, context=context)
+    if batch_id is None:
+        return
+    report["notes"].append(f"submitted {len(requests)} extraction requests as batch {batch_id}")
+
+    results = collect_batch(
+        batch_id=batch_id, db=db, ledger=ledger, stage="extract",
+        items=sum(len(c) for c in chunks),
+    )
+    if results is None:
+        report["notes"].append(
+            f"batch {batch_id} still running; a later run will collect it "
+            f"({len(requests)} requests)"
+        )
+        return
+    by_id = {f"extract-{n}": chunk for n, chunk in enumerate(chunks)}
+    for custom_id, result in results.items():
+        chunk = by_id.get(custom_id)
+        if chunk is None:
+            continue
+        cache_store(
+            model=HAIKU, system=EXTRACT_SYSTEM, user=_extract_user(chunk),
+            schema=EXTRACT_SCHEMA, result=result,
+        )
+        _apply_chunk(db, lexicon, chunk, result, fetch_meta, report)
+
+
+def collect_pending(db: Db, lexicon: Lexicon, ledger: Ledger, report: dict[str, Any]) -> None:
+    """Apply results from batches an earlier run submitted, before doing new work."""
+    session = article_session()
+    for batch_id, context in pending_batches(db, stage="extract"):
+        results = collect_batch(
+            batch_id=batch_id, db=db, ledger=ledger, stage="extract", wait=False,
+            items=sum(len(v) for v in context.get("chunks", {}).values()),
+        )
+        if results is None:
+            continue
+        for custom_id, result in results.items():
+            item_ids = context.get("chunks", {}).get(custom_id, [])
+            rows = db.conn.execute(
+                "SELECT id, headline_orig, url FROM news_items WHERE id = ANY(%s)",
+                (item_ids,),
+            ).fetchall()
+            chunk, fetch_meta = [], {}
+            for item_id, headline, url in rows:
+                excerpt, status, image = fetch_excerpt(session, url)
+                chunk.append((item_id, headline, excerpt))
+                fetch_meta[item_id] = (status, image)
+            _apply_chunk(db, lexicon, chunk, result, fetch_meta, report)
+        report["notes"].append(f"collected batch {batch_id} from an earlier run")
+    db.conn.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -310,13 +627,22 @@ def within_window(a: datetime | None, b: datetime | None) -> bool:
     return bool(a and b and abs((a - b).total_seconds()) < PAIR_WINDOW_H * 3600)
 
 
-CONFIRM_SCHEMA = obj_schema({"same_event": {"type": "boolean"}})
+# One call decides among all of an item's candidates at once. The judgment is
+# identical to asking pair by pair — the candidates are mutually exclusive —
+# but it costs one request instead of one per pair, and the 94-token system
+# prompt is paid once instead of N times (D-039).
+CONFIRM_SCHEMA = obj_schema(
+    {"match": {"anyOf": [{"type": "integer"}, {"type": "null"}]}}
+)
 
-CONFIRM_SYSTEM = """You judge whether news items describe the SAME SPECIFIC EVENT for clustering.
+CONFIRM_SYSTEM = """You judge which candidate, if any, describes the SAME SPECIFIC EVENT as a
+given news item, for clustering.
 Same event = the same concrete occurrence: one incident, one announcement, one decision,
 one meeting. Coverage of the same event by different outlets, in Tamil or English, counts.
 NOT the same event: merely the same topic, the same person doing different things, similar
-incidents in different places, or follow-up developments days later."""
+incidents in different places, or follow-up developments days later.
+Return the number of the one candidate describing the same event, or null if none does.
+When two candidates could both fit, return null."""
 
 
 def describe(headline: str, gist: str | None, published: datetime | None) -> str:
@@ -328,21 +654,32 @@ def describe(headline: str, gist: str | None, published: datetime | None) -> str
     return line
 
 
-def confirm_same_event(item: dict[str, Any], other_lines: list[str]) -> bool:
+def confirm_match(
+    item: dict[str, Any], candidates: list[list[str]], ledger: Ledger
+) -> int | None:
+    """Return the index of the matching candidate, or None."""
+    blocks_text = []
+    for n, lines in enumerate(candidates, start=1):
+        blocks_text.append(f"Candidate {n}:\n" + "\n".join(lines[:4]))
     result = structured(
         model=HAIKU,
         system=CONFIRM_SYSTEM,
         user=(
-            "Item A:\n"
+            "Item:\n"
             + describe(item["headline"], (item["entities"] or {}).get("gist"), item["published_at"])
-            + "\n\nItem/cluster B:\n"
-            + "\n".join(other_lines[:4])
-            + "\n\nDo A and B describe the same specific event?"
+            + "\n\n"
+            + "\n\n".join(blocks_text)
+            + "\n\nWhich candidate describes the same specific event as the item?"
         ),
         schema=CONFIRM_SCHEMA,
-        max_tokens=64,
+        max_tokens=128,
+        ledger=ledger,
+        stage="confirm",
     )
-    return bool(result and result["same_event"])
+    if not result or result.get("match") is None:
+        return None
+    index = result["match"] - 1
+    return index if 0 <= index < len(candidates) else None
 
 
 def cluster_locality(db: Db, member_ids: list[int]) -> int | None:
@@ -362,7 +699,9 @@ def cluster_locality(db: Db, member_ids: list[int]) -> int | None:
     return districts.pop() if len(districts) == 1 else None
 
 
-def run_clustering(db: Db, source_id: int, retrieved_at: datetime, report: dict[str, Any]) -> None:
+def run_clustering(
+    db: Db, source_id: int, retrieved_at: datetime, ledger: Ledger, report: dict[str, Any]
+) -> None:
     since = now_utc() - timedelta(days=WINDOW_DAYS)
     items = [
         {
@@ -376,6 +715,7 @@ def run_clustering(db: Db, source_id: int, retrieved_at: datetime, report: dict[
             FROM news_items i
             LEFT JOIN cluster_coverage cc ON cc.news_item_id = i.id
             WHERE i.entities IS NOT NULL AND i.published_at > %s
+              AND i.civic_class IS DISTINCT FROM 'soft'
             ORDER BY i.published_at ASC
             """,
             (since,),
@@ -399,96 +739,95 @@ def run_clustering(db: Db, source_id: int, retrieved_at: datetime, report: dict[
     confirms = 0
 
     for item in unclustered:
+        if confirms >= CONFIRM_CAP:
+            break
         sig = signature(item)
-        merged = False
 
-        # Existing clusters first (newest members shown to the judge).
-        candidates = [
+        # Existing clusters first, then still-unclustered items: one call
+        # ranks them all, so a single judgment settles the item.
+        cluster_candidates = [
             (cid, c) for cid, c in clusters.items()
             if blocks(sig, c["sig"])
             and any(within_window(item["published_at"], m["published_at"]) for m in c["members"])
-        ]
-        for cid, c in candidates[:3]:
-            if confirms >= CONFIRM_CAP:
-                break
-            confirms += 1
-            lines = [
+        ][:3]
+        pool_candidates = [
+            other for other in pool
+            if blocks(sig, other["sig"])
+            and within_window(item["published_at"], other["published_at"])
+        ][:3]
+        if not cluster_candidates and not pool_candidates:
+            item["sig"] = sig
+            pool.append(item)
+            continue
+
+        described = [
+            [
                 describe(m["headline"], (m["entities"] or {}).get("gist"), m["published_at"])
                 for m in c["members"][-4:]
             ]
-            if confirm_same_event(item, lines):
-                db.conn.execute(
-                    "INSERT INTO cluster_coverage (cluster_id, news_item_id) VALUES (%s, %s) "
-                    "ON CONFLICT DO NOTHING",
-                    (cid, item["id"]),
-                )
-                c["members"].append(item)
-                for k, v in sig.items():
-                    c["sig"][k] |= v
-                db.conn.execute(
-                    """
-                    UPDATE news_clusters
-                    SET event_time = LEAST(event_time, %s), locality_id = %s,
-                        updated_at = now()
-                    WHERE id = %s
-                    """,
-                    (
-                        item["published_at"],
-                        cluster_locality(db, [m["id"] for m in c["members"]]),
-                        cid,
-                    ),
-                )
-                report["joined_cluster"] += 1
-                merged = True
-                break
-        if merged:
-            continue
+            for _cid, c in cluster_candidates
+        ] + [
+            [describe(o["headline"], (o["entities"] or {}).get("gist"), o["published_at"])]
+            for o in pool_candidates
+        ]
 
-        # Then other still-unclustered items: a confirmed pair births a cluster.
-        for other in pool:
-            if confirms >= CONFIRM_CAP:
-                break
-            if not blocks(sig, other["sig"]):
-                continue
-            if not within_window(item["published_at"], other["published_at"]):
-                continue
-            confirms += 1
-            other_line = describe(
-                other["headline"], (other["entities"] or {}).get("gist"), other["published_at"]
-            )
-            if confirm_same_event(item, [other_line]):
-                row = db.conn.execute(
-                    """
-                    INSERT INTO news_clusters
-                      (event_time, locality_id, source_id, retrieved_at)
-                    VALUES (%s, %s, %s, %s)
-                    RETURNING id
-                    """,
-                    (
-                        min(item["published_at"], other["published_at"]),
-                        cluster_locality(db, [item["id"], other["id"]]),
-                        source_id,
-                        retrieved_at,
-                    ),
-                ).fetchone()
-                assert row is not None
-                cid = row[0]
-                for member in (other, item):
-                    db.conn.execute(
-                        "INSERT INTO cluster_coverage (cluster_id, news_item_id) VALUES (%s, %s)",
-                        (cid, member["id"]),
-                    )
-                clusters[cid] = {
-                    "members": [other, item],
-                    "sig": {k: sig[k] | other["sig"][k] for k in sig},
-                }
-                pool.remove(other)
-                report["new_clusters"] += 1
-                merged = True
-                break
-        if not merged:
+        confirms += 1
+        choice = confirm_match(item, described, ledger)
+        if choice is None:
             item["sig"] = sig
             pool.append(item)
+            continue
+
+        if choice < len(cluster_candidates):
+            cid, c = cluster_candidates[choice]
+            db.conn.execute(
+                "INSERT INTO cluster_coverage (cluster_id, news_item_id) VALUES (%s, %s) "
+                "ON CONFLICT DO NOTHING",
+                (cid, item["id"]),
+            )
+            c["members"].append(item)
+            for k, v in sig.items():
+                c["sig"][k] |= v
+            db.conn.execute(
+                """
+                UPDATE news_clusters
+                SET event_time = LEAST(event_time, %s), locality_id = %s, updated_at = now()
+                WHERE id = %s
+                """,
+                (
+                    item["published_at"],
+                    cluster_locality(db, [m["id"] for m in c["members"]]),
+                    cid,
+                ),
+            )
+            report["joined_cluster"] += 1
+        else:
+            other = pool_candidates[choice - len(cluster_candidates)]
+            row = db.conn.execute(
+                """
+                INSERT INTO news_clusters (event_time, locality_id, source_id, retrieved_at)
+                VALUES (%s, %s, %s, %s) RETURNING id
+                """,
+                (
+                    min(item["published_at"], other["published_at"]),
+                    cluster_locality(db, [item["id"], other["id"]]),
+                    source_id,
+                    retrieved_at,
+                ),
+            ).fetchone()
+            assert row is not None
+            cid = row[0]
+            for member in (other, item):
+                db.conn.execute(
+                    "INSERT INTO cluster_coverage (cluster_id, news_item_id) VALUES (%s, %s)",
+                    (cid, member["id"]),
+                )
+            clusters[cid] = {
+                "members": [other, item],
+                "sig": {k: sig[k] | other["sig"][k] for k in sig},
+            }
+            pool.remove(other)
+            report["new_clusters"] += 1
 
     db.conn.commit()
     report["confirm_calls"] = confirms
@@ -655,8 +994,57 @@ def markers_valid(text: str, n_sources: int) -> bool:
     return bool(found) and all(1 <= m <= n_sources for m in found)
 
 
+def _shape_ok(draft: dict[str, Any], n: int) -> bool:
+    """Deterministic gate before any model reads the draft — malformed output
+    is caught for free rather than spending a check call to discover it."""
+    notes_ok = (
+        len(draft["coverage_notes"]) == n
+        and {note["source"] for note in draft["coverage_notes"]} == set(range(1, n + 1))
+        and all(
+            has_tamil(note["note_ta"]) and note["note_en"].strip()
+            for note in draft["coverage_notes"]
+        )
+    )
+    return bool(
+        notes_ok
+        and markers_valid(draft["summary_en"], n)
+        and markers_valid(draft["summary_ta"], n)
+        and markers_valid(draft["summary_long_en"], n)
+        and markers_valid(draft["summary_long_ta"], n)
+        and has_tamil(draft["summary_ta"])
+        and has_tamil(draft["summary_long_ta"])
+        and has_tamil(draft["title_ta"])
+        and draft["title_en"].strip()
+    )
+
+
+def _check(
+    *, model: str, evidence: str, draft: dict[str, Any], ledger: Ledger, effort: str, stage: str
+) -> dict[str, Any] | None:
+    return structured(
+        model=model,
+        system=CHECK_SYSTEM,
+        user=f"Sources:\n\n{evidence}\n\nDraft:\n{json.dumps(draft, ensure_ascii=False)}",
+        schema=CHECK_SCHEMA,
+        max_tokens=8000,
+        thinking=True,
+        effort=effort,
+        ledger=ledger,
+        stage=stage,
+    )
+
+
+def _moderation_positive(verdict: dict[str, Any] | None) -> bool:
+    moderation = (verdict or {}).get("moderation", {})
+    return any(
+        moderation.get(key)
+        for key in ("communal", "sub_judice", "allegations_named_person")
+    )
+
+
 def summarize_clusters(
-    db: Db, session: Any, source_id: int, retrieved_at: datetime, report: dict[str, Any]
+    db: Db, session: Any, source_id: int, retrieved_at: datetime,
+    ledger: Ledger, report: dict[str, Any],
 ) -> None:
     since = now_utc() - timedelta(days=WINDOW_DAYS)
     clusters = db.conn.execute(
@@ -697,33 +1085,16 @@ def summarize_clusters(
         n = len(members)
 
         draft = structured(
-            model=SONNET, system=SUMMARY_SYSTEM,
-            user=f"Sources:\n\n{evidence}", schema=SUMMARY_SCHEMA, max_tokens=5000,
+            model=SONNET, system=SUMMARY_SYSTEM, user=f"Sources:\n\n{evidence}",
+            schema=SUMMARY_SCHEMA, max_tokens=5000, ledger=ledger, stage="summary_draft",
         )
         verdict = None
+        adjudicated = False
+
         for attempt in range(2):
             if draft is None:
                 break
-            notes_ok = (
-                len(draft["coverage_notes"]) == n
-                and {note["source"] for note in draft["coverage_notes"]}
-                == set(range(1, n + 1))
-                and all(
-                    has_tamil(note["note_ta"]) and note["note_en"].strip()
-                    for note in draft["coverage_notes"]
-                )
-            )
-            if not (
-                notes_ok
-                and markers_valid(draft["summary_en"], n)
-                and markers_valid(draft["summary_ta"], n)
-                and markers_valid(draft["summary_long_en"], n)
-                and markers_valid(draft["summary_long_ta"], n)
-                and has_tamil(draft["summary_ta"])
-                and has_tamil(draft["summary_long_ta"])
-                and has_tamil(draft["title_ta"])
-                and draft["title_en"].strip()
-            ):
+            if not _shape_ok(draft, n):
                 verdict = {
                     "verdict": "revise",
                     "feedback": (
@@ -732,13 +1103,21 @@ def summarize_clusters(
                     ),
                 }
             else:
-                verdict = structured(
-                    model=OPUS, system=CHECK_SYSTEM,
-                    user=(
-                        f"Sources:\n\n{evidence}\n\nDraft:\n{json.dumps(draft, ensure_ascii=False)}"
-                    ),
-                    schema=CHECK_SCHEMA, max_tokens=8000, thinking=True,
+                # Routine check: same tier as the draft, shallow effort. It is
+                # verification against supplied evidence, not open reasoning.
+                verdict = _check(
+                    model=SONNET, evidence=evidence, draft=draft, ledger=ledger,
+                    effort="low", stage="summary_check",
                 )
+                # The frontier model has the last word on anything that would
+                # LOCK a discussion — moderation is a rights-affecting call, so
+                # it never rests on the cheap tier's judgment alone (D-039).
+                if _moderation_positive(verdict):
+                    adjudicated = True
+                    verdict = _check(
+                        model=OPUS, evidence=evidence, draft=draft, ledger=ledger,
+                        effort="high", stage="summary_adjudicate",
+                    ) or verdict
             if verdict is None or verdict["verdict"] == "pass":
                 break
             if attempt == 0:
@@ -749,8 +1128,27 @@ def summarize_clusters(
                         f"A previous draft failed review with this feedback; fix it:\n"
                         f"{verdict.get('feedback', '')}\n{'; '.join(verdict.get('issues', []))}"
                     ),
-                    schema=SUMMARY_SCHEMA, max_tokens=5000,
+                    schema=SUMMARY_SCHEMA, max_tokens=5000, ledger=ledger,
+                    stage="summary_redraft",
                 )
+
+        # Withholding is also a consequential call: a citizen loses a story.
+        # Before withholding on the cheap tier's word, let the frontier model
+        # adjudicate the final draft (D-039).
+        if (
+            draft is not None
+            and not adjudicated
+            and verdict is not None
+            and verdict["verdict"] != "pass"
+            and _shape_ok(draft, n)
+        ):
+            adjudicated = True
+            verdict = _check(
+                model=OPUS, evidence=evidence, draft=draft, ledger=ledger,
+                effort="high", stage="summary_adjudicate",
+            ) or verdict
+        if adjudicated:
+            report["adjudicated"] += 1
 
         moderation = (verdict or {}).get("moderation", {})
         lock_category = next(
@@ -782,7 +1180,7 @@ def summarize_clusters(
                     summary_long_en = %s, summary_long_ta = %s,
                     sources_disagree = %s,
                     coverage_notes = %s,
-                    citations = %s, content_hash = %s, review_status = 'llm_checked',
+                    citations = %s, content_hash = %s, review_status = %s,
                     source_id = %s, retrieved_at = %s, updated_at = now(),
                     discussion_locked = discussion_locked OR %s,
                     lock_category = COALESCE(lock_category, %s)
@@ -795,7 +1193,11 @@ def summarize_clusters(
                     bool(draft["sources_disagree"]),
                     json.dumps(coverage_notes, ensure_ascii=False),
                     json.dumps([m["id"] for m in members]),
-                    content_hash, source_id, retrieved_at,
+                    content_hash,
+                    # Offline answers did not go through the draft-then-check
+                    # chain, so the row must not say they did (pillar 1).
+                    "unreviewed" if offline.enabled() else "llm_checked",
+                    source_id, retrieved_at,
                     lock_category is not None, lock_category, cluster_id,
                 ),
             )
@@ -820,11 +1222,23 @@ def summarize_clusters(
 
 
 def main() -> None:
-    require_llm()
-    assert llm_available()
-    session = http_session()
+    import os
+
+    if offline.enabled():
+        # Dev mode (D-039 addendum): answers come from the offline cache, not
+        # the API. Refuse production outright — this content is fixture data.
+        offline.guard_local_database()
+        print("OFFLINE MODE: no API calls; unanswered requests are queued.")
+    else:
+        require_llm()
+        assert llm_available()
+    use_batch_api = (
+        os.environ.get("ARIVOM_BATCH_API", "1") != "0" and not offline.enabled()
+    )
+    session = article_session()
     db = Db.connect()
     retrieved_at = now_utc()
+    ledger = Ledger(db)
 
     source_id = db.ensure_source(
         name="Arivom news pipeline (clustering and summaries)",
@@ -834,24 +1248,41 @@ def main() -> None:
         access_mode="api",
         cadence="hourly",
         notes=(
+            "DEVELOPMENT FIXTURE RUN (offline mode): summaries were written by "
+            "an assistant in the editor, not by the model chain below, and are "
+            "recorded review_status='unreviewed'. Never for production. "
+            if offline.enabled() else ""
+        ) + (
             "Clusters registry outlets' items by event and writes neutral bilingual "
-            "summaries with inline citations. Drafts: claude-sonnet-5; entity/merge "
-            "judgments: claude-haiku-4-5; spot-check and escalation classification: "
-            "claude-opus-4-8. Article text is read transiently and never stored "
+            "summaries with inline citations. Triage, entity and merge judgments: "
+            "claude-haiku-4-5; drafts and routine spot-check: claude-sonnet-5; "
+            "adjudication of moderation-flagged and check-failing summaries: "
+            "claude-opus-5. Article text is read transiently and never stored "
             "(D-022). Summaries failing the spot-check are withheld, never published."
         ),
     )
 
     report: dict[str, Any] = {
+        "triaged": 0, "triaged_soft": 0, "triage_vetoed": 0, "triage_failed": 0,
         "extracted": 0, "extract_failed": 0, "fetch_failed": 0,
+        "classified_soft": 0, "class_vetoed": 0,
         "joined_cluster": 0, "new_clusters": 0, "confirm_calls": 0,
-        "summarized": 0, "summary_failed": 0, "locked": 0, "notes": [],
+        "summarized": 0, "summary_failed": 0, "adjudicated": 0, "locked": 0,
+        "notes": [],
     }
 
     lexicon = Lexicon(db)
-    extract_entities(db, session, lexicon, report)
-    run_clustering(db, source_id, retrieved_at, report)
-    summarize_clusters(db, session, source_id, retrieved_at, report)
+    stopped_early = None
+    try:
+        collect_pending(db, lexicon, ledger, report)
+        triage_items(db, lexicon, ledger, report)
+        extract_entities(db, session, lexicon, ledger, report, use_batch_api)
+        run_clustering(db, source_id, retrieved_at, ledger, report)
+        summarize_clusters(db, session, source_id, retrieved_at, ledger, report)
+    except BudgetExhausted as exc:
+        # Not a crash: everything already paid for has been committed. Stop
+        # cleanly so the next run resumes from here.
+        stopped_early = str(exc)
 
     print("\n=== Cluster run report ===")
     for key, value in report.items():
@@ -859,6 +1290,13 @@ def main() -> None:
             print(f"  {key}: {value}")
     for note in report["notes"]:
         print(f"  NOTE: {note}")
+
+    print("\n=== LLM spend ===")
+    for line in ledger.report():
+        print(line)
+    print(f"  this run: ${ledger.spent_this_run:.4f} over {ledger.calls} calls")
+    if stopped_early:
+        print(f"\n  STOPPED EARLY: {stopped_early}")
 
     total_clusters = db.conn.execute("SELECT count(*) FROM news_clusters").fetchone()
     with_summary = db.conn.execute(

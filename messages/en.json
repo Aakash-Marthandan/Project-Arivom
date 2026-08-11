@@ -343,7 +343,8 @@
       "pdf": "PDF document parsing",
       "parser": "Document parser",
       "manual": "Manual verification",
-      "llm_bulk": "AI-assisted extraction"
+      "llm_bulk": "AI-assisted extraction",
+      "fixture": "Written in the editor as development fixture data, not checked by the summary pipeline"
     }
   },
   "methodology": {
@@ -403,6 +404,7 @@
       "title": "How stories are chosen",
       "intro": "The news feed is selected by subject, never by who a story favours. The rules are published here in full.",
       "pool": "We track a fixed registry of Tamil Nadu news outlets and store headlines and links only, never article text. Clearly non-civic sections (cinema, sports, astrology, video galleries) are dropped at collection, before anything is stored.",
+      "screen": "Before an item is read in full, a first pass looks at its headline alone and sets aside material that is plainly not civic, such as cinema, cricket, horoscopes and viral curiosities. This pass can only set a story aside. It never decides what a story is, and the classification below is always made with the article in hand. It is also checked against our own list of sitting representatives and the subject rules above: if a headline names a representative or matches those rules, it is kept and read, whatever the first pass said. When that check and the classification disagree, the story stays in the feed and we record no classification for it.",
       "classification": "Each stored item is classified by its subject: civic (governance, courts, elections, the legislature, public services, public safety, policy), adjacent (economy, employment, education, health, environment, weather, infrastructure, prices), or soft (entertainment, celebrity, sports, astrology, viral items). Feeds show civic and adjacent items only. Soft items never appear in the product; they stay in the database for coverage analysis, and their count is shown on the data status page.",
       "priority": "Some stories carry a priority chip. It is applied when the subject has statewide policy impact, concerns elections or by-elections, court rulings, legislature decisions, or public safety affecting many people. The judgement is about the subject, never about who it favours.",
       "ordering": "The feed's order follows published rules. Stories about elections, courts, the legislature, government decisions, public-safety alerts and household prices come first. Stories from your saved places come next; this uses only the places on your device. The newest stories follow. Once story analysis begins, its checked civic classification replaces the subject rules. Party and person names are never ranking signals.",
@@ -538,6 +540,7 @@
     "empty": "No stories yet. News collection has just started. Check back soon.",
     "singleSource": "Reported by one tracked outlet so far",
     "aiNote": "This summary was written automatically from the cited reporting. It was checked for accuracy and neutrality before publishing.",
+    "aiNoteFixture": "This summary was written in the editor as development fixture data. It did not go through the automatic checking step, and is not published to readers.",
     "summaryPending": "A checked summary is not ready yet. The headlines below come from the outlets themselves.",
     "coverageNote": "This table only shows which tracked outlets reported this story. It says nothing about why. We do not rate or label outlets.",
     "sources": "Sources",

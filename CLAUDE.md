@@ -84,18 +84,30 @@ refinement phase (owner-directed) shipped D-035…D-038: the knowledge
 map + /right-to-know, the finite staged feed with beyond-TN outlets,
 civic-context ranking, spoken money units and the gentle RTI thread;
 plus the D-033 addendum (one card per department). Every decision is
-in docs/DECISIONS.md (D-001…D-038); D-021 is the north star (informed
-electorate).
+in docs/DECISIONS.md (D-001…D-039); D-021 is the north star (informed
+electorate), and D-039 governs every LLM call's cost.
 
-**The one gate: ANTHROPIC_API_KEY.** Owner will provide it when the app is
-near-complete so API testing happens once, efficiently — do not ask for it
-early. Until then the hourly cluster-news cron skips politely, and every
-LLM-dependent surface renders an honest interim (language-filtered original
-headlines, no clusters/markers/brief). Built-and-waiting on the key:
-clustering, checked bilingual summaries (short+long), per-outlet coverage
-notes, civic/adjacent/soft classification, Arivom-voice titles,
-civic-priority + sources-differ markers, department tagging, story pages'
-full depth, the daily brief, entity-matched person news.
+**Key day happened (2026-08-11).** ANTHROPIC_API_KEY is in `.env.local`
+(gitignored). The pipeline was restructured for cost before any volume ran
+through it — see **D-039**, which is required reading before touching
+`pipelines/arivom/{llm,spend,civic_guard,cluster_news}.py`. Headline
+numbers, all measured against production:
+
+- Volume is ~1,080 items/day (29K+ items), roughly 4x what D-022 assumed.
+  As built, the pipeline would have cost **$350-530/month**.
+- **Prompt caching does not apply and must not be added** — every system
+  prompt is below its model's minimum cacheable prefix. Batching is what
+  amortises them.
+- The ladder is Haiku (triage/entities/merge) -> Sonnet (draft + routine
+  check) -> **Opus 5 only as adjudicator** of moderation-flagged or
+  check-failing summaries. Nothing is ever locked or withheld on the cheap
+  tier's word alone.
+- **`ARIVOM_LLM_BUDGET_USD` is a hard ceiling** (default $20) enforced from
+  the `llm_spend` ledger in the database, not a warning. A run that reaches
+  it stops cleanly and reports; the next run resumes.
+
+Owner's standing instruction: MVP testing fits inside **$20 total**; proper
+capacity planning happens when the platform goes live.
 
 **Live today** (all CI-gated; prod schema and data in step as of
 2026-07-18):
@@ -140,27 +152,60 @@ full depth, the daily brief, entity-matched person news.
   a11y ≥0.95; local measures 0.89–0.93); Monday editorial-QA sample
   workflow.
 
-**Key-day runbook** (when the owner hands over the key):
-1. Add `ANTHROPIC_API_KEY=` to `.env.local` AND as a GitHub Actions secret.
-2. `cd pipelines && DATABASE_URL=postgresql://localhost/arivom uv run
-   cluster-news` — first run processes the extraction backlog in capped
-   batches (300 extract / 250 confirm / 40 summaries per run; rerun until
-   backlog clears; all calls disk-cached under `.cache/llm/`).
-3. Verify in browser (both locales): clustered story cards with markers,
-   the feed order handover (D-037: civic_priority now outranks the
-   interim subject rubric; spot-check tier 1),
-   /news/s/[id] summaries + coverage notes + timeline + in-numbers, home
-   brief + MLA-mentions, feeds now civic+adjacent-only with Arivom titles.
-4. Run against prod (`DATABASE_URL="$SUPABASE_DB_URL"`), confirm the
-   hourly cron goes from skip to live.
-5. Close M7 exit criteria in docs/PLAN.md; remove the "analysis has not
-   started" interim line (`methodology.stories.interim`) from both
-   catalogs; check the /freshness story-pool counts move; verify the
-   department feeds (/government/news/[dept]) fill in and the D-019
-   loose match (src/lib/departments.ts) is precise enough in both
-   languages.
-6. Watch cost + spot-check quality via the qa-sample output; escalate the
-   summary-draft model only if the spot-check failure rate is high (D-022).
+**Where key day got to, and what is left** (2026-08-11):
+
+Done and verified locally against a 3-day production slice (3,110 items):
+triage, batched extraction over the Message Batches API, clustering,
+and checked bilingual summaries all run end to end. The feed renders
+clustered cards with the source-count pill, civic-priority chip,
+sources-differ marker and coverage dot-row, in both locales. Spend for
+the whole exercise was ~$2.5.
+
+Still to do, in order:
+1. **Apply the migration and run against prod** — `20260811090000_llm_cost_controls.sql`
+   is applied locally only. Prod writes need explicit owner authorization
+   (ask, never assume); queue the exact commands in the handoff.
+2. Add `ANTHROPIC_API_KEY` as a **GitHub Actions secret** so the hourly
+   cron goes from skip to live, and set the `ARIVOM_LLM_BUDGET_USD`
+   repository variable deliberately — the ceiling is cumulative across
+   runs, so the cron stops for good once it is reached.
+3. Remove the `methodology.stories.interim` line ("analysis has not
+   started yet") from both catalogs once prod has clustered stories.
+4. Close M7 exit criteria in docs/PLAN.md; check /freshness story-pool
+   counts move; verify department feeds (/government/news/[dept]) fill in
+   and the D-019 loose match (`src/lib/departments.ts`) is precise enough
+   in both languages.
+5. Watch cost and spot-check quality via the weekly qa-sample. If the
+   Sonnet routine check proves weaker than Opus, D-022's escalation
+   clause still governs — raise the check tier, not the draft tier.
+
+**Dev phase: do not spend API credits (owner directive, 2026-08-11).** The
+pipeline is validated; use offline mode instead, where Claude Code answers
+in the model's place (D-039 addendum):
+
+```
+ARIVOM_LLM_OFFLINE=1 DATABASE_URL=postgresql://localhost/arivom uv run cluster-news
+uv run llm-offline export --stage summary_draft --limit 5   # -> offline_requests.json
+#   author offline_responses.json as [{"key": ..., "result": {...}}]
+uv run llm-offline import
+ARIVOM_LLM_OFFLINE=1 ... uv run cluster-news                # consumes at $0
+```
+
+Read the WHOLE request before answering — the export is the real prompt,
+and a draft that misses sources fails the shape gate. Offline mode refuses
+any non-local `DATABASE_URL`, and its output is written
+`review_status='unreviewed'`; never relabel it `llm_checked`.
+
+**Operating the pipeline:**
+- `ARIVOM_LLM_BUDGET_USD` (default 20) — hard cumulative ceiling.
+- `ARIVOM_BATCH_API=0` — synchronous mode. Costs 2x but returns
+  immediately; use it when iterating, not in the cron.
+- `ARIVOM_BATCH_POLL_SECONDS` — how long a run waits for a batch before
+  leaving it for the next run (240 in CI, longer for manual runs).
+- `ARIVOM_LLM_TIMEOUT_SECONDS` (default 240) — a hung request must not
+  stall an hourly job; one observed hang blocked a run for 27 minutes
+  before this was added.
+- Read the spend breakdown the run prints; it is per stage and per model.
 
 **Brand identity (D-027):** the mark is final — AdS/CFT tensor network /
 screen / reader pages / white Tamil Nadu (our real served boundary) on the
@@ -170,10 +215,10 @@ generator against the state geometry (see D-027).
 
 **Next steps, in gate order (session close 2026-07-18):**
 
-**Ask the owner first:** the India relocation was planned for
-~2026-07-13 and had NOT been confirmed as of the last session. Whether
-it has happened decides how much of item 1 is now unblocked — check,
-never assume. Everything below is otherwise accurate as written.
+**The India relocation has happened** (owner confirmed 2026-08-11), so
+item 1 is unblocked and nobody needs to ask again. Re-probe each endpoint
+before planning work against it — geo-blocking was the only thing
+stopping us, but confirm rather than assume.
 
 1. **India egress (owner move, was planned ~2026-07-13):** HMIS monthly
    health (finishes M12); tn.gov.in department directory (the canonical
@@ -235,9 +280,10 @@ and TN-government-site access arrive when the owner relocates to India
   `import-ministers`. Order-independent: `monitor-vacancies` (detection-only,
   daily GH Actions cron), `poll-news` (outlet registry → news_items,
   30-min cron; registry in `pipelines/data/outlets.json`),
-  `cluster-news` (clusters + checked bilingual summaries + classification
-  + Arivom titles, hourly cron; the only LLM pipeline — needs
-  `ANTHROPIC_API_KEY`, D-022/D-025/D-026), and `qa-sample` (weekly
+  `cluster-news` (triage + clusters + checked bilingual summaries +
+  classification + Arivom titles, hourly cron; the only LLM pipeline and
+  the only one that spends money — needs `ANTHROPIC_API_KEY`, and is
+  governed by D-022/D-025/D-026/**D-039**), and `qa-sample` (weekly
   editorial QA print for human review). Lint:
   `uv run ruff check .`. All importers are idempotent and print
   audit/pending reports; read them.

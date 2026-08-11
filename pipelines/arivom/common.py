@@ -31,6 +31,43 @@ def has_tamil(text: str | None) -> bool:
     return any(ord(ch) in TAMIL_BLOCK for ch in text)
 
 
+# Scripts that must never appear in our Tamil or English copy. Cheap models
+# occasionally leak them into bilingual output — observed 2026-08-11, a Tamil
+# headline came back reading "பிஹார்野党 தலைவர்" (CJK) and another carried
+# Devanagari. has_tamil() passes both, because some Tamil is present; the
+# result is unreadable copy in a product whose Tamil typography is the point.
+FOREIGN_SCRIPTS = (
+    (0x0400, 0x04FF),  # Cyrillic
+    (0x0590, 0x05FF),  # Hebrew
+    (0x0600, 0x06FF),  # Arabic
+    (0x0900, 0x097F),  # Devanagari
+    (0x0980, 0x09FF),  # Bengali
+    (0x0A00, 0x0A7F),  # Gurmukhi
+    (0x0A80, 0x0AFF),  # Gujarati
+    (0x0C00, 0x0C7F),  # Telugu
+    (0x0C80, 0x0CFF),  # Kannada
+    (0x0D00, 0x0D7F),  # Malayalam
+    (0x0E00, 0x0E7F),  # Thai
+    (0x3040, 0x30FF),  # Hiragana + Katakana
+    (0x4E00, 0x9FFF),  # CJK unified ideographs
+    (0xAC00, 0xD7AF),  # Hangul
+)
+
+
+def script_clean(text: str | None) -> bool:
+    """False when text carries a script we never publish in either locale.
+
+    Tamil and Latin (and digits, punctuation, currency) are fine; anything
+    from FOREIGN_SCRIPTS means the generation went wrong and the string must
+    not reach a reader.
+    """
+    if not text:
+        return False
+    return not any(
+        low <= ord(ch) <= high for ch in text for low, high in FOREIGN_SCRIPTS
+    )
+
+
 def norm_name(name: str) -> str:
     """Normalize an English place name for matching across sources."""
     name = unicodedata.normalize("NFKD", name)
@@ -52,6 +89,29 @@ def http_session() -> requests.Session:
         respect_retry_after_header=True,
     )
     session.mount("https://", HTTPAdapter(max_retries=retry))
+    session.headers["User-Agent"] = USER_AGENT
+    return session
+
+
+def article_session() -> requests.Session:
+    """Fast-failing session for reading outlet articles.
+
+    http_session()'s backoff is tuned for rate-limited government APIs where
+    completeness beats speed. Applied to news articles it is the wrong trade:
+    a single dead link costs ~6 minutes of retries, and the clustering cron
+    reads hundreds of articles an hour. A story we cannot fetch is a recorded
+    state (fetch_status), not something worth waiting for — the headline
+    still carries the item.
+    """
+    session = requests.Session()
+    retry = Retry(
+        total=1,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        respect_retry_after_header=True,
+    )
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    session.mount("http://", HTTPAdapter(max_retries=retry))
     session.headers["User-Agent"] = USER_AGENT
     return session
 

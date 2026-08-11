@@ -5,6 +5,130 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-08-11 — Key day: cost architecture for the news pipeline
+
+### D-039: Cheap by default, frontier as adjudicator, hard ceiling
+The owner provided ANTHROPIC_API_KEY and directed: use batching, make
+cheaper models the default and reserve Opus for stories the cheap tier
+flags as hard, and fit MVP testing inside **$20 total** (proper capacity
+planning happens when the platform goes live). Measured first, because
+the D-022 estimate of $10-30/month predated real volume.
+
+**What measurement showed** (2026-08-11, against production): the poller
+has been running throughout — 29,406 items, ~1,080/day, far above the
+volume D-022 assumed. As built, the pipeline would cost roughly
+$350-530/month: extraction $99, merge confirms ~$71 at the cap, summaries
+$180-360. Two structural facts drove the redesign:
+- **The system prompt dominated.** EXTRACT_SYSTEM is 605 tokens and a
+  headline is 54; one call per item paid the instructions 1,080 times a
+  day. Extraction output was another 52% of item cost.
+- **Prompt caching does not apply here and should not be attempted.**
+  All four system prompts (613 / 94 / 684 / 515 tokens) sit below their
+  model's minimum cacheable prefix (4096 Haiku, 1024 Sonnet). A
+  cache_control marker would pay the 1.25x write premium and never
+  produce a read. Re-check only if a system prompt grows past its
+  model's minimum.
+
+**Resolved:**
+- **Triage before reading (new stage 0).** A headline-only pass, 40 per
+  call, sets aside plainly non-civic material before anything expensive
+  happens to it. Measured: 19.5% set aside at $0.000065/item, a 6.4x
+  return on its own cost. It also avoids fetching those articles at all.
+- **Triage may only ELIMINATE, never classify.** The displayed
+  `civic_class` is always set by the full read in stage 1. A cheap model
+  judging a headline in isolation never decides what a citizen sees.
+- **Our own civic data vetoes the cheap model** (`civic_guard.py`).
+  Before any item is set aside, it is checked against the published
+  D-037 subject rubric (mirrored from `src/lib/civic-rank.ts`) and our
+  representative lexicon; either match keeps the story. This was not
+  theoretical — triage alone set aside "Tamil Nadu Assembly:
+  Sengottaiyan and O. Panneerselvam trade barbs", and the full
+  classifier repeated the error on a similar Assembly story. The guard
+  is deliberately asymmetric: it can only ever keep a story. When the
+  guard and the classifier disagree, `civic_class` stays **NULL** —
+  which the product already treats as unclassified-and-visible (D-025).
+  We make no claim we cannot defend, and the story stays in the feed.
+- **Batching everywhere.** Many items per call (40 triage, 8 extraction)
+  amortises the system prompt; the Message Batches API halves every
+  token on top. Measured 52% saving, 105s round trip. Batch jobs outlive
+  the process (`llm_batches`), so a run submits and a later run collects
+  — the cost is that a story can stay an unclustered single-source card
+  about an hour longer. Accepted: D-021 is an informed electorate, not a
+  breaking-news race.
+- **The model ladder.** Haiku for triage, entities and merge judgments.
+  Sonnet for the bilingual draft AND its routine spot-check (effort
+  "low" — verification against supplied evidence is a bounded task).
+  **Opus 5 adjudicates only what the cheap tier cannot settle**: any
+  moderation positive (communal / sub judice / allegations), and any
+  draft still failing after one revise cycle. This preserves DESIGN §7's
+  frontier spot-check where it protects a person or a story — nothing is
+  ever LOCKED or WITHHELD on a cheap model's word alone — while the
+  routine case no longer pays frontier prices. Opus 4.8 -> Opus 5 at
+  identical pricing.
+- **A hard ceiling, not a warning** (`spend.py`, `llm_spend`). Every
+  billed call is metered and refused past `ARIVOM_LLM_BUDGET_USD`
+  (default $20). A run that hits it stops cleanly and reports; work
+  already paid for is committed, so the next run resumes. The ledger
+  lives in the database because `pipelines/.cache` is ephemeral in CI —
+  a disk-only ledger would reset the ceiling to zero every cron run.
+- **Two quality guards that cost nothing.** `script_clean()` rejects
+  copy carrying scripts we never publish: the cheap model returned Tamil
+  headlines containing CJK ("பிஹார்野党 தலைவர்") and Devanagari, which
+  `has_tamil()` passed because some Tamil was present. And extraction
+  now states "return exactly one entry per item", which took the
+  dropped-item rate from 5% to 0.
+
+**Addendum, same day — offline mode for the dev phase.** Once the pipeline
+was validated end to end (~$2.9 of the $20), the owner directed: stop
+spending during development, and have the assistant answer the pipeline in
+the model's place. Built as `ARIVOM_LLM_OFFLINE=1` (`offline.py`): a run
+queues the requests it would have sent, `llm-offline export` writes them
+out, answers are filled in, `llm-offline import` seeds the ordinary
+`.cache/llm/` disk cache, and the next run consumes them at zero cost. The
+pipeline itself is unchanged — only the transport differs.
+
+Two rules keep this from becoming a fabrication, and they are not optional:
+- **It cannot touch production.** Offline mode exits if `DATABASE_URL` is
+  not local. Fixture content must never reach a reader.
+- **It never claims to be spot-checked.** Summaries produced this way are
+  written `review_status='unreviewed'`, not `'llm_checked'`, and the
+  pipeline's `sources` row says plainly that the run was a development
+  fixture. The D-022 draft-then-check chain did not run, so the database
+  must not say it did. Real and fixture content stay separable by query.
+
+Note the shape gate and the check still apply in offline mode: a
+hand-authored draft that missed two of a cluster's four sources was
+rejected by `_shape_ok`, and no summary publishes without a check verdict.
+The guarantee is enforced by the pipeline, not by who is answering it.
+
+**Two pillar-1 leaks the browser caught, which code review did not.** The
+story page hardcoded both its provenance method ("AI-assisted extraction")
+and its footer claim ("It was checked for accuracy and neutrality before
+publishing"). Both were shown for every summary regardless of how it was
+made, so a fixture summary asserted a check that never ran. Both now read
+from `review_status`: `news_clusters.review_status` is threaded through
+`getNewsClusters` / `getNewsClusterById`, and anything other than
+`llm_checked` renders `provenance.methods.fixture` and `news.aiNoteFixture`
+in both locales. A displayed claim about how a fact was produced is itself
+a fact under pillar 1, and had to carry the same honesty as the fact.
+
+**On pillar 2 and the guard's use of person names.** `civic_guard.protected`
+matches against our representative lexicon as well as the subject rubric.
+That is not actor-based tilt: the lexicon is every sitting representative
+of every party, applied uniformly, and a match can only ever KEEP a story
+that was about to be dropped. It never boosts, buries or orders. D-037's
+rule that the ranking rubric carries no party or person names is untouched
+— `CIVIC_SUBJECTS` is subjects only, and it is the part that feeds ranking.
+
+**What would change this:** Sonnet's routine spot-check proving weaker
+than Opus in the weekly qa-sample — the ladder is a cost decision, and
+D-022's escalation clause still governs. Summary-stage batching through
+the Batches API is the next lever and is deliberately not built yet: the
+draft -> check -> revise chain is sequential per cluster, and at MVP
+volume the win is small.
+
+---
+
 ## 2026-07-08 — Money in spoken units; the gentle RTI thread
 
 ### D-038: Lakhs and crores; data gaps point to the right, softly

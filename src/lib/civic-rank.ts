@@ -22,6 +22,9 @@ import type { NewsSingleItem } from "./queries";
  * Ties break by recency. Nothing is hidden by ranking: every story
  * stays in the feed, later in it.
  */
+// Mirrored in pipelines/arivom/civic_guard.py, where the same rubric vetoes
+// the cheap-model triage (D-039). Change both together — they are described
+// as one thing on /methodology.
 const CIVIC_SUBJECTS: RegExp[] = [
   // Elections and by-elections
   /தேர்தல்|வாக்குப்பதிவு|வாக்காளர்|வேட்பாளர்|by-?election|election|polling|voter/iu,

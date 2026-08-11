@@ -24,6 +24,14 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # Hard spend ceiling across ALL runs, not per run — the ledger lives in
+      # the database (D-039). The cron stops cleanly once cumulative spend
+      # reaches it, so raise this deliberately rather than letting an hourly
+      # job discover the limit for you.
+      ARIVOM_LLM_BUDGET_USD: ${{ vars.ARIVOM_LLM_BUDGET_USD || '20' }}
+      # A cron run submits batch work and lets a later run collect it rather
+      # than holding a GitHub Actions runner open waiting.
+      ARIVOM_BATCH_POLL_SECONDS: "240"
     steps:
       - name: Gate on ANTHROPIC_API_KEY
         id: gate

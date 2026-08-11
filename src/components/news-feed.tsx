@@ -38,6 +38,7 @@ type Formatter = Awaited<ReturnType<typeof getFormatter>>;
 
 export interface NewsStrings extends StoryStrings {
   aiNote: string;
+  aiNoteFixture: string;
   summaryPending: string;
   locked: string;
   lockedReason: (category: string | null) => string;
@@ -46,6 +47,7 @@ export interface NewsStrings extends StoryStrings {
     title: string;
     summaryEntryTitle: string;
     method: string;
+    methodFixture: string;
     fieldLabels: {
       publisher: string;
       retrievedOn: string;
@@ -68,6 +70,7 @@ export async function buildNewsStrings(): Promise<NewsStrings> {
     // line returns by itself once the first cluster lands (D-037).
     singleSource: clustersExist ? t("singleSource") : null,
     aiNote: t("aiNote"),
+    aiNoteFixture: t("aiNoteFixture"),
     summaryPending: t("summaryPending"),
     sourcesCount: (count) => t("sourcesCount", { count }),
     markers: {
@@ -88,7 +91,11 @@ export async function buildNewsStrings(): Promise<NewsStrings> {
       chipLabel: tp("chipLabel"),
       title: tp("title"),
       summaryEntryTitle: t("summaryLabel"),
+      // Pillar 1: never claim the checked pipeline produced a summary it
+      // did not. Offline/dev fixtures carry review_status other than
+      // 'llm_checked' and must say so where the reader can see it.
       method: tp("methods.llm_bulk"),
+      methodFixture: tp("methods.fixture"),
       fieldLabels: {
         publisher: tp("publisher"),
         retrievedOn: tp("retrievedOn"),
