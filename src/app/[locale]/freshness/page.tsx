@@ -24,13 +24,16 @@ const SLA: Record<
   hourly: { late: 6, stalled: 24 },
   daily: { late: 48, stalled: 96 },
   monthly: { late: 45 * 24, stalled: 75 * 24 },
+  // Final as published: there is no schedule to be late against.
+  static: null,
   manual: null,
 };
 
-type SlaStatus = "current" | "late" | "stalled" | "onDemand";
+type SlaStatus = "current" | "late" | "stalled" | "onDemand" | "final";
 
 /** age_hours comes from the query's now() — clock reads stay out of render. */
 function slaStatus(row: FreshnessRow): SlaStatus {
+  if (row.cadence === "static") return "final";
   const sla = row.cadence ? SLA[row.cadence] : null;
   if (!sla) return "onDemand";
   if (row.age_hours >= sla.stalled) return "stalled";
@@ -43,6 +46,7 @@ const STATUS_DOT: Record<SlaStatus, string> = {
   late: "bg-amber-500 dark:bg-amber-400",
   stalled: "bg-red-600 dark:bg-red-500",
   onDemand: "bg-muted-foreground/40",
+  final: "bg-sky-600 dark:bg-sky-500",
 };
 
 // Problems surface first: a reader checking "is anything broken?"
@@ -51,7 +55,8 @@ const STATUS_ORDER: Record<SlaStatus, number> = {
   stalled: 0,
   late: 1,
   current: 2,
-  onDemand: 3,
+  final: 3,
+  onDemand: 4,
 };
 
 type Translator = Awaited<ReturnType<typeof getTranslations<"freshness">>>;

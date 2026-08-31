@@ -410,8 +410,7 @@
       "ordering": "The feed's order follows published rules. Stories about elections, courts, the legislature, government decisions, public-safety alerts and household prices come first. Stories from your saved places come next; this uses only the places on your device. The newest stories follow. Once story analysis begins, its checked civic classification replaces the subject rules. Party and person names are never ranking signals.",
       "differ": "When outlets report conflicting facts about the same event, the story carries a \"sources differ\" marker and the summary names the disagreement with citations. We never compute controversy scores.",
       "titles": "Displayed headlines are written by our pipeline in a calm, informative voice: no exclamation marks, no teasers, no sensational words. The outlet's original headline stays one tap away on the story page.",
-      "actorBlind": "Within the feed nothing is boosted or buried by party or person. A weekly sample of displayed titles and summaries is reviewed by a human against these same rules.",
-      "interim": "Story analysis has not started yet. Until it does, feeds show original headlines in your language, and no stored item is excluded by classification."
+      "actorBlind": "Within the feed nothing is boosted or buried by party or person. A weekly sample of displayed titles and summaries is reviewed by a human against these same rules."
     },
     "corrections": {
       "title": "Corrections",
@@ -441,15 +440,17 @@
       "late": "Overdue",
       "stalled": "Stopped",
       "onDemand": "On demand",
-      "legend": "The status compares each source's last successful check with its checking schedule. The time shows when we last checked, not when the source last published.",
+      "legend": "The status compares each source's last successful check with its checking schedule. The time shows when we last checked, not when the source last published. Final: the dataset is complete as published, such as a finished election or survey round. We re-check it only if the publisher issues a revision, so there is no schedule to fall behind.",
       "thresholds": "Exact thresholds",
-      "thresholdsBody": "News feeds are checked every 30 minutes: overdue after 3 hours, stopped after 24. The vacancy watch runs daily: overdue after 2 days, stopped after 4. Monthly imports: overdue after 45 days, stopped after 75. Sources checked on demand carry no colour."
+      "thresholdsBody": "News feeds are checked every 30 minutes: overdue after 3 hours, stopped after 24. The vacancy watch runs daily: overdue after 2 days, stopped after 4. Monthly imports: overdue after 45 days, stopped after 75. Sources checked on demand carry no colour.",
+      "final": "Final"
     },
     "cadence": {
       "half-hourly": "checked every 30 minutes",
       "hourly": "checked hourly",
       "daily": "checked daily",
-      "monthly": "checked monthly"
+      "monthly": "checked monthly",
+      "static": "checked only on a publisher revision"
     },
     "onDemandGroup": "Sources checked on demand ({count})"
   },

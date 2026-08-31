@@ -136,7 +136,6 @@ export default async function MethodologyPage({
               "differ",
               "titles",
               "actorBlind",
-              "interim",
             ] as const
           ).map((key) => (
             <p key={key} className="leading-relaxed text-muted-foreground">

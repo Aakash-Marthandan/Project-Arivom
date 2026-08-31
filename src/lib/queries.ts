@@ -62,7 +62,14 @@ export interface FreshnessRow {
   publisher: string;
   license: string | null;
   access_mode: string;
-  cadence: "half-hourly" | "hourly" | "daily" | "monthly" | "manual" | null;
+  cadence:
+    | "half-hourly"
+    | "hourly"
+    | "daily"
+    | "monthly"
+    | "static"
+    | "manual"
+    | null;
   last_retrieved: Date;
   age_hours: number;
   record_count: number;
