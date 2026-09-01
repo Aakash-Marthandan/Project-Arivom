@@ -5,6 +5,67 @@ Newest first. Each entry: date, decision, rationale, and what would change it.
 
 ---
 
+## 2026-09-01 — Ground News features: ownership instead of lean labels
+
+### D-042: Who owns the news, as sourced fact
+Owner asked for Ground News's full feature set, naming political leans,
+factuality scores and ownership. Research first, because the plan turned on
+what their ratings actually are.
+
+**What the research found.** Ground News does not rate anyone: bias is an
+average of AllSides, Ad Fontes Media and Media Bias/Fact Check, and factuality
+comes from the latter two. Only ownership is their own work, hand-coded across
+2,276 outlets. That distinction decides what we can build — repeating a rating
+agency's published verdict is a sourced fact and fits pillar 1, while authoring
+a lean score is an opinion, which pillar 2 forbids.
+
+**The blocker, verified at the source.** Those agencies do not rate Tamil
+media. Ground News's own page for Dinamani, one of our largest outlets, reads
+"Ground News rates Dinamani's media bias as unknown" and "We've assigned a
+rating of Unknown factuality", because it lacks ratings from all three. The two
+features the owner named would render empty across most of our registry, in the
+very product being copied. This is independent of the pillar-2 objection and of
+the D-040 finding that our own outlet metric ranked Tamil outlets last for
+using an exclamation mark.
+
+**Resolved: ownership answers the same question, and we can source it.**
+A lean label compresses a judgment into a word. "This outlet's parent is
+controlled by X, who is documented as related to party Y" gives a reader the
+same thing to reason with, as a checkable fact with a citation, and never
+requires us to hold an opinion about anyone's coverage. In Tamil Nadu this is
+stronger than a lean label anyway, because ownership is publicly tied to
+political families.
+
+- **Outlets became first-class subjects.** The registry moved from
+  pipelines/data/outlets.json into an `outlets` table, and `facts` accepts
+  subject_type='outlet'. Ownership claims are rows in `facts`, so they inherit
+  the provenance columns the platform already enforces, allow two sources to
+  corroborate the same key, and render through the existing provenance chip
+  with no new UI concept.
+- **Every claim is cited; "not recorded" is a correct answer.** The seed
+  (pipelines/data/outlet_ownership.json) carries a source per claim and the
+  importer never infers. Political affiliation is recorded only where a named
+  source documents it — currently one claim, the Media Ownership Monitor's
+  finding on the Sun Group and Kalanithi Maran. Deriving an owner's politics
+  from an outlet's coverage is exactly the bias labelling we refuse.
+- **Ownership taxonomy is adopted from Ground News with attribution** rather
+  than inventing a ninth scheme, and it is stated on the page.
+- **Concentration is the finding, so it leads the page.** Owner groups running
+  more than one tracked outlet: The Hindu Group (3), Daily Thanthi group (3),
+  Express (2), Sun Group (2), BBC (2). When several outlets covering one story
+  share an owner, the reader is seeing fewer independent newsrooms than the
+  source count suggests. Ground News cannot compute this, because they do not
+  cluster coverage by owner.
+
+**Deliberately not ported:** the My News Bias dashboard, which is the counts
+and completion mechanic D-035 bans wearing a civic hat; and subscription tiers,
+since Ground News paywalls exactly the ownership data we consider the part that
+must not be gated.
+
+**Still open:** whether to author lean and factuality ratings anyway. That
+needs a decision record superseding pillar 2 and the do-not-build list, plus a
+methodology answering the D-040 language-bias failure. Not built.
+
 ## 2026-08-11 — Summaries that inform, not summaries that referee
 
 ### D-040: Rank information by consequence; anchor claims to our own record

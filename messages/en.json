@@ -13,7 +13,8 @@
       "search": "Search",
       "more": "More",
       "corrections": "Corrections",
-      "rightToKnow": "Right to know"
+      "rightToKnow": "Right to know",
+      "outlets": "Who owns the news"
     },
     "localeSwitcher": {
       "label": "Change language",
@@ -678,5 +679,34 @@
         "answers": "Where data stops, what are your rights?"
       }
     }
+  },
+  "outlets": {
+    "title": "Who owns the news",
+    "intro": "Every outlet we track, and who owns it. Ownership is recorded as fact with a source, never inferred from what an outlet publishes.",
+    "ownerLabel": "Owned by",
+    "groupLabel": "Part of",
+    "typeLabel": "Ownership",
+    "affiliationTitle": "Documented political links",
+    "unknown": "Not recorded",
+    "unknownBody": "We have not found a source that documents this. We would rather say so than guess.",
+    "concentration": "{count} of the outlets we track share this owner",
+    "concentrationTitle": "Owners running more than one outlet we track",
+    "concentrationBody": "When several outlets covering the same story share an owner, a reader is seeing fewer independent newsrooms than the source count suggests.",
+    "noLabels": "No bias labels, no factuality scores",
+    "noLabelsBody": "We do not rate outlets for political lean or accuracy. No organisation publishes such ratings for Tamil-language media, and inventing our own would be an opinion we authored rather than a fact we sourced. Ownership is what we can document, and it answers the same question a reader is asking.",
+    "outletCount": "{count} outlets tracked",
+    "statusPending": "Not yet polled",
+    "visit": "Visit site",
+    "types": {
+      "media_conglomerate": "Media conglomerate",
+      "private_equity": "Private equity",
+      "individual": "Individual",
+      "government": "Public corporation",
+      "telecom": "Telecom",
+      "corporation": "Corporation",
+      "independent": "Independent",
+      "other": "Other"
+    },
+    "taxonomyNote": "Ownership categories follow the taxonomy published by Ground News."
   }
 }

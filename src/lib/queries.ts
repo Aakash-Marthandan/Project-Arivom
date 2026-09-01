@@ -980,3 +980,77 @@ export async function getFreshness(): Promise<FreshnessRow[]> {
     ORDER BY s.name
   `;
 }
+
+/* ---------------------------------------------------------------------------
+ * Outlets and their ownership (D-042)
+ *
+ * Ownership claims live in `facts` with subject_type='outlet', so each one
+ * arrives with the source that documented it. A null owner is a real and
+ * common answer, and the page says so rather than implying we checked.
+ * ------------------------------------------------------------------------ */
+
+export interface OutletOwnership {
+  slug: string;
+  name: string;
+  lang: "ta" | "en";
+  status: string;
+  homepage: string | null;
+  owner: string | null;
+  owner_note: string | null;
+  owner_group: string | null;
+  ownership_type: string | null;
+  affiliation_en: string | null;
+  affiliation_ta: string | null;
+  affiliation_note: string | null;
+  /** How many tracked outlets the same group runs. 1 means no concentration. */
+  group_size: number;
+  source_name: string | null;
+  source_url: string | null;
+  source_publisher: string | null;
+  retrieved_at: Date | null;
+}
+
+const OUTLET_SELECT = `
+  WITH f AS (
+    SELECT subject_id, key, value, source_id, retrieved_at
+    FROM facts WHERE subject_type = 'outlet'
+  ), grp AS (
+    SELECT value ->> 'name' AS name, count(*)::int AS n
+    FROM f WHERE key = 'owner_group' GROUP BY 1
+  )
+  SELECT o.slug, o.name, o.lang, o.status, o.homepage,
+         own.value ->> 'name'  AS owner,
+         own.value ->> 'note'  AS owner_note,
+         g.value   ->> 'name'  AS owner_group,
+         t.value   ->> 'type'  AS ownership_type,
+         a.value   ->> 'claim'    AS affiliation_en,
+         a.value   ->> 'claim_ta' AS affiliation_ta,
+         a.value   ->> 'note'     AS affiliation_note,
+         COALESCE(grp.n, 1)    AS group_size,
+         s.name AS source_name, s.url AS source_url,
+         s.publisher AS source_publisher, own.retrieved_at
+  FROM outlets o
+  LEFT JOIN f own ON own.subject_id = o.id AND own.key = 'owner'
+  LEFT JOIN f g   ON g.subject_id   = o.id AND g.key = 'owner_group'
+  LEFT JOIN f t   ON t.subject_id   = o.id AND t.key = 'ownership_type'
+  LEFT JOIN f a   ON a.subject_id   = o.id AND a.key = 'political_affiliation'
+  LEFT JOIN grp   ON grp.name = g.value ->> 'name'
+  LEFT JOIN sources s ON s.id = own.source_id
+`;
+
+/** Every tracked outlet with its recorded ownership, active first. */
+export async function getOutlets(): Promise<OutletOwnership[]> {
+  return sql<OutletOwnership[]>`
+    ${sql.unsafe(OUTLET_SELECT)}
+    ORDER BY (o.status = 'active') DESC, COALESCE(g.value ->> 'name', o.name), o.name
+  `;
+}
+
+export async function getOutletBySlug(
+  slug: string,
+): Promise<OutletOwnership | null> {
+  const rows = await sql<OutletOwnership[]>`
+    ${sql.unsafe(OUTLET_SELECT)} WHERE o.slug = ${slug} LIMIT 1
+  `;
+  return rows[0] ?? null;
+}

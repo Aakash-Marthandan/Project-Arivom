@@ -1,0 +1,77 @@
+{
+  "_comment": [
+    "Sourced ownership claims about tracked outlets (D-042).",
+    "",
+    "Every claim carries its own citation. A claim we cannot cite is not recorded,",
+    "and 'unknown' is a correct and common answer — see how Ground News itself",
+    "renders 'unknown' for Dinamani. Nothing here is inferred: an owner's politics",
+    "is recorded only when a named source documents it, never deduced from an",
+    "outlet's coverage, which would be the bias labelling pillar 2 forbids.",
+    "",
+    "owner        : the company, trust or group that publishes the outlet.",
+    "owner_group  : the controlling group, where one owner runs several outlets.",
+    "               This is what makes coverage concentration computable.",
+    "ownership_type: Ground News's published eight-category taxonomy, adopted and",
+    "               attributed to them. Recorded only where the legal form is",
+    "               unambiguous; omitted rather than guessed.",
+    "political_affiliation: documented links only, one citation per claim.",
+    "",
+    "Human-confirmation path (DESIGN section 6): a person edits this file, the",
+    "importer validates and applies. No pipeline writes these."
+  ],
+  "sources": {
+    "arivom_registry": {
+      "name": "Arivom outlet registry (verified per entry)",
+      "url": "https://github.com/Aakash-Marthandan/Project-Arivom/blob/main/pipelines/data/outlets.json",
+      "publisher": "Arivom",
+      "note": "Publisher/parent recorded during M6 registry verification, verified_on per entry."
+    },
+    "mom_india": {
+      "name": "Media Ownership Monitor India (RSF / DEF)",
+      "url": "http://india.mom-gmr.org/en/owners/individual-owners/",
+      "publisher": "Reporters Without Borders and Digital Empowerment Foundation",
+      "note": "Research project mapping Indian media ownership and political proximity."
+    }
+  },
+  "outlets": {
+    "the-hindu":            { "owner": "THG Publishing Pvt Ltd", "owner_group": "The Hindu Group", "ownership_type": "corporation", "source": "arivom_registry" },
+    "the-hindu-national":   { "owner": "THG Publishing Pvt Ltd", "owner_group": "The Hindu Group", "ownership_type": "corporation", "source": "arivom_registry" },
+    "hindu-tamil-thisai":   { "owner": "THG Publishing Pvt Ltd", "owner_group": "The Hindu Group", "ownership_type": "corporation", "source": "arivom_registry" },
+
+    "daily-thanthi":        { "owner": "Thanthi Trust", "owner_group": "Daily Thanthi group", "source": "arivom_registry" },
+    "maalaimalar":          { "owner": "Thanthi Trust", "owner_group": "Daily Thanthi group", "source": "arivom_registry" },
+    "dt-next":              { "owner": "Daily Thanthi group", "owner_group": "Daily Thanthi group", "source": "arivom_registry" },
+
+    "new-indian-express":   { "owner": "Express Publications (Madurai) Ltd", "owner_group": "The New Indian Express Group", "ownership_type": "corporation", "source": "arivom_registry" },
+    "dinamani":             { "owner": "Express Publications (Madurai) Ltd", "owner_group": "The New Indian Express Group", "ownership_type": "corporation", "source": "arivom_registry" },
+
+    "sun-news":             { "owner": "Sun TV Network Ltd", "owner_group": "Sun Group", "ownership_type": "media_conglomerate", "source": "arivom_registry" },
+    "dinakaran":            { "owner": "Kal Publications Pvt Ltd", "owner_group": "Sun Group", "ownership_type": "media_conglomerate", "source": "arivom_registry" },
+
+    "times-of-india":       { "owner": "Bennett, Coleman & Co. Ltd", "owner_group": "The Times Group", "ownership_type": "corporation", "source": "arivom_registry" },
+    "indian-express-india": { "owner": "The Indian Express Group", "owner_group": "The Indian Express Group", "ownership_type": "corporation", "source": "arivom_registry" },
+    "news18-tamil":         { "owner": "Network18 Media & Investments Ltd", "owner_group": "Network18", "ownership_type": "media_conglomerate", "source": "arivom_registry" },
+
+    "bbc-tamil":            { "owner": "British Broadcasting Corporation", "owner_group": "BBC", "ownership_type": "government", "source": "arivom_registry", "note": "Public corporation established by Royal Charter; editorially independent of government." },
+    "bbc-world":            { "owner": "British Broadcasting Corporation", "owner_group": "BBC", "ownership_type": "government", "source": "arivom_registry", "note": "Public corporation established by Royal Charter; editorially independent of government." },
+
+    "puthiyathalaimurai":   { "owner": "New Gen Media Corporation", "source": "arivom_registry" },
+    "polimer-news":         { "owner": "Polimer Media Pvt Ltd", "source": "arivom_registry" },
+    "news7-tamil":          { "owner": "Vel Murugan Broadcasting Pvt Ltd", "source": "arivom_registry" },
+    "oneindia-tamil":       { "owner": "Greynium Information Technologies Pvt Ltd", "source": "arivom_registry" },
+    "dinamalar":            { "owner": "Dinamalar", "source": "arivom_registry" },
+    "youturn":              { "owner": "People Educational Awareness Trust", "source": "arivom_registry" },
+    "factly":               { "owner": "Factly Media & Research", "source": "arivom_registry" },
+    "boom":                 { "owner": "Ping Network", "source": "arivom_registry" },
+    "alt-news":             { "owner": "Pravda Media Foundation", "source": "arivom_registry" }
+  },
+  "political_affiliation": [
+    {
+      "owner_group": "Sun Group",
+      "claim": "The Sun Group is run by Kalanithi Maran, the grand nephew of former Tamil Nadu Chief Minister Muthuvel Karunanidhi of the Dravida Munnetra Kazhagam.",
+      "claim_ta": "சன் குழுமத்தை நடத்தும் கலாநிதி மாறன், திராவிட முன்னேற்றக் கழகத்தைச் சேர்ந்த முன்னாள் தமிழ்நாடு முதலமைச்சர் முத்துவேல் கருணாநிதி அவர்களின் பேரன் முறை உறவினர் ஆவார்.",
+      "source": "mom_india",
+      "note": "Quoted from the Media Ownership Monitor's individual-owners findings. Recorded as a documented family and party relationship, not as an assessment of the outlet's coverage."
+    }
+  ]
+}
