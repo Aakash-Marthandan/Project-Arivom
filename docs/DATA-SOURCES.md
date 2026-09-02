@@ -90,6 +90,49 @@ shows the demand for reservoir data.
 
 Did not connect. Household prices are a D-037 ranked class; worth a retry.
 
+## The strategic finding
+
+After probing every accessible route, one pattern decides how News in Data has
+to work:
+
+**Live data needs approvals. Historical data is abundant and open.**
+
+- Current figures sit behind a captcha (RBI), an IP whitelist (IMD), an
+  authenticated dashboard (HMIS beyond 2019-20) or a 403 (Open Budgets India).
+- Reference and historical data is wide open: data.gov.in catalogues 279,554
+  resources, 9,535 of them titled for Tamil Nadu, served through the same
+  `api.data.gov.in/resource/{id}` machinery we already use for NFHS-5.
+
+So most grounding will read "the last published figure is X, for year Y"
+rather than "the figure today is X". That is still worth having — a claim
+about school enrolment is better met with the 2024-25 UDISE number than with
+nothing — but the year has to travel with the number everywhere it appears,
+and a source's staleness must be disclosed rather than smoothed over.
+
+Samples checked, to calibrate expectations:
+- Rainfall in Tamil Nadu — district level, but 2016-17, updated 2019.
+- Employment in Tamil Nadu — state level, ends 2018.
+- CWC daily reservoir levels — daily granularity, but the series stops at
+  December 2023. This is the reservoir data India-WRIS refused us.
+
+## Tooling
+
+`uv run discover-data "<search>"` searches the catalogue;
+`uv run discover-data --show <resource_id>` prints fields, row count, last
+update and a sample row, and states plainly whether a source is current enough
+to read as current. Finding a usable dataset used to cost an afternoon per
+milestone; it is now a command.
+
+## TN department directory — partial
+
+`tn.gov.in/department_list.php` serves the canonical list of 43 departments in
+`<h3>` elements. This is the authoritative English list and would upgrade
+/government from a wiki table to the government's own taxonomy.
+
+It does not close the D-019/D-033 asymmetry, though: there is no Tamil version.
+`/ta/` 404s and `?lang=ta` returns the identical English page. Tamil department
+names would still have to come from the existing curated source.
+
 ## Reachable, not yet probed at the data layer
 
 `tn.gov.in`, `elections.tn.gov.in`, `tnsec.tn.gov.in`, `assembly.tn.gov.in`,
